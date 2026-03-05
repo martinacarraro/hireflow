@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import {
@@ -9,15 +9,14 @@ import {
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
   const [candidature, setCandidature] = useState([])
   const [profile, setProfile] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [toast, setToast] = useState(null)
   const [confetti, setConfetti] = useState(false)
   const [loading, setLoading] = useState(true)
-
-  // ── LOAD DATA ─────────────────────────────────────────────────
+  const sentNotifs = useRef(new Set()) // dedup per sessione
 
   const loadProfile = useCallback(async () => {
     if (!user) return
@@ -26,7 +25,6 @@ export function AppProvider({ children }) {
     if (data) {
       setProfile(data)
     } else {
-      // Create profile on first login
       const nome = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Utente'
       const { data: newProfile } = await supabase
         .from('user_profiles')
@@ -61,6 +59,14 @@ export function AppProvider({ children }) {
 
   const addCandidatura = async (data) => {
     const isFirst = candidature.length === 0
+    if (isGuest) {
+      const row = { ...data, id: Date.now().toString(), user_id: 'guest', created_at: new Date().toISOString() }
+      setCandidature(prev => [row, ...prev])
+      const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
+      showToast(`Aggiunta! 🚀 +${xp} XP`, 'success')
+      if (isFirst) triggerConfetti()
+      return row
+    }
     const { data: row, error } = await supabase
       .from('candidature')
       .insert({ ...data, user_id: user.id })
@@ -75,6 +81,18 @@ export function AppProvider({ children }) {
     return row
   }
 
+  const addBulkCandidature = async (rows) => {
+    const toInsert = rows.map(r => ({ ...r, user_id: user.id }))
+    const { data, error } = await supabase
+      .from('candidature').insert(toInsert).select()
+    if (error) { showToast('❌ Errore importazione.', 'error'); return false }
+    setCandidature(prev => [...(data || []), ...prev])
+    showToast(`✅ Importate ${data.length} candidature!`, 'success')
+    triggerConfetti()
+    await checkBadges()
+    return true
+  }
+
   const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id)
     const { data: row, error } = await supabase
@@ -82,21 +100,25 @@ export function AppProvider({ children }) {
     if (error) { showToast('❌ Errore — riprova.', 'error'); return }
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
-    // XP & events on stato change
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
         showToast('🎙️ Colloquio! +15 XP 🎉', 'success')
-        pushNotification('🎙️ Colloquio confermato!', `Preparati per ${prev?.azienda}. Checklist pronta! 💜`)
+        pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`)
         await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
         await addXP(XP_EVENTS.OFFERTA)
         showToast('🏆 OFFERTA RICEVUTA! +20 XP 🎉🎉', 'success')
         triggerConfetti()
         pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
+      } else if (updates.stato === 'Assunto') {
+        await addXP(XP_EVENTS.OFFERTA)
+        showToast('🏆 SEI STATA ASSUNTA! 🎉🎉', 'success')
+        triggerConfetti()
+        pushNotification('🏆 ASSUNTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'GHOSTED') {
         showToast(`👻 ${prev?.azienda} archiviata come GHOSTED.`, 'info')
-        pushNotification('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Classici. Avanti! 💜`)
+        pushNotification('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
       } else {
         showToast('✅ Stato aggiornato!', 'success')
       }
@@ -198,7 +220,7 @@ export function AppProvider({ children }) {
 
   const computeStats = () => {
     const total = candidature.length
-    const colloqui = candidature.filter(c => ['Colloquio','In attesa','Offerta ricevuta'].includes(c.stato)).length
+    const colloqui = candidature.filter(c => ['Colloquio','Secondo colloquio','Call conoscitiva','In attesa','Offerta ricevuta'].includes(c.stato)).length
     const ghosted = candidature.filter(c => c.stato === 'GHOSTED').length
     const offerte = candidature.filter(c => c.stato === 'Offerta ricevuta').length
     const withNotes = candidature.filter(c => c.note?.length > 5).length
@@ -212,9 +234,12 @@ export function AppProvider({ children }) {
     return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: 0 }
   }
 
-  // ── PUSH NOTIFICATIONS ────────────────────────────────────────
+  // ── PUSH NOTIFICATIONS (con dedup) ────────────────────────────
 
   const pushNotification = (title, body) => {
+    const key = `${title}::${body}`
+    if (sentNotifs.current.has(key)) return // dedup
+    sentNotifs.current.add(key)
     const notif = { id: Date.now(), title, body, read: false, time: new Date().toISOString() }
     setNotifications(prev => [notif, ...prev.slice(0, 49)])
     if ('Notification' in window && Notification.permission === 'granted') {
@@ -226,33 +251,34 @@ export function AppProvider({ children }) {
     if (!candidature.length) return
     candidature.forEach(c => {
       if (!c.notifiche_push) return
-      // Day before interview
-      if (c.data_colloquio && isTomorrow(c.data_colloquio) && c.stato === 'Colloquio') {
-        pushNotification(`⏰ Domani: ${c.azienda}!`, `Sei pronta? Controlla la checklist. 🐺✨`)
+      const days = daysSince(c.data_invio)
+
+      // Giorno prima del colloquio
+      if (c.data_colloquio && isTomorrow(c.data_colloquio) && ['Colloquio','Secondo colloquio','Call conoscitiva'].includes(c.stato)) {
+        pushNotification(`⏰ Domani: ${c.azienda}!`, `Tutto pronto? Controlla la checklist. 🐺✨`)
       }
-      // Day of interview
-      if (c.data_colloquio && isToday(c.data_colloquio) && c.stato === 'Colloquio') {
-        pushNotification(`🌅 Oggi: ${c.azienda} ${c.ora_colloquio || ''}`, `Forza! Respira e mostragli chi sei. 💜`)
+      // Giorno del colloquio
+      if (c.data_colloquio && isToday(c.data_colloquio) && ['Colloquio','Secondo colloquio','Call conoscitiva'].includes(c.stato)) {
+        pushNotification(`🌅 Oggi: ${c.azienda} ${c.ora_colloquio || ''}`, `Forza! Respira e mostrati al meglio. 💜`)
       }
-      // Post-interview (day after, feeling not updated)
+      // Giorno dopo (feeling non aggiornato)
       if (c.data_colloquio && isYesterday(c.data_colloquio) && !c.feeling_aggiornato) {
         pushNotification(`☕ Com'è andato con ${c.azienda}?`, `Aggiorna lo stato e scrivi le impressioni! 📝`)
       }
-      // 7 days waiting
-      const days = daysSince(c.data_invio)
+      // 7 giorni in attesa
       if (c.stato === 'In attesa' && days >= 7 && days < 14 && !c.notifica_7gg_inviata) {
         pushNotification(`⏳ Notizie da ${c.azienda}?`, `Passata una settimana. Controlla la mail! 👀`)
         supabase.from('candidature').update({ notifica_7gg_inviata: true }).eq('id', c.id)
       }
-      // 14 days waiting
+      // 14 giorni in attesa
       if (c.stato === 'In attesa' && days >= 14 && !c.notifica_14gg_inviata) {
-        pushNotification(`📧 2 settimane senza risposta da ${c.azienda}`, `Considera un follow-up. Hai niente da perdere! 💪`)
+        pushNotification(`📧 2 settimane senza risposta da ${c.azienda}`, `Considera un follow-up. 💪`)
         supabase.from('candidature').update({ notifica_14gg_inviata: true }).eq('id', c.id)
       }
-      // Auto-GHOSTED at 30 days
-      if (c.stato === 'Inviata' && days >= 30) {
+      // Auto-GHOSTED a 60 giorni (2 mesi)
+      if ((c.stato === 'Inviata' || c.stato === 'In attesa') && days >= 60) {
         updateCandidatura(c.id, { stato: 'GHOSTED' })
-        pushNotification(`👻 ${c.azienda} archiviata come GHOSTED`, `30 giorni di silenzio. Classici. Avanti! 💜`)
+        pushNotification(`👻 ${c.azienda} → GHOSTED`, `2 mesi di silenzio. Archiviata automaticamente. Avanti! 💜`)
       }
     })
   }, [candidature])
@@ -288,7 +314,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       candidature, profile, notifications, toast, confetti,
       loading, unreadCount, computeStats,
-      addCandidatura, updateCandidatura, deleteCandidatura,
+      addCandidatura, addBulkCandidature, updateCandidatura, deleteCandidatura,
       getChecklist, toggleChecklistItem,
       addXP, updateProfile, markOnboarded, refreshMotto,
       pushNotification, requestNotificationPermission,
