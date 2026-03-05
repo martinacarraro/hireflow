@@ -6,34 +6,13 @@ import { STATI, PRIORITA, FONTI, STATUS_CONFIG, fetchJobDataFromUrl, parseJobUrl
 const TODAY = new Date().toISOString().split('T')[0]
 
 async function parseWithAI(text) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('/api/parse-job', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `Estrai i dati da questo annuncio di lavoro e rispondi SOLO con un JSON valido, senza testo aggiuntivo:
-{
-  "azienda": "nome azienda o stringa vuota",
-  "ruolo": "titolo del ruolo o stringa vuota",
-  "sede": "città o stringa vuota",
-  "paese": "paese o Italia come default",
-  "stipendio_min": numero intero in migliaia di euro o null,
-  "stipendio_max": numero intero in migliaia di euro o null,
-  "fonte": "LinkedIn o Indeed o InfoJobs o Glassdoor o Sito aziendale o Altro"
-}
-
-Annuncio:
-${text.slice(0, 3000)}`
-      }]
-    })
+    body: JSON.stringify({ text })
   })
-  const data = await response.json()
-  const raw = data.content?.[0]?.text || ''
-  const clean = raw.replace(/```json|```/g, '').trim()
-  return JSON.parse(clean)
+  if (!response.ok) throw new Error('API error')
+  return await response.json()
 }
 
 export default function AddCandidatura({ onBack, onDone }) {
@@ -122,6 +101,7 @@ export default function AddCandidatura({ onBack, onDone }) {
       ...form,
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
+      data_colloquio: form.data_colloquio || null,
     }
     const result = await addCandidatura(payload)
     setLoading(false)
