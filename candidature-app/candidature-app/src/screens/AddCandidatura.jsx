@@ -11,7 +11,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
     sede: '', paese: 'Italia', link_annuncio: '', fonte: 'Altro',
     stipendio_min: '', stipendio_max: '',
-    note: '', notifiche_push: true, data_invio: TODAY,
+    note: '', notifiche_push: true, data_invio: TODAY, data_colloquio: '',
   })
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState(false)
@@ -20,6 +20,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [errors, setErrors] = useState({})
   const parseTimer = useRef(null)
 
+  const statiConColloquio = ['Call conoscitiva','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const handleUrlChange = (url) => {
@@ -134,11 +135,18 @@ export default function AddCandidatura({ onBack, onDone }) {
             onChange={v => set('stato', v)} colorFn={statusColor} />
         </Field>
 
-        {/* DATA INVIO */}
+        {/* DATE */}
         <Field label="📅 Data candidatura">
           <input className="input-field" type="date"
             value={form.data_invio} onChange={e => set('data_invio', e.target.value)} />
         </Field>
+
+        {statiConColloquio.includes(form.stato) && (
+          <Field label="🗓️ Data colloquio">
+            <input className="input-field" type="date"
+              value={form.data_colloquio} onChange={e => set('data_colloquio', e.target.value)} />
+          </Field>
+        )}
 
         {/* SEDE */}
         <SectionLabel>DOVE?</SectionLabel>
