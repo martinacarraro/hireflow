@@ -5,16 +5,6 @@ import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
-async function parseWithAI(text) {
-  const response = await fetch('/api/parse-job', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
-  })
-  if (!response.ok) throw new Error('API error')
-  return await response.json()
-}
-
 export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura } = useApp()
   const [form, setForm] = useState({
@@ -25,36 +15,8 @@ export default function AddCandidatura({ onBack, onDone }) {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-  const [showTextPaste, setShowTextPaste] = useState(false)
-  const [pastedText, setPastedText] = useState('')
-  const [aiParsing, setAiParsing] = useState(false)
-  const [aiParsed, setAiParsed] = useState(false)
   const statiConColloquio = ['Call conoscitiva','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-  const handleAIParse = async () => {
-    if (!pastedText.trim()) return
-    setAiParsing(true)
-    setAiParsed(false)
-    try {
-      const result = await parseWithAI(pastedText)
-      setForm(f => ({
-        ...f,
-        azienda: result.azienda || f.azienda,
-        ruolo: result.ruolo || f.ruolo,
-        sede: result.sede || f.sede,
-        paese: result.paese || f.paese,
-        fonte: result.fonte || f.fonte,
-        stipendio_min: result.stipendio_min ?? f.stipendio_min,
-        stipendio_max: result.stipendio_max ?? f.stipendio_max,
-      }))
-      setAiParsed(true)
-      setShowTextPaste(false)
-    } catch {
-      alert('Errore AI — riprova o compila manualmente.')
-    }
-    setAiParsing(false)
-  }
 
   const validate = () => {
     const e = {}
@@ -89,49 +51,11 @@ export default function AddCandidatura({ onBack, onDone }) {
         </button>
         <div>
           <h2 className="font-bold text-txt text-base">Nuova candidatura ✍️</h2>
-          <p className="text-xs text-muted italic">Incolla il testo dell'annuncio per compilare in automatico.</p>
+          <p className="text-xs text-muted italic">Compila i campi per aggiungere una candidatura.</p>
         </div>
       </div>
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
-
-        {/* AI TEXT PASTE */}
-        <div className="card mb-5 border-purple/30">
-          <div className="flex items-center justify-between">
-            <SectionLabel>🤖 INCOLLA TESTO ANNUNCIO (AI)</SectionLabel>
-            <button
-              onClick={() => setShowTextPaste(v => !v)}
-              className="text-xs text-purple-soft font-medium mb-2"
-            >
-              {showTextPaste ? 'Chiudi ↑' : 'Apri ↓'}
-            </button>
-          </div>
-
-          {!showTextPaste && aiParsed && (
-            <div className="p-2.5 bg-green/10 border border-green/20 rounded-xl text-xs text-green">
-              ✅ Dati estratti dall'AI — controlla e modifica se necessario!
-            </div>
-          )}
-
-          {showTextPaste && (
-            <div className="space-y-2">
-              <textarea
-                className="input-field resize-none text-xs"
-                rows={6}
-                placeholder="Copia e incolla qui il testo completo dell'annuncio di lavoro (da LinkedIn, Indeed, email, PDF...)&#10;&#10;L'AI estrarrà automaticamente: azienda, ruolo, sede, stipendio..."
-                value={pastedText}
-                onChange={e => setPastedText(e.target.value)}
-              />
-              <button
-                onClick={handleAIParse}
-                disabled={aiParsing || !pastedText.trim()}
-                className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm"
-              >
-                {aiParsing ? <><Spinner size={16} /> Analisi in corso...</> : '✨ Estrai dati con AI'}
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* FONDAMENTALI */}
         <SectionLabel>I FONDAMENTALI ✱</SectionLabel>
