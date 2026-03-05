@@ -10,17 +10,17 @@ import AddCandidatura from './screens/AddCandidatura'
 import DetailView from './screens/DetailView'
 import Stats from './screens/Stats'
 import Profile from './screens/Profile'
+import Calendar from './screens/Calendar'
 
 export default function App() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const [showSplash, setShowSplash] = useState(true)
   const [tab, setTab] = useState('home')
-  const [view, setView] = useState(null) // { type: 'detail'|'add', data? }
+  const [view, setView] = useState(null)
 
   const loading = authLoading || (user && dataLoading)
 
-  // Register service worker for push
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
@@ -31,19 +31,14 @@ export default function App() {
     return <Splash onDone={() => !loading && setShowSplash(false)} />
   }
 
-  if (!user) return <Login />
+  if (!user && !isGuest) return <Login />
 
   if (user && profile && !profile.seen_onboarding) return <Onboarding />
 
-  // Detail or Add views
   if (view?.type === 'detail') {
     return (
       <div className="h-full flex flex-col">
-        <DetailView
-          candidatura={view.data}
-          onBack={() => setView(null)}
-          onUpdate={() => {}}
-        />
+        <DetailView candidatura={view.data} onBack={() => setView(null)} onUpdate={() => {}} />
         <Toast toast={toast} />
         <Confetti active={confetti} />
       </div>
@@ -53,10 +48,7 @@ export default function App() {
   if (view?.type === 'add') {
     return (
       <div className="h-full flex flex-col">
-        <AddCandidatura
-          onBack={() => setView(null)}
-          onDone={() => setView(null)}
-        />
+        <AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} />
         <Toast toast={toast} />
         <Confetti active={confetti} />
       </div>
@@ -70,22 +62,13 @@ export default function App() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Screen */}
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
-        {tab === 'home' && (
-          <Home
-            onAdd={() => setView({ type: 'add' })}
-            onDetail={(c) => setView({ type: 'detail', data: c })}
-          />
-        )}
-        {tab === 'stats'   && <Stats />}
-        {tab === 'profile' && <Profile />}
+        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} />}
+        {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
+        {tab === 'stats'    && <Stats />}
+        {tab === 'profile'  && <Profile />}
       </div>
-
-      {/* Tab bar */}
       <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />
-
-      {/* Global overlays */}
       <Toast toast={toast} />
       <Confetti active={confetti} />
     </div>
