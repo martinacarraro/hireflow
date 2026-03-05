@@ -27,7 +27,7 @@ export default function Splash({ onDone }) {
       <div className="relative z-10 flex flex-col items-center px-8 w-full max-w-sm">
         {/* Logo */}
         <div className="text-6xl mb-3 animate-pulse-soft">🚀</div>
-        <h1 className="text-2xl font-bold text-txt tracking-tight mb-1">Le mie Candidature</h1>
+        <h1 className="text-2xl font-bold text-txt tracking-tight mb-1">Hireflow</h1>
         <p className="text-sm text-muted italic mb-10">Il job tracker che ti capisce davvero.</p>
 
         {/* Progress bar */}
