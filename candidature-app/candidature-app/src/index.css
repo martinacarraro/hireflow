@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  html, body, #root { height: 100%; margin: 0; padding: 0; }
+  body {
+    background: #0E0E1A;
+    color: #EEEEFF;
+    font-family: 'Outfit', system-ui, sans-serif;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2A2A4A; border-radius: 2px; }
+}
+
+@layer components {
+  .screen {
+    @apply h-full flex flex-col overflow-hidden bg-bg;
+  }
+  .scrollable {
+    @apply overflow-y-auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .card {
+    @apply bg-surface rounded-2xl border border-border p-4 shadow-glow;
+  }
+  .btn-primary {
+    @apply bg-purple text-white font-semibold rounded-2xl px-6 py-3.5 shadow-btn 
+           active:scale-95 transition-all duration-150 text-sm tracking-wide;
+  }
+  .btn-secondary {
+    @apply border border-purple text-purple-soft font-semibold rounded-2xl px-6 py-3.5
+           active:scale-95 transition-all duration-150 text-sm tracking-wide;
+  }
+  .btn-danger {
+    @apply border border-red text-red font-semibold rounded-2xl px-6 py-3.5
+           active:scale-95 transition-all duration-150 text-sm;
+  }
+  .input-field {
+    @apply w-full bg-surface border border-border rounded-xl px-4 py-3 text-txt 
+           placeholder-disabled text-sm outline-none
+           focus:border-purple focus:ring-1 focus:ring-purple/30
+           transition-all duration-150;
+  }
+  .section-label {
+    @apply text-xs uppercase tracking-widest text-muted font-semibold mb-2;
+  }
+  .status-badge {
+    @apply text-xs font-semibold px-3 py-1 rounded-full;
+  }
+  .pill-btn {
+    @apply px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 active:scale-95;
+  }
+  .tab-safe-padding {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Purple glow bg effect */
+.purple-glow-bg::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Confetti pieces */
+.confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 1.2s ease-in forwards;
+  z-index: 9999;
+}
+
+/* Bottom sheet animation */
+.sheet-enter { animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1); }
+
+/* Swipe hint */
+@keyframes swipeHint {
+  0% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(-8px); opacity: 0.5; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.swipe-hint { animation: swipeHint 1.5s ease-in-out 2s 2; }
+
+/* Loading bar */
+@keyframes loadingBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.loading-bar { animation: loadingBar 2s ease-in-out forwards; }
+
+/* XP bar fill */
+@keyframes xpFill {
+  from { width: 0%; }
+}
+.xp-fill { animation: xpFill 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
