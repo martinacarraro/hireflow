@@ -1,3 +1,4 @@
+import React from 'react'
 import { STATUS_CONFIG, PRIORITA_CONFIG, getLevel, getXpProgress } from '../lib/utils'
 
 // ─── STATUS BADGE ─────────────────────────────────────────────────
@@ -41,20 +42,48 @@ export function LevelBadge({ xp = 0 }) {
 }
 
 // ─── XP BAR ──────────────────────────────────────────────────────
+const XP_LOG_KEY = 'hireflow_xp_log'
+
+export function logXpEvent(label, amount) {
+  try {
+    const log = JSON.parse(sessionStorage.getItem(XP_LOG_KEY) || '[]')
+    log.unshift({ label, amount, time: new Date().toISOString() })
+    sessionStorage.setItem(XP_LOG_KEY, JSON.stringify(log.slice(0, 20)))
+  } catch {}
+}
+
 export function XpBar({ xp = 0 }) {
   const lv = getLevel(xp)
   const pct = getXpProgress(xp)
   const next = lv.max === 99999 ? '∞' : lv.max
+  const [showLog, setShowLog] = React.useState(false)
+  let log = []
+  try { log = JSON.parse(sessionStorage.getItem(XP_LOG_KEY) || '[]') } catch {}
+
   return (
     <div>
       <div className="flex justify-between text-xs text-muted mb-1">
         <span>{lv.emoji} Lv.{lv.lv} — {lv.name}</span>
-        <span>{xp} / {next} XP</span>
+        <button onClick={() => setShowLog(v => !v)} className="text-purple-soft font-medium">
+          {xp} / {next} XP {showLog ? '▴' : '▾'}
+        </button>
       </div>
-      <div className="h-1.5 bg-border rounded-full overflow-hidden">
+      <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
         <div className="h-full bg-purple rounded-full xp-fill transition-all"
           style={{ width: `${pct}%` }} />
       </div>
+      {showLog && (
+        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+          {log.length === 0 ? (
+            <p className="text-xs text-disabled text-center py-1">Nessun XP guadagnato ancora</p>
+          ) : log.map((e, i) => (
+            <div key={i} className="flex justify-between items-center text-xs py-0.5">
+              <span className="text-muted">{e.label}</span>
+              <span className="text-green font-semibold">+{e.amount} XP</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -172,21 +201,21 @@ export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel, dan
 // ─── TAB BAR ─────────────────────────────────────────────────────
 export function TabBar({ active, onChange, unread = 0 }) {
   const tabs = [
-    { id: 'home',    icon: '🏠', label: 'Home' },
-    { id: 'add',     icon: '➕', label: 'Aggiungi', special: true },
-    { id: 'stats',   icon: '📊', label: 'Stats' },
-    { id: 'profile', icon: '👤', label: 'Profilo' },
+    { id: 'home',     icon: '🏠', label: 'Home' },
+    { id: 'calendar', icon: '📅', label: 'Calendario' },
+    { id: 'add',      icon: '+',  label: 'Aggiungi', special: true },
+    { id: 'stats',    icon: '📊', label: 'Stats' },
+    { id: 'profile',  icon: '👤', label: 'Profilo' },
   ]
   return (
     <div className="bg-surface border-t border-border tab-safe-padding flex-shrink-0">
       <div className="flex items-center">
         {tabs.map(t => (
           <button key={t.id} onClick={() => onChange(t.id)}
-            className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 transition-all active:scale-95
+            className={`flex-1 flex flex-col items-center py-2 gap-0.5 transition-all active:scale-95
               ${active === t.id ? 'text-purple' : 'text-disabled'}`}>
             {t.special ? (
-              <span className={`flex items-center justify-center w-10 h-10 rounded-full text-lg
-                ${active === t.id ? 'bg-purple text-white shadow-btn' : 'bg-border text-muted'}`}>
+              <span className="flex items-center justify-center w-12 h-12 -mt-5 rounded-full text-2xl font-bold bg-purple text-white shadow-btn ring-4 ring-bg">
                 {t.icon}
               </span>
             ) : (
