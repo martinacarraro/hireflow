@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { Spinner } from '../components/UI'
 
 export default function Login() {
-  const { signInWithEmail, signUpWithEmail } = useAuth()
+  const { signInWithEmail, signUpWithEmail, enterAsGuest } = useAuth()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,15 +29,18 @@ export default function Login() {
       </div>
 
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
-        <div className="text-7xl mb-4">🚀</div>
-        <h1 className="text-3xl font-bold text-txt tracking-tight mb-2 text-center">
-          Le mie Candidature
-        </h1>
+        <div className="mb-4">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="14" fill="#1A1A2E"/>
+            <polygon points="38,6 18,36 30,36 26,58 46,28 34,28" fill="#34D399"/>
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-txt tracking-tight mb-2 text-center">Hireflow</h1>
         <p className="text-base text-muted italic text-center mb-8 leading-relaxed">
           Il job tracker che ti capisce davvero.
         </p>
 
-        <div className="flex gap-2 flex-wrap justify-center mb-10">
+        <div className="flex gap-2 flex-wrap justify-center mb-8">
           {['🎯 Traccia tutto', '🔔 Notifiche smart', '🏆 Gamificato'].map(f => (
             <span key={f} className="text-xs px-3 py-1.5 rounded-full bg-surface border border-border text-purple-soft">
               {f}
@@ -46,7 +49,7 @@ export default function Login() {
         </div>
 
         <h2 className="text-2xl font-bold text-txt mb-1 w-full">
-          {isSignUp ? 'Crea account 🚀' : 'Bentornata! 👋'}
+          {isSignUp ? 'Crea account 🚀' : 'Ciao! 👋'}
         </h2>
         <p className="text-sm text-muted mb-6 w-full">
           {isSignUp ? 'Gratis. Per sempre. I tuoi dati privati.' : 'Accedi al tuo tracker.'}
@@ -63,14 +66,30 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-muted mt-6">
+        <p className="text-center text-sm text-muted mt-4">
           {isSignUp ? 'Hai già un account?' : 'Prima volta qui?'}{' '}
           <button onClick={() => setIsSignUp(v => !v)} className="text-purple-soft font-medium">
             {isSignUp ? 'Accedi' : 'Registrati'}
           </button>
         </p>
 
-        <p className="text-xs text-disabled text-center mt-8 leading-relaxed px-4">
+        {/* Divider */}
+        <div className="flex items-center gap-3 w-full my-5">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-disabled">oppure</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Guest mode */}
+        <button onClick={enterAsGuest}
+          className="w-full border border-border text-muted rounded-2xl py-3 text-sm font-medium active:scale-95 transition-all">
+          👀 Entra come ospite
+        </button>
+        <p className="text-[11px] text-disabled text-center mt-2 leading-relaxed px-2">
+          ⚠️ In modalità ospite i dati non vengono salvati e andranno persi alla chiusura dell'app.
+        </p>
+
+        <p className="text-xs text-disabled text-center mt-6 leading-relaxed px-4">
           🔒 Account gratuito. I tuoi dati sono privati e visibili solo a te.
         </p>
       </div>
