@@ -29,8 +29,6 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [pastedText, setPastedText] = useState('')
   const [aiParsing, setAiParsing] = useState(false)
   const [aiParsed, setAiParsed] = useState(false)
-  const parseTimer = useRef(null)
-
   const statiConColloquio = ['Call conoscitiva','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
