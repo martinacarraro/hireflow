@@ -1,14 +1,20 @@
 {
-  "name": "Le mie Candidature",
-  "short_name": "Candidature 🚀",
-  "description": "Il job tracker che ti capisce davvero.",
+  "name": "Hireflow",
+  "short_name": "Hireflow",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0E0E1A",
-  "theme_color": "#8B5CF6",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
