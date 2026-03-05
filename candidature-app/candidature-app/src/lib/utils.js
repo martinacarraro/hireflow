@@ -1,18 +1,22 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
-export const STATI = ['Inviata','Colloquio','In attesa','Offerta ricevuta','GHOSTED','Ritirata']
+export const STATI = ['Inviata','Call conoscitiva','Colloquio','Secondo colloquio','In attesa','Offerta ricevuta','Assunto','Rifiutato','GHOSTED','Ritirata']
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Referral','Sito aziendale','Altro']
 export const TIPI_COLLOQUIO = ['📞 Telefonico','💻 Video','🏢 In presenza']
 export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
 export const STATUS_CONFIG = {
-  'Inviata':          { color: '#60A5FA', bg: 'rgba(96,165,250,0.15)',  emoji: '📤', label: 'Inviata' },
-  'Colloquio':        { color: '#34D399', bg: 'rgba(52,211,153,0.15)',  emoji: '🎙️', label: 'Colloquio' },
-  'In attesa':        { color: '#FBBF24', bg: 'rgba(251,191,36,0.15)',  emoji: '⏳', label: 'In attesa' },
-  'Offerta ricevuta': { color: '#A78BFA', bg: 'rgba(167,139,250,0.15)', emoji: '🎉', label: 'Offerta!' },
-  'GHOSTED':          { color: '#F87171', bg: 'rgba(248,113,113,0.15)', emoji: '👻', label: 'GHOSTED' },
-  'Ritirata':         { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '🚫', label: 'Ritirata' },
+  'Inviata':           { color: '#60A5FA', bg: 'rgba(96,165,250,0.15)',  emoji: '📤', label: 'Inviata' },
+  'Call conoscitiva':  { color: '#38BDF8', bg: 'rgba(56,189,248,0.15)',  emoji: '📞', label: 'Call' },
+  'Colloquio':         { color: '#34D399', bg: 'rgba(52,211,153,0.15)',  emoji: '🎙️', label: 'Colloquio' },
+  'Secondo colloquio': { color: '#10B981', bg: 'rgba(16,185,129,0.15)',  emoji: '🎙️🎙️', label: '2° Colloquio' },
+  'In attesa':         { color: '#FBBF24', bg: 'rgba(251,191,36,0.15)',  emoji: '⏳', label: 'In attesa' },
+  'Offerta ricevuta':  { color: '#A78BFA', bg: 'rgba(167,139,250,0.15)', emoji: '🎉', label: 'Offerta!' },
+  'Assunto':           { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  emoji: '🏆', label: 'Assunto!' },
+  'Rifiutato':         { color: '#F87171', bg: 'rgba(248,113,113,0.15)', emoji: '❌', label: 'Rifiutato' },
+  'GHOSTED':           { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '👻', label: 'GHOSTED' },
+  'Ritirata':          { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '🚫', label: 'Ritirata' },
 }
 
 export const PRIORITA_CONFIG = {
@@ -21,7 +25,7 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-export const STATUS_GROUP_ORDER = ['Colloquio','Offerta ricevuta','Inviata','In attesa','GHOSTED','Ritirata']
+export const STATUS_GROUP_ORDER = ['Assunto','Offerta ricevuta','Secondo colloquio','Colloquio','Call conoscitiva','Inviata','In attesa','GHOSTED','Rifiutato','Ritirata']
 
 // ─── SMART URL PARSER ────────────────────────────────────────────
 
@@ -41,43 +45,75 @@ export function parseJobUrl(url) {
 }
 
 export async function fetchJobDataFromUrl(url) {
-  // Try to fetch page title via allorigins CORS proxy
+  const proxies = [
+    async (u) => {
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(6000) })
+      const data = await res.json()
+      return data.contents || ''
+    },
+    async (u) => {
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(6000) })
+      return await res.text()
+    },
+    async (u) => {
+      const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(6000) })
+      return await res.text()
+    },
+  ]
+
+  let html = ''
+  for (const proxy of proxies) {
+    try {
+      html = await proxy(url)
+      if (html && html.length > 100) break
+    } catch { /* try next */ }
+  }
+
+  if (!html) return { fonte: parseJobUrl(url).fonte, success: false }
+
   try {
-    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(5000) })
-    const data = await res.json()
-    const html = data.contents || ''
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
     const rawTitle = titleMatch ? titleMatch[1].trim() : ''
 
+    // Try og:title as fallback (more reliable on many job sites)
+    const ogMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i)
+    const ogTitle = ogMatch ? ogMatch[1].trim() : ''
+
+    const title = ogTitle || rawTitle
     let azienda = '', ruolo = ''
     const lower = url.toLowerCase()
 
     if (lower.includes('linkedin.com')) {
-      // "Ruolo at Azienda | LinkedIn"
-      const parts = rawTitle.replace(/\s*\|\s*LinkedIn.*$/i, '').split(' at ')
+      const parts = title.replace(/\s*\|\s*LinkedIn.*$/i, '').split(/ at /i)
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.trim() || ''
     } else if (lower.includes('indeed.')) {
-      // "Ruolo - Azienda - Indeed"
-      const clean = rawTitle.replace(/\s*[-–]\s*Indeed.*$/i, '')
+      const clean = title.replace(/\s*[-–]\s*Indeed.*$/i, '')
       const parts = clean.split(/\s*[-–]\s/)
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.trim() || ''
     } else if (lower.includes('infojobs.')) {
-      // "Ruolo en Azienda"
-      const parts = rawTitle.split(/\s+en\s+/i)
+      const parts = title.split(/\s+en\s+/i)
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.replace(/\s*[-|].*$/, '').trim() || ''
     } else if (lower.includes('glassdoor.')) {
-      // "Ruolo Jobs at Azienda"
-      const parts = rawTitle.replace(/ jobs?/i, '').split(/\s+at\s+/i)
+      const parts = title.replace(/ jobs?/i, '').split(/\s+at\s+/i)
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.replace(/\s*[-|].*$/, '').trim() || ''
+    } else if (lower.includes('monster.')) {
+      const parts = title.split(/\s*[-–|]\s/)
+      ruolo = parts[0]?.trim() || ''
+      azienda = parts[1]?.trim() || ''
+    } else if (lower.includes('welcometothejungle.')) {
+      const parts = title.split(/\s*[-–|]\s/)
+      ruolo = parts[0]?.trim() || ''
+      azienda = parts[1]?.trim() || ''
     } else {
-      // Generic: take first part of title
-      const clean = rawTitle.replace(/\s*[-|–]\s*.*$/, '').trim()
-      ruolo = clean || ''
+      // Generic: prende le prime due parti divise da - o |
+      const parts = title.split(/\s*[-|–]\s/)
+      ruolo = parts[0]?.trim() || ''
+      azienda = parts[1]?.trim() || ''
     }
 
     return { azienda, ruolo, fonte: parseJobUrl(url).fonte, success: !!(azienda || ruolo) }
