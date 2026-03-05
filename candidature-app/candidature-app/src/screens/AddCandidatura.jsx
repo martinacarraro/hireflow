@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
-import { STATI, PRIORITA, FONTI, STATUS_CONFIG, fetchJobDataFromUrl, parseJobUrl } from '../lib/utils'
+import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
@@ -23,9 +23,6 @@ export default function AddCandidatura({ onBack, onDone }) {
     stipendio_min: '', stipendio_max: '',
     note: '', notifiche_push: true, data_invio: TODAY, data_colloquio: '',
   })
-  const [parsing, setParsing] = useState(false)
-  const [parsed, setParsed] = useState(false)
-  const [parseFailed, setParseFailed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [showTextPaste, setShowTextPaste] = useState(false)
@@ -36,31 +33,6 @@ export default function AddCandidatura({ onBack, onDone }) {
 
   const statiConColloquio = ['Call conoscitiva','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-  const handleUrlChange = (url) => {
-    set('link_annuncio', url)
-    setParsed(false); setParseFailed(false)
-    if (!url || url.length < 15) return
-    clearTimeout(parseTimer.current)
-    parseTimer.current = setTimeout(async () => {
-      setParsing(true)
-      const result = await fetchJobDataFromUrl(url)
-      setParsing(false)
-      if (result.success) {
-        setForm(f => ({
-          ...f,
-          azienda: result.azienda || f.azienda,
-          ruolo: result.ruolo || f.ruolo,
-          fonte: result.fonte || f.fonte,
-        }))
-        setParsed(true)
-      } else {
-        const { fonte } = parseJobUrl(url)
-        set('fonte', fonte)
-        if (url.length > 15) setParseFailed(true)
-      }
-    }, 800)
-  }
 
   const handleAIParse = async () => {
     if (!pastedText.trim()) return
@@ -119,38 +91,11 @@ export default function AddCandidatura({ onBack, onDone }) {
         </button>
         <div>
           <h2 className="font-bold text-txt text-base">Nuova candidatura ✍️</h2>
-          <p className="text-xs text-muted italic">Incolla il link o il testo dell'annuncio.</p>
+          <p className="text-xs text-muted italic">Incolla il testo dell'annuncio per compilare in automatico.</p>
         </div>
       </div>
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
-
-        {/* SMART LINK SECTION */}
-        <div className="card mb-3 border-purple/30">
-          <SectionLabel>🔗 LINK ANNUNCIO</SectionLabel>
-          <div className="relative">
-            <input
-              className="input-field pr-10"
-              placeholder="Incolla il link da LinkedIn, Indeed, InfoJobs..."
-              value={form.link_annuncio}
-              onChange={e => handleUrlChange(e.target.value)}
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {parsing && <Spinner size={16} />}
-              {!parsing && parsed && <span className="text-green text-sm">✓</span>}
-            </div>
-          </div>
-          {parsed && (
-            <div className="mt-2 p-2.5 bg-green/10 border border-green/20 rounded-xl text-xs text-green">
-              ✅ Dati estratti dall'annuncio — controlla e modifica se necessario!
-            </div>
-          )}
-          {parseFailed && (
-            <p className="text-xs text-muted mt-1.5">
-              Non riesco ad estrarre i dati dal link 😕
-            </p>
-          )}
-        </div>
 
         {/* AI TEXT PASTE */}
         <div className="card mb-5 border-purple/30">
