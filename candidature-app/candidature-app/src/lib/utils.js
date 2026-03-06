@@ -7,16 +7,16 @@ export const TIPI_COLLOQUIO = ['📞 Telefonico','💻 Video','🏢 In presenza'
 export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
 export const STATUS_CONFIG = {
-  'Spontanea':          { color: '#D1D5DB', bg: 'rgba(209,213,219,0.15)', emoji: '💡', label: 'Spontanea' },
-  'Inviata':            { color: '#60A5FA', bg: 'rgba(96,165,250,0.15)',  emoji: '📤', label: 'Inviata' },
+  'Spontanea':          { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '💡', label: 'Spontanea' },
+  'Inviata':            { color: '#3B82F6', bg: 'rgba(59,130,246,0.15)',  emoji: '📤', label: 'Inviata' },
   'Vista':              { color: '#F97316', bg: 'rgba(249,115,22,0.15)',  emoji: '👀', label: 'Vista' },
-  'Prima call':         { color: '#C084FC', bg: 'rgba(192,132,252,0.15)', emoji: '📞', label: 'Prima call' },
-  'Colloquio':          { color: '#34D399', bg: 'rgba(52,211,153,0.15)',  emoji: '🎙️', label: 'Colloquio' },
-  'In attesa risposta': { color: '#FBBF24', bg: 'rgba(251,191,36,0.15)',  emoji: '⏳', label: 'In attesa' },
-  'Secondo colloquio':  { color: '#10B981', bg: 'rgba(16,185,129,0.15)',  emoji: '🎙️🎙️', label: '2° Colloquio' },
-  'Non mi piace':       { color: '#8B5CF6', bg: 'rgba(139,92,246,0.15)',  emoji: '😕', label: 'Non mi piace' },
-  'Rifiutata':          { color: '#F87171', bg: 'rgba(248,113,113,0.15)', emoji: '❌', label: 'Rifiutata' },
-  'GHOSTED':            { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '👻', label: 'GHOSTED' },
+  'Prima call':         { color: '#A855F7', bg: 'rgba(168,85,247,0.15)',  emoji: '📞', label: 'Prima call' },
+  'Colloquio':          { color: '#22C55E', bg: 'rgba(34,197,94,0.15)',   emoji: '🎙️', label: 'Colloquio' },
+  'In attesa risposta': { color: '#EAB308', bg: 'rgba(234,179,8,0.15)',   emoji: '⏳', label: 'In attesa' },
+  'Secondo colloquio':  { color: '#16A34A', bg: 'rgba(22,163,74,0.15)',   emoji: '🎙️🎙️', label: '2° Colloquio' },
+  'Rifiutata':          { color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   emoji: '❌', label: 'Rifiutata' },
+  'Non mi piace':       { color: '#6D28D9', bg: 'rgba(109,40,217,0.15)',  emoji: '😕', label: 'Non mi piace' },
+  'GHOSTED':            { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '👻', label: 'GHOSTED' },
 }
 
 export const PRIORITA_CONFIG = {
