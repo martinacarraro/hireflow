@@ -277,26 +277,37 @@ function DeadlineBadge({ scadenza }) {
   const deadline = new Date(scadenza); deadline.setHours(0,0,0,0)
   const diff = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
 
-  if (diff > 0) {
+  if (diff > 3) {
     return (
       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: diff <= 3 ? 'rgba(251,191,36,0.2)' : 'rgba(96,165,250,0.15)', color: diff <= 3 ? '#F59E0B' : '#60A5FA' }}>
+        style={{ background: 'rgba(96,165,250,0.15)', color: '#60A5FA' }}>
         ⏰ {diff}gg al responso
+      </span>
+    )
+  } else if (diff > 0) {
+    return (
+      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+        style={{ background: 'rgba(251,191,36,0.2)', color: '#F59E0B' }}>
+        ⏰ solo {diff}gg al responso!
       </span>
     )
   } else if (diff === 0) {
     return (
       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: 'rgba(251,191,36,0.2)', color: '#F59E0B' }}>
+        style={{ background: 'rgba(251,191,36,0.25)', color: '#F59E0B' }}>
         ⏰ responso oggi!
       </span>
     )
   } else {
+    const giorni = Math.abs(diff)
     return (
-      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: 'rgba(248,113,113,0.15)', color: '#F87171' }}>
-        ⚠️ {Math.abs(diff)}gg fa
-      </span>
+      <div className="flex flex-col items-end gap-0.5">
+        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+          style={{ background: 'rgba(248,113,113,0.15)', color: '#F87171' }}>
+          ⚠️ responso {giorni}gg fa
+        </span>
+        <span className="text-[9px] text-amber font-medium">💬 ricontattali!</span>
+      </div>
     )
   }
 }
@@ -309,7 +320,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   // Long press detection
   const pressTimer = React.useRef(null)
   const handleTouchStart = () => {
-    pressTimer.current = setTimeout(() => { onLongPress?.() }, 500)
+    pressTimer.current = setTimeout(() => { onLongPress?.() }, 900)
   }
   const handleTouchEnd = () => { clearTimeout(pressTimer.current) }
 
