@@ -19,16 +19,16 @@ export default function Home({ onAdd, onDetail }) {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
   const stats = useMemo(() => [
-    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#D1D5DB' },
-    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#60A5FA' },
+    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#9CA3AF' },
+    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#3B82F6' },
     { emoji: '👀', label: 'Vista',      stato: 'Vista',              color: '#F97316' },
-    { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#C084FC' },
-    { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#34D399' },
-    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#FBBF24' },
-    { emoji: '🎙️🎙️', label: '2° Col.',  stato: 'Secondo colloquio',  color: '#10B981' },
-    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#8B5CF6' },
-    { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#F87171' },
-    { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#9CA3AF' },
+    { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#A855F7' },
+    { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#22C55E' },
+    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#EAB308' },
+    { emoji: '🎙️🎙️', label: '2° Col.',  stato: 'Secondo colloquio',  color: '#16A34A' },
+    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#6D28D9' },
+    { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#EF4444' },
+    { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#6B7280' },
   ]
     .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
     .filter(s => s.count > 0),
@@ -318,10 +318,10 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
           )}
           <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-disabled truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
+            <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {c.priorita && <PriorityBadge priorita={c.priorita} />}
-              <span className="text-xs text-disabled">{days}gg fa</span>
+              <span className="text-xs text-muted font-medium">{days}gg fa</span>
             </div>
           </div>
         </div>
