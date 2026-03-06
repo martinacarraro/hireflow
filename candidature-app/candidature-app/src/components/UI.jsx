@@ -20,12 +20,25 @@ export function PriorityBadge({ priorita }) {
 }
 
 // ─── COMPANY AVATAR ───────────────────────────────────────────────
+const AVATAR_COLORS = [
+  ['#EF4444','#fee2e2'], // A B C
+  ['#F97316','#ffedd5'], // D E F
+  ['#EAB308','#fef9c3'], // G H I
+  ['#22C55E','#dcfce7'], // J K L
+  ['#14B8A6','#ccfbf1'], // M N O
+  ['#3B82F6','#dbeafe'], // P Q R
+  ['#8B5CF6','#ede9fe'], // S T U
+  ['#EC4899','#fce7f3'], // V W X
+  ['#6366F1','#e0e7ff'], // Y Z
+]
+
 export function CompanyAvatar({ name = '?', size = 40 }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
-  const s = { width: size, height: size, minWidth: size }
+  const idx = Math.max(0, letter.charCodeAt(0) - 65)
+  const [bg, text] = AVATAR_COLORS[Math.min(Math.floor(idx / 3), AVATAR_COLORS.length - 1)]
   return (
-    <div className="flex items-center justify-center rounded-full bg-purple text-white font-bold shadow-glow"
-      style={{ ...s, fontSize: size * 0.45 }}>
+    <div className="flex items-center justify-center rounded-full font-bold"
+      style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
       {letter}
     </div>
   )
