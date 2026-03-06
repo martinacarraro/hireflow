@@ -271,6 +271,36 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
   )
 }
 
+function DeadlineBadge({ scadenza }) {
+  if (!scadenza) return null
+  const today = new Date(); today.setHours(0,0,0,0)
+  const deadline = new Date(scadenza); deadline.setHours(0,0,0,0)
+  const diff = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
+
+  if (diff > 0) {
+    return (
+      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+        style={{ background: diff <= 3 ? 'rgba(251,191,36,0.2)' : 'rgba(96,165,250,0.15)', color: diff <= 3 ? '#F59E0B' : '#60A5FA' }}>
+        ⏰ {diff}gg al responso
+      </span>
+    )
+  } else if (diff === 0) {
+    return (
+      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+        style={{ background: 'rgba(251,191,36,0.2)', color: '#F59E0B' }}>
+        ⏰ responso oggi!
+      </span>
+    )
+  } else {
+    return (
+      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+        style={{ background: 'rgba(248,113,113,0.15)', color: '#F87171' }}>
+        ⚠️ {Math.abs(diff)}gg fa
+      </span>
+    )
+  }
+}
+
 function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
