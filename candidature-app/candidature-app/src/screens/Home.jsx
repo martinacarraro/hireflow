@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
@@ -208,6 +208,7 @@ export default function Home({ onAdd, onDetail }) {
                 <CandidaturaCard
                   key={c.id} c={c}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
+                  onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
                   selectMode={selectMode}
                   isSelected={selected.has(c.id)}
                 />
@@ -255,9 +256,6 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
             {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} /></div>}
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={onSelectMode} className="p-2 text-muted text-lg active:scale-90 transition-transform" title="Selezione multipla">
-              ☑️
-            </button>
             <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
               <span className="text-2xl">🔔</span>
               {unread > 0 && (
@@ -273,13 +271,26 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
   )
 }
 
-function CandidaturaCard({ c, onPress, selectMode, isSelected }) {
+function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
 
+  // Long press detection
+  const pressTimer = React.useRef(null)
+  const handleTouchStart = () => {
+    pressTimer.current = setTimeout(() => { onLongPress?.() }, 500)
+  }
+  const handleTouchEnd = () => { clearTimeout(pressTimer.current) }
+
   return (
-    <div onClick={onPress}
+    <div
+      onClick={onPress}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleTouchStart}
+      onMouseUp={handleTouchEnd}
+      onMouseLeave={handleTouchEnd}
       className={`card mb-3 cursor-pointer active:scale-[0.98] transition-all ${isSelected ? 'ring-2 ring-purple' : ''}`}
       style={{ borderLeft: `3px solid ${isStale ? '#FBBF24' : cfg.color}` }}>
       {isStale && (
