@@ -27,6 +27,16 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault()
+      e.returnValue = 'Vuoi davvero uscire da Hireflow?'
+      return e.returnValue
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
   if (showSplash || loading) {
     return <Splash onDone={() => !loading && setShowSplash(false)} />
   }
