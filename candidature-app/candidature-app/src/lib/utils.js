@@ -1,22 +1,22 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
-export const STATI = ['Inviata','Call conoscitiva','Colloquio','Secondo colloquio','In attesa','Offerta ricevuta','Assunto','Rifiutato','GHOSTED','Ritirata']
+export const STATI = ['Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Referral','Sito aziendale','Altro']
 export const TIPI_COLLOQUIO = ['📞 Telefonico','💻 Video','🏢 In presenza']
 export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
 export const STATUS_CONFIG = {
-  'Inviata':           { color: '#60A5FA', bg: 'rgba(96,165,250,0.15)',  emoji: '📤', label: 'Inviata' },
-  'Call conoscitiva':  { color: '#38BDF8', bg: 'rgba(56,189,248,0.15)',  emoji: '📞', label: 'Call' },
-  'Colloquio':         { color: '#34D399', bg: 'rgba(52,211,153,0.15)',  emoji: '🎙️', label: 'Colloquio' },
-  'Secondo colloquio': { color: '#10B981', bg: 'rgba(16,185,129,0.15)',  emoji: '🎙️🎙️', label: '2° Colloquio' },
-  'In attesa':         { color: '#FBBF24', bg: 'rgba(251,191,36,0.15)',  emoji: '⏳', label: 'In attesa' },
-  'Offerta ricevuta':  { color: '#A78BFA', bg: 'rgba(167,139,250,0.15)', emoji: '🎉', label: 'Offerta!' },
-  'Assunto':           { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  emoji: '🏆', label: 'Assunto!' },
-  'Rifiutato':         { color: '#F87171', bg: 'rgba(248,113,113,0.15)', emoji: '❌', label: 'Rifiutato' },
-  'GHOSTED':           { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '👻', label: 'GHOSTED' },
-  'Ritirata':          { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '🚫', label: 'Ritirata' },
+  'Spontanea':          { color: '#D1D5DB', bg: 'rgba(209,213,219,0.15)', emoji: '💡', label: 'Spontanea' },
+  'Inviata':            { color: '#60A5FA', bg: 'rgba(96,165,250,0.15)',  emoji: '📤', label: 'Inviata' },
+  'Vista':              { color: '#F97316', bg: 'rgba(249,115,22,0.15)',  emoji: '👀', label: 'Vista' },
+  'Prima call':         { color: '#C084FC', bg: 'rgba(192,132,252,0.15)', emoji: '📞', label: 'Prima call' },
+  'Colloquio':          { color: '#34D399', bg: 'rgba(52,211,153,0.15)',  emoji: '🎙️', label: 'Colloquio' },
+  'In attesa risposta': { color: '#FBBF24', bg: 'rgba(251,191,36,0.15)',  emoji: '⏳', label: 'In attesa' },
+  'Secondo colloquio':  { color: '#10B981', bg: 'rgba(16,185,129,0.15)',  emoji: '🎙️🎙️', label: '2° Colloquio' },
+  'Non mi piace':       { color: '#8B5CF6', bg: 'rgba(139,92,246,0.15)',  emoji: '😕', label: 'Non mi piace' },
+  'Rifiutata':          { color: '#F87171', bg: 'rgba(248,113,113,0.15)', emoji: '❌', label: 'Rifiutata' },
+  'GHOSTED':            { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '👻', label: 'GHOSTED' },
 }
 
 export const PRIORITA_CONFIG = {
@@ -25,7 +25,7 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-export const STATUS_GROUP_ORDER = ['Assunto','Offerta ricevuta','Secondo colloquio','Colloquio','Call conoscitiva','Inviata','In attesa','GHOSTED','Rifiutato','Ritirata']
+export const STATUS_GROUP_ORDER = ['Secondo colloquio','Colloquio','Prima call','Vista','In attesa risposta','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED']
 
 // ─── SMART URL PARSER ────────────────────────────────────────────
 
