@@ -285,7 +285,7 @@ export function AppProvider({ children }) {
         supabase.from('candidature').update({ notifica_14gg_inviata: true }).eq('id', c.id)
       }
       // Auto-GHOSTED a 60 giorni (2 mesi)
-      if ((c.stato === 'Inviata' || c.stato === 'In attesa') && days >= 60) {
+      if (['Inviata','Spontanea','In attesa risposta'].includes(c.stato) && days >= 60) {
         updateCandidatura(c.id, { stato: 'GHOSTED' })
         pushNotification(`👻 ${c.azienda} → GHOSTED`, `2 mesi di silenzio. Archiviata automaticamente. Avanti! 💜`)
       }
