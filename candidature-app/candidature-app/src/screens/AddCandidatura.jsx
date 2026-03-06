@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
 import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
@@ -15,6 +15,24 @@ export default function AddCandidatura({ onBack, onDone }) {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [suggestions, setSuggestions] = useState([])
+  const [showSugg, setShowSugg] = useState(false)
+  const [companyDomain, setCompanyDomain] = useState('')
+  const searchTimer = useRef(null)
+
+  useEffect(() => {
+    const q = form.azienda.trim()
+    if (q.length < 2) { setSuggestions([]); setShowSugg(false); return }
+    clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`)
+        const data = await res.json()
+        setSuggestions(data.slice(0, 6))
+        setShowSugg(data.length > 0)
+      } catch { setSuggestions([]); setShowSugg(false) }
+    }, 300)
+  }, [form.azienda])
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -31,6 +49,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     setLoading(true)
     const payload = {
       ...form,
+      azienda_domain: companyDomain || undefined,
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
       data_colloquio: form.data_colloquio || null,
@@ -61,9 +80,47 @@ export default function AddCandidatura({ onBack, onDone }) {
         <SectionLabel>I FONDAMENTALI ✱</SectionLabel>
 
         <Field label="🏢 Azienda">
-          <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
-            placeholder="Es: Spotify, Ferrero, Studio Rossi..."
-            value={form.azienda} onChange={e => set('azienda', e.target.value)} />
+          <div className="relative">
+            <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
+              placeholder="Es: Spotify, Ferrero, Studio Rossi..."
+              value={form.azienda}
+              onChange={e => { set('azienda', e.target.value); setCompanyDomain('') }}
+              onBlur={() => setTimeout(() => setShowSugg(false), 150)}
+              onFocus={() => suggestions.length > 0 && setShowSugg(true)}
+              autoComplete="off" />
+            {showSugg && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl"
+                style={{ background: '#1A1A2E' }}>
+                {suggestions.map(s => (
+                  <button key={s.domain} type="button"
+                    onMouseDown={() => {
+                      set('azienda', s.name)
+                      setCompanyDomain(s.domain)
+                      setShowSugg(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 active:bg-purple/20 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
+                      <img src={s.logo} alt={s.name}
+                        onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
+                        className="w-7 h-7 object-contain" />
+                      <span className="text-sm font-bold hidden" style={{ color: '#8B5CF6' }}>{s.name.charAt(0)}</span>
+                    </div>
+                    <div className="text-left min-w-0">
+                      <p className="text-sm font-medium text-txt truncate">{s.name}</p>
+                      <p className="text-xs text-disabled truncate">{s.domain}</p>
+                    </div>
+                  </button>
+                ))}
+                <button onMouseDown={() => { setShowSugg(false); setCompanyDomain('') }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-purple-soft text-lg">+</span>
+                  </div>
+                  <p className="text-sm text-muted">Usa "{form.azienda}" come nome personalizzato</p>
+                </button>
+              </div>
+            )}
+          </div>
           {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
         </Field>
 
