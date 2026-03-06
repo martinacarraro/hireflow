@@ -48,14 +48,14 @@ function guessDomain(name) {
   return clean + '.com'
 }
 
-export function CompanyAvatar({ name = '?', size = 40 }) {
-  const [status, setStatus] = React.useState('loading') // loading | ok | fail
+export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
+  const [status, setStatus] = React.useState('loading')
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  const domain = guessDomain(name)
 
-  // Google favicon API - funziona per quasi tutti i siti, incluse aziende italiane
-  const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+  // Use saved domain if available, otherwise guess it
+  const domain = domainProp || guessDomain(name)
+  const logoUrl = `https://logo.clearbit.com/${domain}`
 
   if (status !== 'fail') {
     return (
@@ -64,14 +64,9 @@ export function CompanyAvatar({ name = '?', size = 40 }) {
         <img
           src={logoUrl}
           alt={name}
-          onLoad={(e) => {
-            // Google restituisce sempre un'immagine, anche per domini inesistenti
-            // Se è 16x16 è il favicon generico → fallback
-            if (e.target.naturalWidth <= 16) setStatus('fail')
-            else setStatus('ok')
-          }}
+          onLoad={() => setStatus('ok')}
           onError={() => setStatus('fail')}
-          style={{ width: size * 0.65, height: size * 0.65, objectFit: 'contain' }}
+          style={{ width: size, height: size, objectFit: 'contain' }}
         />
       </div>
     )
