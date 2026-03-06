@@ -37,30 +37,41 @@ function getAvatarColor(letter) {
   return AVATAR_COLORS[Math.min(Math.floor(idx / 3), AVATAR_COLORS.length - 1)]
 }
 
-// Prova a indovinare il dominio dal nome azienda
+// Indovina dominio dal nome azienda
 function guessDomain(name) {
-  return name.trim().toLowerCase()
-    .replace(/\s+s\.?r\.?l\.?$/i, '').replace(/\s+s\.?p\.?a\.?$/i, '')
-    .replace(/\s+group$/i, '').replace(/\s+italia$/i, '')
-    .replace(/[^a-z0-9]/g, '') + '.com'
+  const clean = name.trim().toLowerCase()
+    .replace(/\s+(s\.?r\.?l|s\.?p\.?a|s\.?n\.?c|group|italia|holding|spa|srl)\.?$/i, '')
+    .replace(/[àáâãäå]/g, 'a').replace(/[èéêë]/g, 'e')
+    .replace(/[ìíîï]/g, 'i').replace(/[òóôõö]/g, 'o')
+    .replace(/[ùúûü]/g, 'u')
+    .replace(/[^a-z0-9]/g, '')
+  return clean + '.com'
 }
 
 export function CompanyAvatar({ name = '?', size = 40 }) {
-  const [imgOk, setImgOk] = React.useState(true)
+  const [status, setStatus] = React.useState('loading') // loading | ok | fail
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
   const domain = guessDomain(name)
-  const logoUrl = `https://logo.clearbit.com/${domain}`
 
-  if (imgOk) {
+  // Google favicon API - funziona per quasi tutti i siti, incluse aziende italiane
+  const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+
+  if (status !== 'fail') {
     return (
-      <div className="rounded-full overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
-        style={{ width: size, height: size, minWidth: size }}>
+      <div className="rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+        style={{ width: size, height: size, minWidth: size, background: '#fff' }}>
         <img
           src={logoUrl}
           alt={name}
-          onError={() => setImgOk(false)}
-          style={{ width: size, height: size, objectFit: 'contain' }}
+          onLoad={(e) => {
+            // Google restituisce sempre un'immagine, anche per domini inesistenti
+            // Se è 16x16 è il favicon generico → fallback
+            if (e.target.naturalWidth <= 16) setStatus('fail')
+            else setStatus('ok')
+          }}
+          onError={() => setStatus('fail')}
+          style={{ width: size * 0.65, height: size * 0.65, objectFit: 'contain' }}
         />
       </div>
     )
