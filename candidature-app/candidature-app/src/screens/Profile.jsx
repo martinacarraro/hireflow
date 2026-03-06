@@ -64,10 +64,13 @@ export default function Profile() {
       const ws   = wb.Sheets[wb.SheetNames[0]]
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false })
       const today = new Date().toISOString().split('T')[0]
+      // Flexible column finder — matches if header CONTAINS any keyword
       const getVal = (row, ...keys) => {
         for (const k of keys) {
-          const found = Object.keys(row).find(rk => rk.toLowerCase().trim() === k.toLowerCase())
-          if (found && row[found] !== '' && row[found] !== undefined) return String(row[found]).trim()
+          const found = Object.keys(row).find(rk =>
+            rk != null && rk.toLowerCase().replace(/[^a-z0-9]/g,' ').includes(k.toLowerCase())
+          )
+          if (found && row[found] != null && row[found] !== '') return String(row[found]).trim()
         }
         return ''
       }
@@ -79,11 +82,17 @@ export default function Profile() {
       const parseDate = (raw) => {
         if (!raw) return null
         const s = String(raw).trim()
+        // Already YYYY-MM-DD
         if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+        // DD/MM/YYYY or DD-MM-YYYY
         const m = s.match(/^(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})$/)
         if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`
-        const n = parseInt(s)
+        // Excel serial number
+        const n = parseFloat(s)
         if (!isNaN(n) && n > 40000) return new Date((n - 25569) * 86400 * 1000).toISOString().slice(0,10)
+        // Try JS Date parse as last resort
+        const d = new Date(s)
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0,10)
         return null
       }
       // Try to auto-detect which column has company/role even if headers differ
@@ -100,30 +109,24 @@ export default function Profile() {
 
       const parsed = rows
         .filter(r => {
-          // Skip rows that are clearly notes/headers (start with ⚠️ or empty)
-          const az = azKey ? String(r[azKey]||'').trim() : getVal(r,'azienda','company','nome azienda','employer')
-          const ru = ruKey ? String(r[ruKey]||'').trim() : getVal(r,'ruolo','role','posizione','job title','titolo')
-          const hasContent = az || ru
+          const az = getVal(r,'aziend','company','employer','dator')
           const isNote = az.startsWith('⚠') || az.startsWith('*') || az.toLowerCase() === 'azienda'
-          return hasContent && !isNote
+          return az && !isNote
         })
-        .map(r => {
-          const az = azKey ? String(r[azKey]||'').trim() : getVal(r,'azienda','company','nome azienda','employer')
-          const ru = ruKey ? String(r[ruKey]||'').trim() : getVal(r,'ruolo','role','posizione','job title','titolo')
-          return {
-          azienda: az || ru || '?',
-          ruolo: ru || az || '?',
-          stato: resolveStato(getVal(r,'stato','status','stato candidatura')),
-          data_invio: parseDate(getVal(r,'data invio (yyyy-mm-dd)','data invio','data','date','invio')) || today,
-          data_colloquio: parseDate(getVal(r,'data colloquio (yyyy-mm-dd)','data colloquio','data 1° colloquio')) || null,
-          sede: getVal(r,'sede','location','città','city','indirizzo') || null,
+        .map(r => ({
+          azienda: getVal(r,'aziend','company','employer','dator') || '?',
+          ruolo: getVal(r,'ruol','role','posizion','job','titolo','mansione','figura') || '—',
+          stato: resolveStato(getVal(r,'stato','status')),
+          data_invio: parseDate(getVal(r,'data invio','data candidatura','invio','data')) || today,
+          data_colloquio: parseDate(getVal(r,'colloquio','interview date','data 1')) || null,
+          sede: getVal(r,'sede','location','citt','city','indirizzo','distanza') || null,
           paese: getVal(r,'paese','country','nazione') || 'Italia',
-          fonte: getVal(r,'fonte','source','portale','canale','piattaforma') || 'Altro',
-          stipendio_min: parseInt(getVal(r,'stipendio min (k€)','stipendio min','ral min','min')) || null,
-          stipendio_max: parseInt(getVal(r,'stipendio max (k€)','stipendio max','ral max','max')) || null,
+          fonte: getVal(r,'fonte','portale','source','canale','piattaforma','agenzia','portal') || 'Altro',
+          stipendio_min: parseInt(getVal(r,'stipendio min','ral min','min sal')) || null,
+          stipendio_max: parseInt(getVal(r,'stipendio max','ral max','max sal')) || null,
           note: getVal(r,'note','notes','appunti','commenti') || null,
           notifiche_push: true,
-        }})
+        }))
       if (parsed.length === 0) {
         setImportError('Nessuna riga trovata. Assicurati che il file abbia almeno una riga con dati (azienda o ruolo).')
         setImporting(false); return
@@ -142,9 +145,10 @@ export default function Profile() {
   }
 
   const handleShare = () => {
-    const text = '\ud83d\ude80 Stai cercando lavoro? Prova Hireflow!\nhttps://hireflow-mocha.vercel.app'
-    if (navigator.share) navigator.share({ title: 'Hireflow', text, url: 'https://hireflow-mocha.vercel.app' })
-    else navigator.clipboard.writeText('https://hireflow-mocha.vercel.app').then(() => alert('Link copiato! \ud83d\udc9c'))
+    const url = 'https://hireflow-mocha.vercel.app'
+    const text = '🚀 Stai cercando lavoro? Ti presento Hireflow — il job tracker gratuito per tenere tutto sotto controllo: candidature, colloqui, notifiche e molto altro. Provalo!'
+    if (navigator.share) navigator.share({ title: 'Hireflow', text, url })
+    else navigator.clipboard.writeText(url).then(() => alert('Link copiato! 💜'))
   }
 
   // Notification panel
