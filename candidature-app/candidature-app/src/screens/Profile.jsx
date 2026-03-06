@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import * as XLSX from 'xlsx'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { XpBar, LevelBadge, SectionLabel, ConfirmDialog, Spinner } from '../components/UI'
@@ -58,7 +59,6 @@ export default function Profile() {
     if (!file) return
     setImporting(true); setImportError('')
     try {
-      const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.mjs')
       const buf  = await file.arrayBuffer()
       const wb   = XLSX.read(buf)
       const ws   = wb.Sheets[wb.SheetNames[0]]
