@@ -15,7 +15,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-  const statiConColloquio = ['Call conoscitiva','Colloquio','Secondo colloquio']
+  const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
