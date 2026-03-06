@@ -5,11 +5,11 @@ import {
 } from '../components/UI'
 import {
   STATI, PRIORITA, FEELING_OPTIONS, STATUS_CONFIG, PRIORITA_CONFIG,
-  TIPI_COLLOQUIO, DEFAULT_CHECKLIST, daysSince, formatDate
+  TIPI_COLLOQUIO, FONTI, daysSince, formatDate
 } from '../lib/utils'
 
-const STATI_CON_COLLOQUIO = ['Call conoscitiva','Colloquio','Secondo colloquio']
-const STATI_CON_FEELING = ['In attesa','Offerta ricevuta','Assunto','Rifiutato','GHOSTED']
+const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
+const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem } = useApp()
