@@ -153,7 +153,16 @@ export function AppProvider({ children }) {
       .from('checklist_items').select('*')
       .eq('candidatura_id', candidaturaId)
       .order('ordine')
-    return data || []
+    if (!data || data.length === 0) {
+      // Auto-create if missing
+      await createChecklist(candidaturaId)
+      const { data: data2 } = await supabase
+        .from('checklist_items').select('*')
+        .eq('candidatura_id', candidaturaId)
+        .order('ordine')
+      return data2 || []
+    }
+    return data
   }
 
   const toggleChecklistItem = async (itemId, fatto) => {
