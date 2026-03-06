@@ -5,7 +5,7 @@ import {
 } from '../components/UI'
 import {
   STATI, PRIORITA, FEELING_OPTIONS, STATUS_CONFIG, PRIORITA_CONFIG,
-  TIPI_COLLOQUIO, daysSince, formatDate
+  TIPI_COLLOQUIO, DEFAULT_CHECKLIST, daysSince, formatDate
 } from '../lib/utils'
 
 const STATI_CON_COLLOQUIO = ['Call conoscitiva','Colloquio','Secondo colloquio']
@@ -13,6 +13,7 @@ const STATI_CON_FEELING = ['In attesa','Offerta ricevuta','Assunto','Rifiutato',
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem } = useApp()
+  const { user } = useApp()
   const [form, setForm] = useState({ ...c })
   const [checklist, setChecklist] = useState([])
   const [loadingChecklist, setLoadingChecklist] = useState(false)
@@ -21,12 +22,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [saved, setSaved] = useState(false)
 
   const days = daysSince(c.data_invio)
-  const cfg = STATUS_CONFIG[form.stato] || STATUS_CONFIG['Inviata']
 
-  const set = (k, v) => {
-    setForm(f => ({ ...f, [k]: v }))
-    setSaved(false)
-  }
+  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSaved(false) }
 
   useEffect(() => {
     if (STATI_CON_COLLOQUIO.includes(form.stato)) loadChecklist()
@@ -64,6 +61,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
 
   const doneCount = checklist.filter(i => i.fatto).length
   const checklistPct = checklist.length ? (doneCount / checklist.length) * 100 : 0
+  const cfg = STATUS_CONFIG[form.stato] || STATUS_CONFIG['Inviata']
 
   return (
     <div className="screen">
@@ -86,34 +84,25 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           {form.priorita && <span className="text-sm">{PRIORITA_CONFIG[form.priorita]?.emoji}</span>}
           <span className="text-xs text-muted ml-auto">{days}gg fa</span>
           {form.fonte && (
-            <span className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">
-              {form.fonte}
-            </span>
+            <span className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">{form.fonte}</span>
           )}
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 scrollable px-4 py-4 space-y-4">
 
-        {/* STATO */}
+        {/* STATO - dropdown */}
         <Section label="📋 AGGIORNA STATO">
-          <div className="grid grid-cols-3 gap-2">
+          <select
+            value={form.stato}
+            onChange={e => set('stato', e.target.value)}
+            className="input-field"
+            style={{ color: cfg.color }}>
             {STATI.map(s => {
               const sc = STATUS_CONFIG[s]
-              const active = form.stato === s
-              return (
-                <button key={s} onClick={() => set('stato', s)}
-                  className={`py-2 px-1 rounded-xl text-xs font-semibold border transition-all active:scale-95
-                    flex items-center justify-center gap-1
-                    ${active ? 'text-white border-transparent' : 'text-muted border-border'}`}
-                  style={active ? { background: sc.color, borderColor: sc.color } : {}}>
-                  <span>{sc.emoji}</span>
-                  <span className="truncate">{sc.label}</span>
-                </button>
-              )
+              return <option key={s} value={s}>{sc.emoji} {s}</option>
             })}
-          </div>
+          </select>
         </Section>
 
         {/* PRIORITÀ */}
@@ -133,7 +122,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </div>
         </Section>
 
-        {/* COLLOQUIO DETAILS */}
+        {/* COLLOQUIO */}
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
           <Section label="🎙️ DETTAGLI COLLOQUIO">
             <div className="space-y-3">
@@ -141,14 +130,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <div className="flex-1">
                   <p className="text-xs text-muted mb-1">Data</p>
                   <input className="input-field text-sm" type="date"
-                    value={form.data_colloquio || ''}
-                    onChange={e => set('data_colloquio', e.target.value)} />
+                    value={form.data_colloquio || ''} onChange={e => set('data_colloquio', e.target.value)} />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted mb-1">Ora</p>
                   <input className="input-field text-sm" type="time"
-                    value={form.ora_colloquio || ''}
-                    onChange={e => set('ora_colloquio', e.target.value)} />
+                    value={form.ora_colloquio || ''} onChange={e => set('ora_colloquio', e.target.value)} />
                 </div>
               </div>
               <div>
@@ -157,9 +144,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   {TIPI_COLLOQUIO.map(t => (
                     <button key={t} onClick={() => set('tipo_colloquio', t)}
                       className={`px-3 py-1.5 rounded-full text-xs border transition-all active:scale-95
-                        ${form.tipo_colloquio === t
-                          ? 'bg-purple border-purple text-white'
-                          : 'border-border text-muted'}`}>
+                        ${form.tipo_colloquio === t ? 'bg-purple border-purple text-white' : 'border-border text-muted'}`}>
                       {t}
                     </button>
                   ))}
@@ -168,14 +153,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               <div>
                 <p className="text-xs text-muted mb-1">👤 HR / Recruiter</p>
                 <input className="input-field text-sm" placeholder="Nome del contatto"
-                  value={form.contatto_hr || ''}
-                  onChange={e => set('contatto_hr', e.target.value)} />
+                  value={form.contatto_hr || ''} onChange={e => set('contatto_hr', e.target.value)} />
               </div>
               <div>
                 <p className="text-xs text-muted mb-1">📧 Email HR</p>
                 <input className="input-field text-sm" type="email" placeholder="email@azienda.com"
-                  value={form.email_hr || ''}
-                  onChange={e => set('email_hr', e.target.value)} />
+                  value={form.email_hr || ''} onChange={e => set('email_hr', e.target.value)} />
               </div>
             </div>
           </Section>
@@ -184,36 +167,37 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {/* CHECKLIST */}
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
           <Section label="✅ CHECKLIST PRE-COLLOQUIO">
-            {loadingChecklist ? <Spinner /> : (
+            {loadingChecklist ? <div className="flex justify-center py-4"><Spinner /></div> : (
               <>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-muted">{doneCount}/{checklist.length} completati</span>
-                  <div className="w-32 h-1.5 bg-border rounded-full overflow-hidden">
-                    <div className="h-full bg-green rounded-full transition-all"
-                      style={{ width: `${checklistPct}%` }} />
+                {checklist.length > 0 && (
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-muted">{doneCount}/{checklist.length} completati</span>
+                    <div className="w-32 h-1.5 bg-border rounded-full overflow-hidden">
+                      <div className="h-full bg-green rounded-full transition-all" style={{ width: `${checklistPct}%` }} />
+                    </div>
                   </div>
-                </div>
+                )}
                 {checklist.length === 0 && (
-                  <p className="text-sm text-muted text-center py-2">Checklist generata automaticamente 🎯</p>
+                  <div className="text-center py-3">
+                    <p className="text-sm text-muted mb-2">Nessuna checklist trovata</p>
+                    <p className="text-xs text-disabled">La checklist si crea automaticamente quando imposti lo stato a "Colloquio". Salva le modifiche prima.</p>
+                  </div>
                 )}
                 <div className="space-y-2">
                   {checklist.map(item => (
                     <button key={item.id} onClick={() => handleToggleChecklist(item)}
-                      className="w-full flex items-center gap-3 py-2 px-3 rounded-xl
-                        bg-surface border border-border active:scale-98 transition-all text-left">
+                      className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl bg-surface border border-border active:scale-[0.98] transition-all text-left">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
                         ${item.fatto ? 'bg-green border-green' : 'border-border'}`}>
-                        {item.fatto && <span className="text-white text-xs">✓</span>}
+                        {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
                       </div>
-                      <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>
-                        {item.task}
-                      </span>
+                      <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>{item.task}</span>
                     </button>
                   ))}
                 </div>
                 {checklist.length > 0 && checklistPct === 100 && (
                   <div className="mt-3 p-3 bg-green/10 border border-green/20 rounded-xl text-center">
-                    <span className="text-green text-sm font-semibold">🎉 Sei pronta! +10 XP guadagnati!</span>
+                    <span className="text-green text-sm font-semibold">🎉 Tutto pronto! +10 XP guadagnati!</span>
                   </div>
                 )}
               </>
@@ -224,9 +208,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {/* SEDE */}
         <Section label="📍 SEDE">
           <div className="space-y-2">
-            <input className="input-field text-sm" placeholder="Indirizzo preciso (es: Via Roma 1, Milano)"
-              value={form.sede || ''}
-              onChange={e => set('sede', e.target.value)} />
+            <input className="input-field text-sm" placeholder="Indirizzo (es: Via Roma 1, Milano)"
+              value={form.sede || ''} onChange={e => set('sede', e.target.value)} />
             {form.sede && (
               <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
                 target="_blank" rel="noopener noreferrer"
@@ -243,28 +226,24 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
               <input className="input-field pl-7 text-sm" type="number" placeholder="Min k"
-                value={form.stipendio_min || ''}
-                onChange={e => set('stipendio_min', e.target.value ? parseInt(e.target.value) : null)} />
+                value={form.stipendio_min || ''} onChange={e => set('stipendio_min', e.target.value ? parseInt(e.target.value) : null)} />
             </div>
             <span className="text-muted">–</span>
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
               <input className="input-field pl-7 text-sm" type="number" placeholder="Max k"
-                value={form.stipendio_max || ''}
-                onChange={e => set('stipendio_max', e.target.value ? parseInt(e.target.value) : null)} />
+                value={form.stipendio_max || ''} onChange={e => set('stipendio_max', e.target.value ? parseInt(e.target.value) : null)} />
             </div>
           </div>
         </Section>
 
-        {/* FEELING — solo dopo colloquio */}
+        {/* FEELING */}
         {STATI_CON_FEELING.includes(form.stato) && (
           <Section label="😊 COM'È ANDATA?">
             <div className="flex justify-around py-1">
               {FEELING_OPTIONS.map(f => (
                 <button key={f} onClick={() => set('feeling', f)}
-                  className={`text-3xl transition-all active:scale-110 ${
-                    form.feeling === f ? 'scale-125 drop-shadow-lg' : 'opacity-40'
-                  }`}
+                  className={`text-3xl transition-all active:scale-110 ${form.feeling === f ? 'scale-125' : 'opacity-40'}`}
                   style={form.feeling === f ? { filter: 'drop-shadow(0 0 8px rgba(139,92,246,0.6))' } : {}}>
                   {f}
                 </button>
@@ -276,27 +255,22 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {/* NOTES */}
         <Section label="📝 LE TUE NOTE">
           <textarea className="input-field resize-none" rows={4}
-            placeholder="Com'è andato? Che feeling hai avuto? Domande strane? Scrivi tutto finché è fresco. 🧠"
-            value={form.note || ''}
-            onChange={e => set('note', e.target.value)} />
+            placeholder="Com'è andato? Domande strane? Scrivi tutto finché è fresco. 🧠"
+            value={form.note || ''} onChange={e => set('note', e.target.value)} />
         </Section>
 
-        {/* DOMANDE */}
         <Section label="❓ DOMANDE CHE MI HANNO FATTO">
           <textarea className="input-field resize-none" rows={3}
             placeholder="Utile per prepararsi ai prossimi colloqui..."
-            value={form.domande_fatte || ''}
-            onChange={e => set('domande_fatte', e.target.value)} />
+            value={form.domande_fatte || ''} onChange={e => set('domande_fatte', e.target.value)} />
         </Section>
 
         <Section label="🙋 DOMANDE CHE VOGLIO FARE A LORO">
           <textarea className="input-field resize-none" rows={3}
-            placeholder="Es: com'è la cultura aziendale? smart working? crescita?"
-            value={form.domande_mie || ''}
-            onChange={e => set('domande_mie', e.target.value)} />
+            placeholder="Es: smart working? crescita? cultura aziendale?"
+            value={form.domande_mie || ''} onChange={e => set('domande_mie', e.target.value)} />
         </Section>
 
-        {/* LINK ANNUNCIO */}
         {c.link_annuncio && (
           <Section label="🔗 ANNUNCIO">
             <a href={c.link_annuncio} target="_blank" rel="noopener noreferrer"
@@ -306,17 +280,15 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </Section>
         )}
 
-        {/* NOTIFICATIONS */}
+        {/* NOTIFICHE */}
         <div className="flex items-center justify-between card">
           <div>
             <p className="text-sm font-medium text-txt">🔔 Notifiche push</p>
             <p className="text-xs text-muted">Per questa candidatura</p>
           </div>
           <button onClick={() => set('notifiche_push', !form.notifiche_push)}
-            className={`w-12 h-6 rounded-full transition-all duration-200 relative
-              ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200
-              ${form.notifiche_push ? 'left-[26px]' : 'left-0.5'}`} />
+            className={`w-12 h-6 rounded-full transition-all duration-200 relative ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push ? 'left-[26px]' : 'left-0.5'}`} />
           </button>
         </div>
 
@@ -339,7 +311,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       <ConfirmDialog
         isOpen={confirmDelete}
         title="Elimina candidatura"
-        message={`Sicura di voler eliminare "${c.azienda}"? Non è reversibile.`}
+        message={`Sicuro/a di voler eliminare "${c.azienda}"? Non è reversibile.`}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
         danger
