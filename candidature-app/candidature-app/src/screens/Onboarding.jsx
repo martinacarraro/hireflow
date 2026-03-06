@@ -5,22 +5,22 @@ const SLIDES = [
   {
     emoji: '🗂️',
     title: 'Tutto in un posto',
-    body: 'Aggiungi ogni candidatura in secondi. Azienda, ruolo, stato, link all\'annuncio — tutto organizzato e cercabile. Niente più post-it o tab dimenticati.',
+    body: 'Aggiungi ogni candidatura in secondi: azienda, ruolo, stato, sede, stipendio. Tieni traccia di tutto senza post-it, fogli Excel o tab aperti a caso.',
   },
   {
-    emoji: '🔗',
-    title: 'Incolla un link, facciamo il resto',
-    body: 'Copia il link dell\'annuncio da LinkedIn, Indeed o qualsiasi sito — l\'app estrae in automatico azienda e ruolo. Tu controlla, noi compiliamo. 🤖',
+    emoji: '📅',
+    title: 'Colloqui sempre sotto controllo',
+    body: 'Il calendario ti mostra tutti i colloqui del mese. Ricevi notifiche il giorno prima, il giorno stesso e dopo — per non dimenticarti mai di aggiornare lo stato.',
   },
   {
     emoji: '🔔',
-    title: 'Notifiche che lavorano per te',
-    body: 'Ti avvisiamo la sera prima del colloquio, quando un\'azienda tace da troppo, e se sparisce nel nulla dopo 30 giorni. Tutto sul telefono. 📱',
+    title: 'Notifiche smart, niente spam',
+    body: 'Ti avvisiamo solo quando serve: colloquio in arrivo, azienda in silenzio da troppo tempo, o ghosting automatico dopo 60 giorni. Una notifica per evento, niente di più.',
   },
   {
     emoji: '🏆',
     title: 'È un gioco. E puoi vincerlo.',
-    body: 'Guadagna XP, sblocca badge, mantieni lo streak. Ogni candidatura è un livello. L\'offerta ricevuta è la vittoria finale. 🎉',
+    body: 'Guadagna XP ad ogni candidatura, sblocca badge, mantieni lo streak giornaliero. Ogni candidatura è un passo avanti. L\'offerta di lavoro è il boss finale. 🎉',
   },
 ]
 
@@ -46,9 +46,7 @@ export default function Onboarding() {
 
   return (
     <div className="screen purple-glow-bg relative">
-      {/* Header */}
       <div className="flex items-center justify-between px-5 pt-safe pt-4">
-        {/* Dot indicators */}
         <div className="flex gap-1.5">
           {SLIDES.map((_, i) => (
             <div key={i}
@@ -62,26 +60,20 @@ export default function Onboarding() {
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-        {/* Purple glow */}
         <div className="w-48 h-48 rounded-full mb-2"
           style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }} />
-        
         <div className="text-7xl mb-6 -mt-40 animate-fade-in" key={`emoji-${slide}`}>
           {s.emoji}
         </div>
-        
         <h2 className="text-2xl font-bold text-txt mb-4 animate-fade-in" key={`title-${slide}`}>
           {s.title}
         </h2>
-        
         <p className="text-base text-muted leading-relaxed animate-fade-in" key={`body-${slide}`}>
           {s.body}
         </p>
       </div>
 
-      {/* Bottom */}
       <div className="px-6 pb-10 space-y-3">
         {isLast ? (
           <button onClick={finish} disabled={loading}
