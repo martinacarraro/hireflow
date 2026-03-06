@@ -208,28 +208,32 @@ export function TabBar({ active, onChange, unread = 0 }) {
     { id: 'profile',  icon: '👤', label: 'Profilo' },
   ]
   return (
-    <div className="bg-surface border-t border-border tab-safe-padding flex-shrink-0">
-      <div className="flex items-center">
+    <div className="bg-surface border-t border-border flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="flex items-end h-16">
         {tabs.map(t => (
           <button key={t.id} onClick={() => onChange(t.id)}
-            className={`flex-1 flex flex-col items-center py-2 gap-0.5 transition-all active:scale-95
-              ${active === t.id ? 'text-purple' : 'text-disabled'}`}>
+            className={`flex-1 flex flex-col items-center justify-end pb-2 gap-0.5 transition-all active:scale-95
+              ${active === t.id && !t.special ? 'text-purple' : 'text-disabled'}`}>
             {t.special ? (
-              <span className="flex items-center justify-center w-12 h-12 -mt-5 rounded-full text-2xl font-bold bg-purple text-white shadow-btn ring-4 ring-bg">
-                {t.icon}
-              </span>
+              <div className="flex flex-col items-center" style={{ marginBottom: '4px' }}>
+                <span className="flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold bg-purple text-white shadow-btn"
+                  style={{ marginTop: '-28px', boxShadow: '0 0 0 4px #0E0E1A, 0 4px 20px rgba(139,92,246,0.5)' }}>
+                  {t.icon}
+                </span>
+              </div>
             ) : (
-              <span className="text-xl leading-none relative">
-                {t.icon}
-                {t.id === 'profile' && unread > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red text-white text-[9px] 
-                    rounded-full flex items-center justify-center font-bold">
-                    {unread > 9 ? '9+' : unread}
-                  </span>
-                )}
-              </span>
+              <>
+                <span className="text-xl leading-none relative">
+                  {t.icon}
+                  {t.id === 'profile' && unread > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red text-white text-[8px] rounded-full flex items-center justify-center font-bold px-1">
+                      {unread > 9 ? '9+' : unread}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[10px] leading-none">{t.label}</span>
+              </>
             )}
-            {!t.special && <span className="text-[10px] font-medium">{t.label}</span>}
           </button>
         ))}
       </div>
@@ -237,7 +241,7 @@ export function TabBar({ active, onChange, unread = 0 }) {
   )
 }
 
-// ─── INPUT WRAPPER ────────────────────────────────────────────────
+
 export function Field({ label, children, hint }) {
   return (
     <div className="mb-4">
