@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../contexts/AppContext'
 import {
   StatusBadge, CompanyAvatar, SectionLabel, ConfirmDialog, Spinner
@@ -18,6 +18,25 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [checklist, setChecklist] = useState([])
   const [loadingChecklist, setLoadingChecklist] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [editingAzienda, setEditingAzienda] = useState(false)
+  const [aziendaSugg, setAziendaSugg] = useState([])
+  const [showAziendaSugg, setShowAziendaSugg] = useState(false)
+  const aziendaTimer = useRef(null)
+
+  useEffect(() => {
+    if (!editingAzienda) return
+    const q = form.azienda.trim()
+    if (q.length < 2) { setAziendaSugg([]); setShowAziendaSugg(false); return }
+    clearTimeout(aziendaTimer.current)
+    aziendaTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`)
+        const data = await res.json()
+        setAziendaSugg(data.slice(0, 6))
+        setShowAziendaSugg(data.length > 0)
+      } catch { setAziendaSugg([]); setShowAziendaSugg(false) }
+    }, 300)
+  }, [form.azienda, editingAzienda])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -71,9 +90,48 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <CompanyAvatar name={form.azienda} size={44} />
-              <div className="min-w-0">
-                <h2 className="font-bold text-txt text-lg truncate">{form.azienda}</h2>
+              <CompanyAvatar name={form.azienda} size={44} domain={form.azienda_domain} />
+              <div className="min-w-0 flex-1">
+                {editingAzienda ? (
+                  <div className="relative">
+                    <input
+                      className="input-field text-sm font-bold py-1"
+                      value={form.azienda}
+                      autoFocus
+                      autoComplete="off"
+                      onChange={e => { set('azienda', e.target.value); set('azienda_domain', '') }}
+                      onBlur={() => setTimeout(() => { setShowAziendaSugg(false); setEditingAzienda(false) }, 150)}
+                    />
+                    {showAziendaSugg && (
+                      <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl" style={{ background: '#1A1A2E' }}>
+                        {aziendaSugg.map(s => (
+                          <button key={s.domain} type="button"
+                            onMouseDown={() => { set('azienda', s.name); set('azienda_domain', s.domain); setShowAziendaSugg(false); setEditingAzienda(false) }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
+                            <div className="w-7 h-7 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
+                              <img src={s.logo} alt={s.name} className="w-6 h-6 object-contain" onError={e => e.target.style.display='none'} />
+                            </div>
+                            <div className="text-left min-w-0">
+                              <p className="text-sm font-medium text-txt truncate">{s.name}</p>
+                              <p className="text-xs text-disabled truncate">{s.domain}</p>
+                            </div>
+                          </button>
+                        ))}
+                        <button onMouseDown={() => { setShowAziendaSugg(false); setEditingAzienda(false) }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface">
+                          <div className="w-7 h-7 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-purple-soft">+</span>
+                          </div>
+                          <p className="text-xs text-muted">Usa "{form.azienda}"</p>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button onClick={() => setEditingAzienda(true)} className="text-left w-full">
+                    <h2 className="font-bold text-txt text-lg truncate">{form.azienda} <span className="text-xs text-muted">✏️</span></h2>
+                  </button>
+                )}
                 <p className="text-muted text-sm truncate">{form.ruolo}</p>
               </div>
             </div>
