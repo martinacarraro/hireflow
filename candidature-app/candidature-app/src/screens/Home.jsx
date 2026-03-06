@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
-import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState } from '../components/UI'
+import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, MOTTOS, daysSince, formatDateTime, getGreeting } from '../lib/utils'
 
 export default function Home({ onAdd, onDetail }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead } = useApp()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura } = useApp()
   const { user } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const motto = MOTTOS[profile?.motto_index ?? 0]
@@ -13,7 +13,11 @@ export default function Home({ onAdd, onDetail }) {
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
 
-  // Solo stati con almeno 1 candidatura
+  // Selezione multipla
+  const [selectMode, setSelectMode] = useState(false)
+  const [selected, setSelected] = useState(new Set())
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
   const stats = useMemo(() => [
     { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#D1D5DB' },
     { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#60A5FA' },
@@ -21,7 +25,7 @@ export default function Home({ onAdd, onDetail }) {
     { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#C084FC' },
     { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#34D399' },
     { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#FBBF24' },
-    { emoji: '🎙️🎙️', label: '2° Col.', stato: 'Secondo colloquio',  color: '#10B981' },
+    { emoji: '🎙️🎙️', label: '2° Col.',  stato: 'Secondo colloquio',  color: '#10B981' },
     { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#8B5CF6' },
     { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#F87171' },
     { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#9CA3AF' },
@@ -47,7 +51,33 @@ export default function Home({ onAdd, onDetail }) {
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
   const greet = getGreeting(nome)
 
-  // ── NOTIFICATION PANEL ────────────────────────────────────────
+  const toggleSelect = (id) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const selectAll = () => {
+    setSelected(new Set(candidatureFiltrate.map(c => c.id)))
+  }
+
+  const handleBulkDelete = async () => {
+    for (const id of selected) {
+      await deleteCandidatura(id)
+    }
+    setSelected(new Set())
+    setSelectMode(false)
+    setConfirmBulkDelete(false)
+  }
+
+  const exitSelectMode = () => {
+    setSelectMode(false)
+    setSelected(new Set())
+  }
+
+  // ── NOTIFICATION PANEL ──────────────────────────────────────
   if (showNotifs) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -78,7 +108,7 @@ export default function Home({ onAdd, onDetail }) {
     )
   }
 
-  // ── EMPTY STATE ───────────────────────────────────────────────
+  // ── EMPTY STATE ──────────────────────────────────────────────
   if (candidature.length === 0) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -99,24 +129,36 @@ export default function Home({ onAdd, onDetail }) {
     )
   }
 
-  // ── MAIN VIEW ─────────────────────────────────────────────────
+  // ── MAIN ────────────────────────────────────────────────────
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <HomeHeader greet={greet} profile={profile} unread={unreadCount} onBell={() => setShowNotifs(true)} />
+      <HomeHeader
+        greet={greet} profile={profile}
+        unread={unreadCount} onBell={() => setShowNotifs(true)}
+        selectMode={selectMode}
+        onSelectMode={() => setSelectMode(true)}
+        onExitSelect={exitSelectMode}
+        onSelectAll={selectAll}
+        selectedCount={selected.size}
+        totalCount={candidatureFiltrate.length}
+        onDeleteSelected={() => selected.size > 0 && setConfirmBulkDelete(true)}
+      />
 
       <div className="flex-1 scrollable px-4 pt-2 pb-20">
 
         {/* Motto */}
-        <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
-          <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
-          <button onClick={refreshMotto} className="text-muted text-base ml-3 active:scale-75 transition-transform">🔄</button>
-        </div>
+        {!selectMode && (
+          <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
+            <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
+            <button onClick={refreshMotto} className="text-muted text-base ml-3 active:scale-75 transition-transform">🔄</button>
+          </div>
+        )}
 
-        {/* Filtri — solo stati con count > 0 */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        {/* Filtri */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setFiltroStato(null)}
-            className={`flex-shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 border text-xs font-semibold transition-all
+            className={`flex-shrink-0 rounded-full px-3 py-1.5 border text-xs font-semibold transition-all
               ${!filtroStato ? 'bg-purple border-purple text-white' : 'bg-surface border-border text-muted'}`}>
             Tutti
           </button>
@@ -135,11 +177,11 @@ export default function Home({ onAdd, onDetail }) {
 
         {filtroStato && (
           <p className="text-xs text-muted mb-3">
-            Filtro attivo: <span className="text-purple-soft font-semibold">{filtroStato}</span> — {candidatureFiltrate.length} candidature
+            Filtro: <span className="text-purple-soft font-semibold">{filtroStato}</span> — {candidatureFiltrate.length} candidature
           </p>
         )}
 
-        {/* Lista raggruppata */}
+        {/* Lista */}
         {STATUS_GROUP_ORDER.map(stato => {
           const items = grouped[stato]
           if (!items) return null
@@ -147,7 +189,7 @@ export default function Home({ onAdd, onDetail }) {
           const isCollapsed = collapsed[stato]
           return (
             <div key={stato} className="mb-5">
-              <button onClick={() => toggleGroup(stato)}
+              <button onClick={() => !selectMode && toggleGroup(stato)}
                 className="w-full flex items-center justify-between mb-2 active:opacity-70">
                 <div className="flex items-center gap-2">
                   <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: cfg.color }}>
@@ -158,46 +200,87 @@ export default function Home({ onAdd, onDetail }) {
                     {items.length}
                   </span>
                 </div>
-                <span className="text-muted text-sm" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>▾</span>
+                {!selectMode && (
+                  <span className="text-muted text-sm" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>▾</span>
+                )}
               </button>
-              {!isCollapsed && items.map(c => (
-                <CandidaturaCard key={c.id} c={c} onPress={() => onDetail(c)} />
+              {(!isCollapsed || selectMode) && items.map(c => (
+                <CandidaturaCard
+                  key={c.id} c={c}
+                  onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
+                  selectMode={selectMode}
+                  isSelected={selected.has(c.id)}
+                />
               ))}
             </div>
           )
         })}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        title={`Elimina ${selected.size} candidature`}
+        message={`Stai per eliminare ${selected.size} candidature. Questa azione è irreversibile.`}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setConfirmBulkDelete(false)}
+        danger
+      />
     </div>
   )
 }
 
-function HomeHeader({ greet, profile, unread, onBell }) {
+function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected }) {
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
-      <div>
-        <h1 className="text-lg font-bold text-txt">{greet}</h1>
-        {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} /></div>}
-      </div>
-      <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
-        <span className="text-2xl">🔔</span>
-        {unread > 0 && (
-          <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
-            {unread > 9 ? '9+' : unread}
-          </span>
-        )}
-      </button>
+      {selectMode ? (
+        <>
+          <div className="flex items-center gap-3">
+            <button onClick={onExitSelect} className="text-muted text-sm active:scale-90">✕ Annulla</button>
+            <span className="text-sm font-semibold text-txt">{selectedCount} selezionate</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={onSelectAll} className="text-xs text-purple-soft font-medium">Tutte</button>
+            <button onClick={onDeleteSelected}
+              disabled={selectedCount === 0}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
+                ${selectedCount > 0 ? 'bg-red text-white active:scale-95' : 'bg-border text-disabled'}`}>
+              🗑️ Elimina ({selectedCount})
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <h1 className="text-lg font-bold text-txt">{greet}</h1>
+            {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} /></div>}
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={onSelectMode} className="p-2 text-muted text-lg active:scale-90 transition-transform" title="Selezione multipla">
+              ☑️
+            </button>
+            <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
+              <span className="text-2xl">🔔</span>
+              {unread > 0 && (
+                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-function CandidaturaCard({ c, onPress }) {
+function CandidaturaCard({ c, onPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
-  const isStale = days >= 14 && ['Inviata', 'In attesa'].includes(c.stato)
+  const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
 
   return (
     <div onClick={onPress}
-      className="card mb-3 cursor-pointer active:scale-[0.98] transition-transform"
+      className={`card mb-3 cursor-pointer active:scale-[0.98] transition-all ${isSelected ? 'ring-2 ring-purple' : ''}`}
       style={{ borderLeft: `3px solid ${isStale ? '#FBBF24' : cfg.color}` }}>
       {isStale && (
         <div className="flex items-center gap-1 mb-2 text-amber text-xs">
@@ -205,6 +288,12 @@ function CandidaturaCard({ c, onPress }) {
         </div>
       )}
       <div className="flex items-start gap-3">
+        {selectMode && (
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all
+            ${isSelected ? 'bg-purple border-purple' : 'border-border'}`}>
+            {isSelected && <span className="text-white text-xs font-bold">✓</span>}
+          </div>
+        )}
         <CompanyAvatar name={c.azienda} size={40} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -214,7 +303,7 @@ function CandidaturaCard({ c, onPress }) {
             </div>
             <StatusBadge stato={c.stato} />
           </div>
-          {c.data_colloquio && ['Colloquio','Secondo colloquio','Call conoscitiva'].includes(c.stato) && (
+          {c.data_colloquio && ['Colloquio','Secondo colloquio','Prima call'].includes(c.stato) && (
             <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
           )}
           <div className="flex items-center justify-between mt-2">
