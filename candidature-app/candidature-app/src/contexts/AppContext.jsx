@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     // Only send fields that exist in the DB schema
-    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda']
+    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso']
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
