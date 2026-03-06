@@ -5,10 +5,34 @@ import { STATUS_CONFIG, formatDate } from '../lib/utils'
 
 const MESI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
 const MESI_FULL = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
-const STATI_COLLOQUIO = ['Call conoscitiva','Colloquio','Secondo colloquio']
+const STATI_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 
 export default function Calendar({ onDetail }) {
-  const { candidature } = useApp()
+  const { candidature, unreadCount, notifications, markAllNotificationsRead } = useApp()
+  const [showNotifs, setShowNotifs] = useState(false)
+
+  if (showNotifs) return (
+    <div className="screen">
+      <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
+        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
+        <h2 className="font-bold text-txt">Notifiche 🔔</h2>
+      </div>
+      <div className="flex-1 scrollable px-4 py-4">
+        {notifications.length === 0
+          ? <div className="text-center py-16 text-muted text-sm">🔕 Nessuna notifica ancora</div>
+          : notifications.map(n => (
+            <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
+              {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
+                <p className="text-xs text-muted mt-0.5">{n.body}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  )
   const now = new Date()
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth())
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
@@ -63,9 +87,19 @@ export default function Calendar({ onDetail }) {
 
   return (
     <div className="screen">
-      <div className="px-5 pt-safe pt-4 pb-3 flex-shrink-0">
-        <h2 className="text-xl font-bold text-txt">Calendario 📅</h2>
-        <p className="text-xs text-muted mt-0.5">Colloqui e call organizzati per mese</p>
+      <div className="px-5 pt-safe pt-4 pb-3 flex items-start justify-between flex-shrink-0">
+        <div>
+          <h2 className="text-xl font-bold text-txt">Calendario 📅</h2>
+          <p className="text-xs text-muted mt-0.5">Colloqui e call organizzati per mese</p>
+        </div>
+        <button onClick={() => setShowNotifs(true)} className="relative p-2 active:scale-90 transition-transform">
+          <span className="text-2xl">🔔</span>
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
 
       <div className="flex-1 scrollable px-4 pb-6 space-y-4">
