@@ -32,12 +32,42 @@ const AVATAR_COLORS = [
   ['#6366F1','#e0e7ff'], // Y Z
 ]
 
-export function CompanyAvatar({ name = '?', size = 40 }) {
-  const letter = name.trim().charAt(0).toUpperCase() || '?'
+function getAvatarColor(letter) {
   const idx = Math.max(0, letter.charCodeAt(0) - 65)
-  const [bg, text] = AVATAR_COLORS[Math.min(Math.floor(idx / 3), AVATAR_COLORS.length - 1)]
+  return AVATAR_COLORS[Math.min(Math.floor(idx / 3), AVATAR_COLORS.length - 1)]
+}
+
+// Prova a indovinare il dominio dal nome azienda
+function guessDomain(name) {
+  return name.trim().toLowerCase()
+    .replace(/\s+s\.?r\.?l\.?$/i, '').replace(/\s+s\.?p\.?a\.?$/i, '')
+    .replace(/\s+group$/i, '').replace(/\s+italia$/i, '')
+    .replace(/[^a-z0-9]/g, '') + '.com'
+}
+
+export function CompanyAvatar({ name = '?', size = 40 }) {
+  const [imgOk, setImgOk] = React.useState(true)
+  const letter = name.trim().charAt(0).toUpperCase() || '?'
+  const [bg, text] = getAvatarColor(letter)
+  const domain = guessDomain(name)
+  const logoUrl = `https://logo.clearbit.com/${domain}`
+
+  if (imgOk) {
+    return (
+      <div className="rounded-full overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
+        style={{ width: size, height: size, minWidth: size }}>
+        <img
+          src={logoUrl}
+          alt={name}
+          onError={() => setImgOk(false)}
+          style={{ width: size, height: size, objectFit: 'contain' }}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div className="flex items-center justify-center rounded-full font-bold"
+    <div className="flex items-center justify-center rounded-full font-bold flex-shrink-0"
       style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
       {letter}
     </div>
