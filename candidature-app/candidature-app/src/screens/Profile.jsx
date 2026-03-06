@@ -60,79 +60,61 @@ export default function Profile() {
     setImporting(true); setImportError('')
     try {
       const buf  = await file.arrayBuffer()
-      const wb   = XLSX.read(buf)
+      const wb   = XLSX.read(buf, { type: 'array', cellDates: true })
       const ws   = wb.Sheets[wb.SheetNames[0]]
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false })
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' })
       const today = new Date().toISOString().split('T')[0]
-      // Flexible column finder — matches if header CONTAINS any keyword
-      const getVal = (row, ...keys) => {
+
+      const fmtDate = (v) => {
+        if (!v) return null
+        if (v instanceof Date) return v.toISOString().slice(0,10)
+        const s = String(v).trim()
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+        const m = s.match(/^(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})$/)
+        if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`
+        const n = parseFloat(s)
+        if (!isNaN(n) && n > 40000) return new Date(Math.round((n - 25569) * 86400 * 1000)).toISOString().slice(0,10)
+        return null
+      }
+
+      const col = (row, ...keys) => {
+        const rk = Object.keys(row)
         for (const k of keys) {
-          const found = Object.keys(row).find(rk =>
-            rk != null && rk.toLowerCase().replace(/[^a-z0-9]/g,' ').includes(k.toLowerCase())
-          )
-          if (found && row[found] != null && row[found] !== '') return String(row[found]).trim()
+          const f = rk.find(h => h && h.toLowerCase().includes(k.toLowerCase()))
+          if (f !== undefined && row[f] !== '' && row[f] !== null && row[f] !== undefined) return row[f]
         }
         return ''
       }
+
       const resolveStato = (raw) => {
         if (!raw) return 'Inviata'
-        const key = raw.toLowerCase().trim()
-        return STATO_ALIAS[key] || (STATI_VALIDI.includes(raw) ? raw : 'Inviata')
+        const key = String(raw).toLowerCase().trim()
+        return STATO_ALIAS[key] || (STATI_VALIDI.includes(String(raw)) ? String(raw) : 'Inviata')
       }
-      const parseDate = (raw) => {
-        if (!raw) return null
-        const s = String(raw).trim()
-        // Already YYYY-MM-DD
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
-        // DD/MM/YYYY or DD-MM-YYYY
-        const m = s.match(/^(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})$/)
-        if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`
-        // Excel serial number
-        const n = parseFloat(s)
-        if (!isNaN(n) && n > 40000) return new Date((n - 25569) * 86400 * 1000).toISOString().slice(0,10)
-        // Try JS Date parse as last resort
-        const d = new Date(s)
-        if (!isNaN(d.getTime())) return d.toISOString().slice(0,10)
-        return null
-      }
-      // Try to auto-detect which column has company/role even if headers differ
-      const allKeys = rows.length > 0 ? Object.keys(rows[0]) : []
-      const findBestKey = (...candidates) => {
-        for (const k of candidates) {
-          const found = allKeys.find(rk => rk.toLowerCase().includes(k.toLowerCase()))
-          if (found) return found
-        }
-        return null
-      }
-      const azKey = findBestKey('aziend','company','employer','datore','organiz')
-      const ruKey = findBestKey('ruol','role','posizion','job','titolo','mansione','figura')
 
       const parsed = rows
         .filter(r => {
-          const az = getVal(r,'aziend','company','employer','dator')
-          const isNote = az.startsWith('⚠') || az.startsWith('*') || az.toLowerCase() === 'azienda'
-          return az && !isNote
+          const az = String(col(r, 'aziend', 'company') || '').trim()
+          return az && !az.startsWith('⚠') && az.toLowerCase() !== 'azienda'
         })
         .map(r => ({
-          azienda: getVal(r,'aziend','company','employer','dator') || '?',
-          ruolo: getVal(r,'ruol','role','posizion','job','titolo','mansione','figura') || '—',
-          stato: resolveStato(getVal(r,'stato','status')),
-          data_invio: parseDate(getVal(r,'data invio','data candidatura','invio','data')) || today,
-          data_colloquio: parseDate(getVal(r,'colloquio','interview date','data 1')) || null,
-          sede: getVal(r,'sede','location','citt','city','indirizzo','distanza') || null,
-          paese: getVal(r,'paese','country','nazione') || 'Italia',
-          fonte: getVal(r,'fonte','portale','source','canale','piattaforma','agenzia','portal') || 'Altro',
-          stipendio_min: parseInt(getVal(r,'stipendio min','ral min','min sal')) || null,
-          stipendio_max: parseInt(getVal(r,'stipendio max','ral max','max sal')) || null,
-          note: getVal(r,'note','notes','appunti','commenti') || null,
+          azienda: String(col(r, 'aziend', 'company') || '?').trim(),
+          ruolo: String(col(r, 'ruol', 'role', 'posiz', 'job', 'titolo') || '—').trim(),
+          stato: resolveStato(col(r, 'stato', 'status')),
+          data_invio: fmtDate(col(r, 'data cand', 'data invio', 'invio', 'data')) || today,
+          data_colloquio: fmtDate(col(r, 'data coll', 'colloquio')) || null,
           notifiche_push: true,
         }))
+
       if (parsed.length === 0) {
-        setImportError('Nessuna riga trovata. Assicurati che il file abbia almeno una riga con dati (azienda o ruolo).')
+        setImportError('Nessuna riga valida trovata — assicurati che ci sia la colonna "Azienda".')
         setImporting(false); return
       }
       await addBulkCandidature(parsed)
-    } catch (err) { setImportError('Errore: ' + (err.message || 'Usa il template Hireflow.')) }
+    } catch (err) {
+      setImportError('Errore: ' + (err.message || 'controlla il file e riprova.'))
+      console.error('Import error:', err)
+    }
     setImporting(false); e.target.value = ''
   }
 
