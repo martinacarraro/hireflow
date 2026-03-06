@@ -15,17 +15,19 @@ export default function Home({ onAdd, onDetail }) {
 
   // Solo stati con almeno 1 candidatura
   const stats = useMemo(() => [
-    { emoji: '📤', label: 'Inviate',   stato: 'Inviata',           color: '#60A5FA' },
-    { emoji: '📞', label: 'Call',      stato: 'Call conoscitiva',  color: '#38BDF8' },
-    { emoji: '🎙️', label: 'Colloqui', stato: 'Colloquio',         color: '#34D399' },
-    { emoji: '🎙️🎙️', label: '2° Col.', stato: 'Secondo colloquio', color: '#10B981' },
-    { emoji: '⏳', label: 'Attesa',    stato: 'In attesa',         color: '#FBBF24' },
-    { emoji: '🎉', label: 'Offerte',   stato: 'Offerta ricevuta',  color: '#A78BFA' },
-    { emoji: '🏆', label: 'Assunto',   stato: 'Assunto',           color: '#F59E0B' },
-    { emoji: '👻', label: 'Ghostate',  stato: 'GHOSTED',           color: '#9CA3AF' },
+    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#D1D5DB' },
+    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#60A5FA' },
+    { emoji: '👀', label: 'Vista',      stato: 'Vista',              color: '#F97316' },
+    { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#C084FC' },
+    { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#34D399' },
+    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#FBBF24' },
+    { emoji: '🎙️🎙️', label: '2° Col.', stato: 'Secondo colloquio',  color: '#10B981' },
+    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#8B5CF6' },
+    { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#F87171' },
+    { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#9CA3AF' },
   ]
     .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
-    .filter(s => s.count > 0),   // ← nasconde stati a 0
+    .filter(s => s.count > 0),
   [candidature])
 
   const candidatureFiltrate = useMemo(() =>
