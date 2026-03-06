@@ -155,7 +155,7 @@ export default function Profile() {
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
                 <p className="text-xs text-muted mt-0.5">{n.body}</p>
-                <p className="text-[10px] text-disabled mt-1">{new Date(n.time).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="text-[10px] text-muted mt-1">{new Date(n.time).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
           ))
@@ -276,7 +276,7 @@ export default function Profile() {
             {importing ? <><Spinner size={16} /> Importazione...</> : '📤 Carica il tuo file Excel'}
           </button>
           {importError && <p className="text-xs text-red mt-2">{importError}</p>}
-          <p className="text-[10px] text-disabled mt-2 text-center">Supporta .xlsx, .xls, .csv</p>
+          <p className="text-[10px] text-muted mt-2 text-center">Supporta .xlsx, .xls, .csv</p>
         </div>
 
         {/* Preferenze */}
@@ -293,7 +293,7 @@ export default function Profile() {
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${(profile?.notifiche_push_globali ?? true) ? 'left-[26px]' : 'left-0.5'}`} />
             </button>
           </div>
-          <p className="text-[10px] text-disabled mt-1 leading-relaxed">⚠️ Le notifiche su mobile richiedono che l'app sia installata come PWA.</p>
+          <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Le notifiche su mobile richiedono che l'app sia installata come PWA.</p>
         </div>
 
         {/* Supporto */}
@@ -301,7 +301,7 @@ export default function Profile() {
           <SectionLabel>SUPPORTO</SectionLabel>
           <a href="mailto:feedback@hireflow.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
           <div className="border-t border-border" />
-          <p className="text-xs text-disabled text-center pt-1">Hireflow v1.0 — Fatto con 💜</p>
+          <p className="text-xs text-muted text-center pt-1">Hireflow v1.0 — Fatto con 💜</p>
         </div>
 
         {/* Account */}
