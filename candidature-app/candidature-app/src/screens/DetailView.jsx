@@ -180,7 +180,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 {checklist.length === 0 && (
                   <div className="text-center py-3">
                     <p className="text-sm text-muted mb-2">Nessuna checklist trovata</p>
-                    <p className="text-xs text-disabled">La checklist si crea automaticamente quando imposti lo stato a "Colloquio". Salva le modifiche prima.</p>
+                    <p className="text-xs text-muted">La checklist si crea automaticamente quando imposti lo stato a "Colloquio". Salva le modifiche prima.</p>
                   </div>
                 )}
                 <div className="space-y-2">
@@ -251,6 +251,22 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </Section>
         )}
+
+        {/* TELEFONO */}
+        <Section label="📞 NUMERO DI TELEFONO">
+          <div className="flex items-center gap-2">
+            <input className="input-field flex-1" type="tel"
+              placeholder="Es: +39 02 1234567 (utile per riconoscere le chiamate)"
+              value={form.telefono_azienda || ''} onChange={e => set('telefono_azienda', e.target.value)} />
+            {form.telefono_azienda && (
+              <a href={`tel:${form.telefono_azienda}`}
+                className="flex-shrink-0 w-10 h-10 bg-purple/20 rounded-xl flex items-center justify-center text-lg">
+                📲
+              </a>
+            )}
+          </div>
+          <p className="text-[10px] text-disabled mt-1">Salvalo per riconoscere le chiamate dell'azienda 📱</p>
+        </Section>
 
         {/* NOTES */}
         <Section label="📝 LE TUE NOTE">
