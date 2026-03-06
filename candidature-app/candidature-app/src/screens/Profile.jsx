@@ -86,15 +86,33 @@ export default function Profile() {
         if (!isNaN(n) && n > 40000) return new Date((n - 25569) * 86400 * 1000).toISOString().slice(0,10)
         return null
       }
+      // Try to auto-detect which column has company/role even if headers differ
+      const allKeys = rows.length > 0 ? Object.keys(rows[0]) : []
+      const findBestKey = (...candidates) => {
+        for (const k of candidates) {
+          const found = allKeys.find(rk => rk.toLowerCase().includes(k.toLowerCase()))
+          if (found) return found
+        }
+        return null
+      }
+      const azKey = findBestKey('aziend','company','employer','datore','organiz')
+      const ruKey = findBestKey('ruol','role','posizion','job','titolo','mansione','figura')
+
       const parsed = rows
         .filter(r => {
-          const az = getVal(r,'azienda','company','nome azienda')
-          const ru = getVal(r,'ruolo','role','posizione','job title','titolo')
-          return az && ru && !az.startsWith('\u26a0')
+          // Skip rows that are clearly notes/headers (start with ⚠️ or empty)
+          const az = azKey ? String(r[azKey]||'').trim() : getVal(r,'azienda','company','nome azienda','employer')
+          const ru = ruKey ? String(r[ruKey]||'').trim() : getVal(r,'ruolo','role','posizione','job title','titolo')
+          const hasContent = az || ru
+          const isNote = az.startsWith('⚠') || az.startsWith('*') || az.toLowerCase() === 'azienda'
+          return hasContent && !isNote
         })
-        .map(r => ({
-          azienda: getVal(r,'azienda','company','nome azienda') || '?',
-          ruolo: getVal(r,'ruolo','role','posizione','job title','titolo') || '?',
+        .map(r => {
+          const az = azKey ? String(r[azKey]||'').trim() : getVal(r,'azienda','company','nome azienda','employer')
+          const ru = ruKey ? String(r[ruKey]||'').trim() : getVal(r,'ruolo','role','posizione','job title','titolo')
+          return {
+          azienda: az || ru || '?',
+          ruolo: ru || az || '?',
           stato: resolveStato(getVal(r,'stato','status','stato candidatura')),
           data_invio: parseDate(getVal(r,'data invio (yyyy-mm-dd)','data invio','data','date','invio')) || today,
           data_colloquio: parseDate(getVal(r,'data colloquio (yyyy-mm-dd)','data colloquio','data 1° colloquio')) || null,
@@ -105,8 +123,11 @@ export default function Profile() {
           stipendio_max: parseInt(getVal(r,'stipendio max (k€)','stipendio max','ral max','max')) || null,
           note: getVal(r,'note','notes','appunti','commenti') || null,
           notifiche_push: true,
-        }))
-      if (parsed.length === 0) { setImportError('Nessuna riga valida. Verifica le colonne "Azienda" e "Ruolo".'); setImporting(false); return }
+        }})
+      if (parsed.length === 0) {
+        setImportError('Nessuna riga trovata. Assicurati che il file abbia almeno una riga con dati (azienda o ruolo).')
+        setImporting(false); return
+      }
       await addBulkCandidature(parsed)
     } catch (err) { setImportError('Errore: ' + (err.message || 'Usa il template Hireflow.')) }
     setImporting(false); e.target.value = ''
