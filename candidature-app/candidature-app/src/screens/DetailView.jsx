@@ -268,6 +268,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           <p className="text-[10px] text-disabled mt-1">Salvalo per riconoscere le chiamate dell'azienda 📱</p>
         </Section>
 
+        {/* SCADENZA RESPONSO */}
+        <Section label="📅 ENTRO QUANDO DANNO RISPOSTA">
+          <input className="input-field" type="date"
+            value={form.data_scadenza_responso || ''} onChange={e => set('data_scadenza_responso', e.target.value)} />
+          <p className="text-[10px] text-disabled mt-1">Se ti hanno detto entro quando faranno sapere, salvalo qui</p>
+        </Section>
+
         {/* NOTES */}
         <Section label="📝 LE TUE NOTE">
           <textarea className="input-field resize-none" rows={4}
