@@ -271,42 +271,35 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
   )
 }
 
-function DeadlineBadge({ scadenza }) {
-  if (!scadenza) return null
+function DeadlineRow({ scadenza }) {
   const today = new Date(); today.setHours(0,0,0,0)
   const deadline = new Date(scadenza); deadline.setHours(0,0,0,0)
   const diff = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
 
-  if (diff > 3) {
+  if (diff > 0) {
     return (
-      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: 'rgba(96,165,250,0.15)', color: '#60A5FA' }}>
-        ⏰ {diff}gg al responso
-      </span>
-    )
-  } else if (diff > 0) {
-    return (
-      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: 'rgba(251,191,36,0.2)', color: '#F59E0B' }}>
-        ⏰ solo {diff}gg al responso!
-      </span>
+      <p className="text-xs font-semibold mt-1" style={{ color: '#34D399' }}>
+        ⏰ Responso entro {diff} {diff === 1 ? 'giorno' : 'giorni'}
+      </p>
     )
   } else if (diff === 0) {
     return (
-      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-        style={{ background: 'rgba(251,191,36,0.25)', color: '#F59E0B' }}>
-        ⏰ responso oggi!
-      </span>
+      <p className="text-xs font-semibold mt-1" style={{ color: '#FBBF24' }}>
+        ⏰ Responso atteso oggi!
+      </p>
     )
   } else {
     const giorni = Math.abs(diff)
     return (
-      <div className="flex flex-col items-end gap-0.5">
-        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-          style={{ background: 'rgba(248,113,113,0.15)', color: '#F87171' }}>
-          ⚠️ responso {giorni}gg fa
-        </span>
-        <span className="text-[9px] text-amber font-medium">💬 ricontattali!</span>
+      <div className="mt-1">
+        <p className="text-xs font-semibold" style={{ color: giorni <= 3 ? '#FBBF24' : '#F87171' }}>
+          {giorni <= 3 ? '⚠️' : '🚨'} Dovevano rispondere {giorni} {giorni === 1 ? 'giorno' : 'giorni'} fa
+        </p>
+        {giorni > 3 && (
+          <p className="text-[10px] font-medium mt-0.5" style={{ color: '#F87171' }}>
+            💬 Considera di ricontattare il recruiter!
+          </p>
+        )}
       </div>
     )
   }
