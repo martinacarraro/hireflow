@@ -19,16 +19,16 @@ export default function Home({ onAdd, onDetail }) {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
   const stats = useMemo(() => [
-    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#9CA3AF' },
-    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#3B82F6' },
-    { emoji: '👀', label: 'Vista',      stato: 'Vista',              color: '#F97316' },
     { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#A855F7' },
     { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#22C55E' },
-    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#EAB308' },
     { emoji: '🎙️🎙️', label: '2° Col.',  stato: 'Secondo colloquio',  color: '#16A34A' },
-    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#6D28D9' },
+    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#EAB308' },
+    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#3B82F6' },
+    { emoji: '👀', label: 'Vista',      stato: 'Vista',              color: '#F97316' },
     { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#EF4444' },
+    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#6D28D9' },
     { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#6B7280' },
+    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#9CA3AF' },
   ]
     .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
     .filter(s => s.count > 0),
@@ -310,10 +310,22 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
 
-  // Long press detection
+  // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
-  const handleTouchStart = () => {
-    pressTimer.current = setTimeout(() => { onLongPress?.() }, 900)
+  const startPos = React.useRef({ x: 0, y: 0 })
+  const didScroll = React.useRef(false)
+
+  const handleTouchStart = (e) => {
+    didScroll.current = false
+    startPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    pressTimer.current = setTimeout(() => {
+      if (!didScroll.current) onLongPress?.()
+    }, 900)
+  }
+  const handleTouchMove = (e) => {
+    const dx = Math.abs(e.touches[0].clientX - startPos.current.x)
+    const dy = Math.abs(e.touches[0].clientY - startPos.current.y)
+    if (dx > 8 || dy > 8) { didScroll.current = true; clearTimeout(pressTimer.current) }
   }
   const handleTouchEnd = () => { clearTimeout(pressTimer.current) }
 
@@ -321,8 +333,9 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
     <div
       onClick={onPress}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onMouseDown={handleTouchStart}
+      onMouseDown={() => { pressTimer.current = setTimeout(() => onLongPress?.(), 900) }}
       onMouseUp={handleTouchEnd}
       onMouseLeave={handleTouchEnd}
       className={`card mb-3 cursor-pointer active:scale-[0.98] transition-all ${isSelected ? 'ring-2 ring-purple' : ''}`}
