@@ -52,25 +52,36 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
   const domain = domainProp || guessDomain(name)
-  const logoUrl = `https://logo.clearbit.com/${domain}`
-  const [imgSrc, setImgSrc] = React.useState(logoUrl)
+
+  // Try multiple logo sources in order
+  const sources = [
+    `https://logo.clearbit.com/${domain}`,
+    `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+  ]
+  const [srcIdx, setSrcIdx] = React.useState(0)
   const [failed, setFailed] = React.useState(false)
 
-  // Reset when domain/name changes
   React.useEffect(() => {
-    setImgSrc(logoUrl)
+    setSrcIdx(0)
     setFailed(false)
-  }, [logoUrl])
+  }, [domain])
+
+  const handleError = () => {
+    if (srcIdx < sources.length - 1) setSrcIdx(i => i + 1)
+    else setFailed(true)
+  }
 
   if (!failed) {
     return (
       <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 bg-white"
         style={{ width: size, height: size, minWidth: size }}>
         <img
-          src={imgSrc}
+          key={sources[srcIdx]}
+          src={sources[srcIdx]}
           alt={name}
-          onError={() => setFailed(true)}
-          style={{ width: size * 0.85, height: size * 0.85, objectFit: 'contain' }}
+          onError={handleError}
+          style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
         />
       </div>
     )
