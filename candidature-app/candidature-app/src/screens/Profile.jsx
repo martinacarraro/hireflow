@@ -28,6 +28,8 @@ export default function Profile() {
   const [confirmDelete, setConfirmDelete]     = useState(false)
   const [showNotifs, setShowNotifs]           = useState(false)
   const [editBio, setEditBio]                 = useState(false)
+  const [editIndirizzo, setEditIndirizzo]     = useState(false)
+  const [indirizzoEdit, setIndirizzoEdit]     = useState(profile?.indirizzo_home || '')
   const [showArchive, setShowArchive]         = useState(false)
   const [editNome, setEditNome]               = useState(false)
   const [bio, setBio]                         = useState(profile?.bio_lavoro || '')
@@ -213,6 +215,19 @@ export default function Profile() {
                 <p className="text-sm text-purple-soft italic mt-0.5">{profile?.bio_lavoro || 'Aggiungi una bio... ✏️'}</p>
               </button>
             )}
+            {editIndirizzo ? (
+              <div className="mt-1 flex gap-2">
+                <input className="input-field text-xs py-1 flex-1" value={indirizzoEdit}
+                  onChange={e => setIndirizzoEdit(e.target.value)}
+                  placeholder="Es: Via Roma 1, Milano" />
+                <button onClick={() => { updateProfile({ indirizzo_home: indirizzoEdit }); setEditIndirizzo(false) }}
+                  className="text-purple-soft text-xs font-medium">✓</button>
+              </div>
+            ) : (
+              <button onClick={() => { setEditIndirizzo(true); setIndirizzoEdit(profile?.indirizzo_home || '') }} className="text-left">
+                <p className="text-xs text-muted mt-0.5">📍 {profile?.indirizzo_home || 'Aggiungi il tuo indirizzo... ✏️'}</p>
+              </button>
+            )}
           </div>
         </div>
 
@@ -374,9 +389,12 @@ export default function Profile() {
             <div className="space-y-2">
               <button
                 onClick={() => {
-                  const text = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
-                  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://lefaremosapere-mocha.vercel.app')}&summary=${encodeURIComponent(text)}`
-                  window.open(url, '_blank')
+                  const postText = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
+                  // Copy to clipboard first, then open LinkedIn so user can paste
+                  try { await navigator.clipboard.writeText(postText) } catch {}
+                  const linkedinUrl = `https://www.linkedin.com/feed/?shareActive=true`
+                  window.open(linkedinUrl, '_blank')
+                  setTimeout(() => alert('📋 Testo copiato! Incollalo nel post LinkedIn che si è aperto.'), 500)
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
                 style={{ background: '#0A66C2', color: 'white' }}>
@@ -385,11 +403,14 @@ export default function Profile() {
               </button>
               <button
                 onClick={() => {
-                  const text = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
-                  navigator.clipboard.writeText(text).then(() => alert('Testo copiato! 📋'))
+                  const link = `https://lefaremosapere-mocha.vercel.app?badge=${selectedBadge.id}`
+                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${selectedBadge.name}\n👉 ${link}`
+                  navigator.clipboard.writeText(text).then(() => {
+                    alert('Link e testo copiati! 📋 Incollali dove vuoi.')
+                  })
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
-                📋 Copia testo
+                🔗 Copia link + testo
               </button>
             </div>
             <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">Chiudi</button>
