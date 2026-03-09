@@ -9,7 +9,7 @@ import {
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const { user, isGuest } = useAuth()
+  const { user, isGuest, convertGuestToAccount } = useAuth()
   const [candidature, setCandidature] = useState([])
   const [profile, setProfile] = useState(null)
   const [notifications, setNotifications] = useState([])
@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     // Only send fields that exist in the DB schema
-    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain']
+    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','data_secondo_colloquio','ora_secondo_colloquio']
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
@@ -103,6 +103,38 @@ export function AppProvider({ children }) {
     return true
   }
 
+  const migrateGuestToAccount = async (email, password) => {
+    const guestData = [...candidature] // snapshot before auth change
+    const { error } = await convertGuestToAccount(email, password)
+    if (error) return { error }
+    // Wait for auth state to update and get new user
+    return new Promise((resolve) => {
+      const unsub = supabase.auth.onAuthStateChange(async (_, session) => {
+        if (session?.user) {
+          unsub.data.subscription.unsubscribe()
+          // Migrate all guest candidature to Supabase
+          if (guestData.length > 0) {
+            const rows = guestData.map(({ id, user_id, ...rest }) => ({
+              ...rest,
+              user_id: session.user.id,
+            }))
+            const { error: insertError } = await supabase
+              .from('candidature').insert(rows)
+            if (insertError) {
+              showToast('⚠️ Account creato ma errore nel salvataggio dati.', 'error')
+            } else {
+              showToast(`✅ Account creato! ${guestData.length} candidature salvate 🎉`, 'success')
+              triggerConfetti()
+            }
+          } else {
+            showToast('✅ Account creato con successo!', 'success')
+          }
+          resolve({ success: true })
+        }
+      })
+    })
+  }
+
   const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id)
     // Preserve data_colloquio if it was set before and not explicitly being cleared
@@ -110,7 +142,7 @@ export function AppProvider({ children }) {
       updates = { ...updates, data_colloquio: prev.data_colloquio }
     }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','data_secondo_colloquio','ora_secondo_colloquio']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase
@@ -341,7 +373,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       candidature, profile, notifications, toast, confetti,
       loading, unreadCount, computeStats,
-      addCandidatura, addBulkCandidature, updateCandidatura, deleteCandidatura,
+      addCandidatura, addBulkCandidature, updateCandidatura, migrateGuestToAccount, deleteCandidatura,
       getChecklist, toggleChecklistItem,
       addXP, updateProfile, markOnboarded, refreshMotto,
       pushNotification, requestNotificationPermission,
