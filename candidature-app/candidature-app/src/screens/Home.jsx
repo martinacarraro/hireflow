@@ -361,7 +361,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             </div>
             <StatusBadge stato={c.stato} />
           </div>
-          {c.data_colloquio && ['Colloquio','Secondo colloquio','Prima call'].includes(c.stato) && (
+          {c.data_colloquio && (
             <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
           )}
           <div className="flex items-center justify-between mt-2">
@@ -371,6 +371,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
               <span className="text-xs text-muted font-medium">{days}gg fa</span>
             </div>
           </div>
+          {c.data_scadenza_responso && <DeadlineRow scadenza={c.data_scadenza_responso} />}
         </div>
       </div>
     </div>
