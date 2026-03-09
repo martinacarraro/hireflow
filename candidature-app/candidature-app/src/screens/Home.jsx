@@ -74,7 +74,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
   const [quickStatusFor, setQuickStatusFor] = useState(null) // candidatura id
   const [reminderFor, setReminderFor] = useState(null) // candidatura for custom reminder
-  const [showWeekFocus, setShowWeekFocus] = useState(false)
 
   // Selezione multipla
   const [selectMode, setSelectMode] = useState(false)
@@ -125,14 +124,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
-  // Week focus stats
-  const weekGoal = profile?.week_goal || 5
-  const weekCount = useMemo(() => {
-    const now = new Date()
-    const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1); mon.setHours(0,0,0,0)
-    return candidature.filter(c => new Date(c.data_invio || c.created_at) >= mon).length
-  }, [candidature])
-  const weekPct = Math.min(100, Math.round((weekCount / weekGoal) * 100))
 
   // Duplicate candidatura
   const handleDuplicate = async (cand) => {
@@ -278,24 +269,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
-        {/* Focus settimana */}
-        {!selectMode && (
-          <button onClick={() => setShowWeekFocus(s => !s)}
-            className="w-full card mb-4 text-left active:scale-[0.98] transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-muted uppercase tracking-widest">🎯 Focus settimana</p>
-              <p className="text-xs font-semibold text-purple-soft">{weekCount}/{weekGoal} candidature</p>
-            </div>
-            <div className="w-full h-2 rounded-full" style={{ background: 'rgba(123,47,255,0.15)' }}>
-              <div className="h-2 rounded-full transition-all duration-500"
-                style={{ width: `${weekPct}%`, background: weekPct >= 100 ? '#22C55E' : 'linear-gradient(90deg,#7B2FFF,#FF2D8B)' }} />
-            </div>
-            {weekPct >= 100 && (
-              <p className="text-xs text-green-400 font-semibold mt-1.5">🏆 Obiettivo settimanale raggiunto!</p>
-            )}
-          </button>
-        )}
-
         {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
@@ -434,26 +407,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                 ✕ Chiudi
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Week goal setter */}
-      {showWeekFocus && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.6)' }}
-          onClick={() => setShowWeekFocus(false)}>
-          <div className="w-full bg-surface rounded-3xl p-6" onClick={e => e.stopPropagation()}>
-            <p className="text-base font-bold text-txt mb-1">🎯 Obiettivo settimanale</p>
-            <p className="text-xs text-muted mb-4">Quante candidature vuoi mandare questa settimana?</p>
-            <div className="flex gap-2 flex-wrap">
-              {[3,5,7,10,15,20].map(n => (
-                <button key={n} onClick={async () => { await updateProfile({ week_goal: n }); setShowWeekFocus(false) }}
-                  className={`flex-1 min-w-[56px] py-3 rounded-xl text-sm font-bold active:scale-95 transition-all ${weekGoal === n ? 'bg-purple text-white' : 'border border-border text-muted'}`}>
-                  {n}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted text-center mt-3">Progresso: {weekCount}/{weekGoal} questa settimana</p>
           </div>
         </div>
       )}
