@@ -69,6 +69,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       ...form,
       data_colloquio: form.data_colloquio || null,
       ora_colloquio: form.ora_colloquio || null,
+      data_secondo_colloquio: form.data_secondo_colloquio || null,
+      ora_secondo_colloquio: form.ora_secondo_colloquio || null,
     })
     setSaving(false)
     setSaved(true)
@@ -192,6 +194,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
           <Section label="🎙️ DETTAGLI COLLOQUIO">
             <div className="space-y-3">
+              <p className="text-xs text-disabled font-semibold uppercase tracking-wide">1° Colloquio</p>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <p className="text-xs text-muted mb-1">Data</p>
@@ -204,6 +207,23 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                     value={form.ora_colloquio || ''} onChange={e => set('ora_colloquio', e.target.value)} />
                 </div>
               </div>
+              {['Secondo colloquio','In attesa risposta'].includes(form.stato) && (
+                <>
+                  <p className="text-xs text-disabled font-semibold uppercase tracking-wide mt-2">2° Colloquio</p>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <p className="text-xs text-muted mb-1">Data</p>
+                      <input className="input-field text-sm" type="date"
+                        value={form.data_secondo_colloquio || ''} onChange={e => set('data_secondo_colloquio', e.target.value)} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted mb-1">Ora</p>
+                      <input className="input-field text-sm" type="time"
+                        value={form.ora_secondo_colloquio || ''} onChange={e => set('ora_secondo_colloquio', e.target.value)} />
+                    </div>
+                  </div>
+                </>
+              )}
               <div>
                 <p className="text-xs text-muted mb-1">Tipo</p>
                 <div className="flex gap-2 flex-wrap">
