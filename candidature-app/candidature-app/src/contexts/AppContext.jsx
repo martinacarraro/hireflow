@@ -163,17 +163,17 @@ export function AppProvider({ children }) {
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
-        showToast('🎙️ Colloquio ottenuto! +15 XP', 'success'); triggerConfetti()
+        showToast(profile?.genere === 'm' ? '🎙️ Colloquio ottenuto! +15 XP' : profile?.genere === 'nb' ? '🎙️ Colloquio ottenut*! +15 XP' : '🎙️ Colloquio ottenuto! +15 XP', 'success'); triggerConfetti()
         pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`)
         await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
         await addXP(XP_EVENTS.OFFERTA)
-        showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
+        showToast(profile?.genere === 'm' ? '🏆 OFFERTA RICEVUTA! +50 XP 🎉' : '🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
         triggerConfetti()
-        pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
+        pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', profile?.genere === 'm' ? 'CE L\'HAI FATTA! 💜🚀' : 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'Assunto') {
         await addXP(XP_EVENTS.OFFERTA)
-        showToast('🏆 SEI STATA ASSUNTA! 🎉🎉', 'success')
+        showToast(profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : profile?.genere === 'nb' ? '🏆 SEI STAT* ASSUNT*! 🎉🎉' : '🏆 SEI STATA ASSUNTA! 🎉🎉', 'success')
         triggerConfetti()
         pushNotification('🏆 ASSUNTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'GHOSTED') {
