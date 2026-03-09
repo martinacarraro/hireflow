@@ -71,7 +71,7 @@ export function AppProvider({ children }) {
       .from('candidature')
       .insert({ ...data, user_id: user.id })
       .select().single()
-    if (error) { showToast('❌ Errore — riprova.', 'error'); return null }
+    if (error) { showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return null }
     setCandidature(prev => [row, ...prev])
     const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
     await addXP(xp)
@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     // Only send fields that exist in the DB schema
-    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','data_secondo_colloquio','ora_secondo_colloquio','archiviata']
+    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note']
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
@@ -97,7 +97,7 @@ export function AppProvider({ children }) {
       return false
     }
     setCandidature(prev => [...(data || []), ...prev])
-    showToast(`✅ Importate ${data.length} candidature!`, 'success')
+    showToast(`🎉 ${data.length} candidature importate!`, 'success')
     triggerConfetti()
     await checkBadges()
     return true
@@ -148,12 +148,12 @@ export function AppProvider({ children }) {
       updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
     }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','data_secondo_colloquio','ora_secondo_colloquio','archiviata']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase
       .from('candidature').update(clean).eq('id', id).select().single()
-    if (error) { showToast('❌ Errore — riprova.', 'error'); return }
+    if (error) { showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return }
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
@@ -190,8 +190,23 @@ export function AppProvider({ children }) {
 
   const deleteCandidatura = async (id) => {
     await supabase.from('candidature').delete().eq('id', id)
-    setCandidature(cs => cs.filter(c => c.id !== id))
-    showToast('🗑️ Candidatura eliminata.', 'info')
+    setCandidature(cs => {
+      const updated = cs.filter(c => c.id !== id)
+      // Recalculate badges with remaining candidature
+      setTimeout(() => recheckBadgesAfterDelete(updated), 100)
+      return updated
+    })
+    showToast('🗑️ Candidatura eliminata!', 'info')
+  }
+
+  const recheckBadgesAfterDelete = async (remaining) => {
+    if (!profile) return
+    const stats = computeStatsFrom(remaining)
+    const stillEarned = BADGES.filter(b => b.check(stats)).map(b => b.id)
+    const updated = stillEarned.join(',')
+    if (updated !== (profile.badge_lista || '')) {
+      await updateProfile({ badge_lista: updated })
+    }
   }
 
   // ── CHECKLIST ─────────────────────────────────────────────────
@@ -272,7 +287,7 @@ export function AppProvider({ children }) {
     for (const badge of BADGES) {
       if (!earned.includes(badge.id) && badge.check(stats)) {
         newBadges.push(badge.id)
-        showToast(`🏅 Badge sbloccato: ${badge.name}!`, 'badge')
+        showToast(`🎉 Badge sbloccato: ${badge.name}!`, 'success')
         triggerConfetti()
         pushNotification(`🏅 Badge: ${badge.name}!`, badge.desc)
       }
@@ -283,21 +298,42 @@ export function AppProvider({ children }) {
     }
   }
 
-  const computeStats = () => {
-    const total = candidature.length
-    const colloqui = candidature.filter(c => ['Colloquio','Secondo colloquio','Call conoscitiva','In attesa','Offerta ricevuta'].includes(c.stato)).length
-    const ghosted = candidature.filter(c => c.stato === 'GHOSTED').length
-    const offerte = candidature.filter(c => c.stato === 'Offerta ricevuta').length
-    const withNotes = candidature.filter(c => c.note?.length > 5).length
-    const withDates = candidature.filter(c => c.data_colloquio).length
-    const countries = new Set(candidature.map(c => c.paese).filter(Boolean)).size
+  const computeStatsFrom = (list) => {
+    const total = list.length
+    const colloqui = list.filter(c => ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) || c.data_colloquio).length
+    const ghosted = list.filter(c => c.stato === 'GHOSTED').length
+    const offerte = list.filter(c => c.stato === 'Offerta ricevuta').length
+    const withNotes = list.filter(c => c.note?.length > 5).length
+    const withDates = list.filter(c => c.data_colloquio).length
+    const countries = new Set(list.map(c => c.paese).filter(Boolean)).size
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const colloquiThisMonth = candidature.filter(c =>
-      c.stato === 'Colloquio' && new Date(c.created_at) >= thisMonth
+    const colloquiThisMonth = list.filter(c =>
+      c.data_colloquio && new Date(c.data_colloquio) >= thisMonth
     ).length
-    return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: 0 }
+    const withLink = list.filter(c => c.link_annuncio).length
+    const secondi = list.filter(c => c.data_secondo_colloquio || c.stato === 'Secondo colloquio').length
+    const spontanee = list.filter(c => c.stato === 'Spontanea' || c.fonte === 'Spontanea').length
+    const todayStr = new Date().toISOString().split('T')[0]
+    const todayCount = list.filter(c => c.data_invio === todayStr).length
+    // week streak: count consecutive weeks with >= 1 candidatura
+    const byWeek = {}
+    list.forEach(c => {
+      const d = new Date(c.data_invio || c.created_at)
+      const week = Math.floor(d.getTime() / (7 * 24 * 60 * 60 * 1000))
+      byWeek[week] = true
+    })
+    const weeks = Object.keys(byWeek).map(Number).sort((a,b) => b-a)
+    let weekStreak = 0
+    const nowWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
+    for (let i = 0; i < weeks.length; i++) {
+      if (weeks[i] === nowWeek - i) weekStreak++
+      else break
+    }
+    return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak }
   }
+
+  const computeStats = () => computeStatsFrom(candidature)
 
   // ── PUSH NOTIFICATIONS (con dedup) ────────────────────────────
 
