@@ -31,13 +31,13 @@ export default function Login() {
               <polygon points="38,6 18,36 30,36 26,58 46,28 34,28" fill="#34D399"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-txt tracking-tight mb-1 text-center">Hireflow</h1>
+          <h1 className="text-3xl font-bold text-txt tracking-tight mb-1 text-center">Le faremo sapere</h1>
           <p className="text-sm text-muted italic text-center mb-6 leading-relaxed">
-            Il job tracker che ti capisce davvero.
+            "Le faremo sapere." — E tu tieni il conto.
           </p>
 
           <div className="flex gap-2 flex-wrap justify-center mb-6">
-            {['🎯 Traccia tutto', '🔔 Notifiche smart', '🏆 Gamificato'].map(f => (
+            {['📬 Zero ghosting', '🔔 Scadenze chiare', '🏆 Gamificato'].map(f => (
               <span key={f} className="text-xs px-3 py-1.5 rounded-full bg-surface border border-border text-purple-soft">
                 {f}
               </span>
