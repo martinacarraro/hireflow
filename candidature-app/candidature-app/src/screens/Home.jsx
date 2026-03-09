@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
-import { STATUS_CONFIG, STATUS_GROUP_ORDER, MOTTOS, daysSince, formatDateTime, getGreeting } from '../lib/utils'
+import { STATUS_CONFIG, STATUS_GROUP_ORDER, MOTTOS, STATI, daysSince, formatDateTime, getGreeting } from '../lib/utils'
 
 
 function GuestConvertModal({ onClose, onSuccess }) {
@@ -50,7 +50,7 @@ function GuestConvertModal({ onClose, onSuccess }) {
 }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, migrateGuestToAccount } = useApp()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
@@ -68,8 +68,13 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   }, [onScrollChange])
   const motto = MOTTOS[profile?.motto_index ?? 0]
   const [filtroStato, setFiltroStato] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
+  const [quickStatusFor, setQuickStatusFor] = useState(null) // candidatura id
+  const [reminderFor, setReminderFor] = useState(null) // candidatura for custom reminder
+  const [showWeekFocus, setShowWeekFocus] = useState(false)
 
   // Selezione multipla
   const [selectMode, setSelectMode] = useState(false)
@@ -93,9 +98,20 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
     .filter(s => s.count > 0),
   [candidature])
 
-  const candidatureFiltrate = useMemo(() =>
-    (filtroStato ? candidature.filter(c => c.stato === filtroStato) : candidature).filter(c => !c.archiviata),
-  [candidature, filtroStato])
+  const candidatureFiltrate = useMemo(() => {
+    let list = candidature.filter(c => !c.archiviata)
+    if (filtroStato) list = list.filter(c => c.stato === filtroStato)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter(c =>
+        c.azienda?.toLowerCase().includes(q) ||
+        c.ruolo?.toLowerCase().includes(q) ||
+        c.sede?.toLowerCase().includes(q) ||
+        c.note?.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [candidature, filtroStato, searchQuery])
 
   const grouped = useMemo(() => {
     const groups = {}
@@ -108,6 +124,21 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   }, [candidatureFiltrate])
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
+
+  // Week focus stats
+  const weekGoal = profile?.week_goal || 5
+  const weekCount = useMemo(() => {
+    const now = new Date()
+    const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1); mon.setHours(0,0,0,0)
+    return candidature.filter(c => new Date(c.data_invio || c.created_at) >= mon).length
+  }, [candidature])
+  const weekPct = Math.min(100, Math.round((weekCount / weekGoal) * 100))
+
+  // Duplicate candidatura
+  const handleDuplicate = async (cand) => {
+    const { id, created_at, updated_at, user_id, ...rest } = cand
+    await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
+  }
   const greet = getGreeting(nome)
 
   const toggleSelect = (id) => {
@@ -213,7 +244,29 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         totalCount={candidatureFiltrate.length}
         onDeleteSelected={() => selected.size > 0 && setConfirmBulkDelete(true)}
         onArchiveSelected={() => selected.size > 0 && setConfirmBulkArchive(true)}
+        showSearch={showSearch}
+        onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
       />
+
+      {/* Search bar */}
+      {showSearch && (
+        <div className="px-4 pb-2 flex-shrink-0">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">🔍</span>
+            <input
+              autoFocus
+              className="input-field pl-9 pr-9 text-sm w-full"
+              placeholder="Cerca azienda, ruolo, sede..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs active:scale-90">✕</button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
 
@@ -223,6 +276,24 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
             <button onClick={refreshMotto} className="text-muted text-base ml-3 active:scale-75 transition-transform">🔄</button>
           </div>
+        )}
+
+        {/* Focus settimana */}
+        {!selectMode && (
+          <button onClick={() => setShowWeekFocus(s => !s)}
+            className="w-full card mb-4 text-left active:scale-[0.98] transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-muted uppercase tracking-widest">🎯 Focus settimana</p>
+              <p className="text-xs font-semibold text-purple-soft">{weekCount}/{weekGoal} candidature</p>
+            </div>
+            <div className="w-full h-2 rounded-full" style={{ background: 'rgba(123,47,255,0.15)' }}>
+              <div className="h-2 rounded-full transition-all duration-500"
+                style={{ width: `${weekPct}%`, background: weekPct >= 100 ? '#22C55E' : 'linear-gradient(90deg,#7B2FFF,#FF2D8B)' }} />
+            </div>
+            {weekPct >= 100 && (
+              <p className="text-xs text-green-400 font-semibold mt-1.5">🏆 Obiettivo settimanale raggiunto!</p>
+            )}
+          </button>
         )}
 
         {/* GUEST BANNER */}
@@ -292,7 +363,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                 <CandidaturaCard
                   key={c.id} c={c}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
-                  onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
+                  onLongPress={() => selectMode ? null : setQuickStatusFor(c)}
                   selectMode={selectMode}
                   isSelected={selected.has(c.id)}
                 />
@@ -324,11 +395,73 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           onSuccess={() => setShowGuestModal(false)}
         />
       )}
+
+      {/* Quick status menu */}
+      {quickStatusFor && (
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setQuickStatusFor(null)}>
+          <div className="w-full bg-surface rounded-t-3xl p-4 pb-safe pb-8" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
+            <p className="text-sm font-bold text-txt mb-3">
+              Cambia stato — <span className="text-purple-soft">{quickStatusFor.azienda}</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+              {STATI.map(s => {
+                const cfg = STATUS_CONFIG[s]
+                const isCurrent = s === quickStatusFor.stato
+                return (
+                  <button key={s}
+                    onClick={async () => {
+                      await updateCandidatura(quickStatusFor.id, { stato: s })
+                      setQuickStatusFor(null)
+                    }}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold text-left active:scale-95 transition-all flex items-center gap-2 ${isCurrent ? 'ring-2 ring-purple' : ''}`}
+                    style={{ background: cfg?.bg || 'rgba(255,255,255,0.05)', color: cfg?.color || '#999', border: `1px solid ${cfg?.color}30` }}>
+                    <span>{cfg?.emoji}</span>
+                    <span>{s}</span>
+                    {isCurrent && <span className="ml-auto">✓</span>}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button onClick={() => { handleDuplicate(quickStatusFor); setQuickStatusFor(null) }}
+                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
+                📋 Duplica candidatura
+              </button>
+              <button onClick={() => setQuickStatusFor(null)}
+                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
+                ✕ Chiudi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Week goal setter */}
+      {showWeekFocus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowWeekFocus(false)}>
+          <div className="w-full bg-surface rounded-3xl p-6" onClick={e => e.stopPropagation()}>
+            <p className="text-base font-bold text-txt mb-1">🎯 Obiettivo settimanale</p>
+            <p className="text-xs text-muted mb-4">Quante candidature vuoi mandare questa settimana?</p>
+            <div className="flex gap-2 flex-wrap">
+              {[3,5,7,10,15,20].map(n => (
+                <button key={n} onClick={async () => { await updateProfile({ week_goal: n }); setShowWeekFocus(false) }}
+                  className={`flex-1 min-w-[56px] py-3 rounded-xl text-sm font-bold active:scale-95 transition-all ${weekGoal === n ? 'bg-purple text-white' : 'border border-border text-muted'}`}>
+                  {n}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted text-center mt-3">Progresso: {weekCount}/{weekGoal} questa settimana</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected }) {
+function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
@@ -360,6 +493,10 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
             {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} /></div>}
           </div>
           <div className="flex items-center gap-1">
+            <button onClick={onToggleSearch}
+              className={`p-2 active:scale-90 transition-transform rounded-xl ${showSearch ? 'bg-purple/20' : ''}`}>
+              <span className="text-xl">🔍</span>
+            </button>
             <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
               <span className="text-2xl">🔔</span>
               {unread > 0 && (
