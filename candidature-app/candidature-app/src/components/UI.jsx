@@ -51,15 +51,33 @@ function guessDomain(name) {
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  const gDomain = guessDomain(name)
-  // Se ha dominio salvato da Clearbit → usa logo Clearbit (HD)
-  // Altrimenti → Google Favicon con fallback lettera
-  const logoUrl = domainProp
-    ? `https://logo.clearbit.com/${domainProp}`
-    : `https://www.google.com/s2/favicons?domain=${gDomain}&sz=128`
+  const domain = domainProp || guessDomain(name)
+
+  // Se dominio salvato dall'autocomplete → Clearbit HD poi Google Favicon
+  // Se nome scritto a mano (no domainProp) → solo Google Favicon, mai Clearbit (evita loghi sbagliati)
+  const sources = React.useMemo(() => domainProp
+    ? [
+        `https://logo.clearbit.com/${domainProp}`,
+        `https://www.google.com/s2/favicons?domain=${domainProp}&sz=128`,
+      ]
+    : [
+        `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+      ],
+  [domain, domainProp])
+
+  const [idx, setIdx] = React.useState(0)
   const [failed, setFailed] = React.useState(false)
 
-  React.useEffect(() => { setFailed(false) }, [domainProp, name])
+  React.useEffect(() => { setIdx(0); setFailed(false) }, [domain])
+
+  const handleError = () => {
+    if (idx < sources.length - 1) setIdx(i => i + 1)
+    else setFailed(true)
+  }
+  const handleLoad = (e) => {
+    // Google favicon generico è 16px — salta al fallback
+    if (idx === 1 && e.target.naturalWidth <= 16) handleError()
+  }
 
   if (failed) {
     return (
@@ -74,11 +92,11 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
     <div className="rounded-xl overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
       style={{ width: size, height: size, minWidth: size }}>
       <img
-        key={logoUrl}
-        src={logoUrl}
+        key={sources[idx]}
+        src={sources[idx]}
         alt={name}
-        onLoad={e => { if (!domainProp && e.target.naturalWidth <= 16) setFailed(true) }}
-        onError={() => setFailed(true)}
+        onLoad={handleLoad}
+        onError={handleError}
         style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
       />
     </div>
