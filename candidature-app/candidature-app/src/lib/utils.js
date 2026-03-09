@@ -219,16 +219,18 @@ export const BADGES = [
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
 
 export const MOTTOS = [
-  "Daje, la prossima è quella giusta. ✨",
-  "Organizzazione è metà della vittoria. 💪",
-  "Ogni no ti avvicina al sì perfetto. 🎯",
-  "Il ghosting dice più su di loro che su di te. 👻",
-  "Stai costruendo qualcosa di grande. Continua. 🌟",
-  "Un colloquio è una conversazione tra pari. Ricordatelo. 🤝",
-  "Il mercato è strano, tu non lo sei. ❤️",
-  "Roma non è stata costruita in un giorno. Nemmeno una carriera. 🏛️",
-  "Una pausa non è fermarsi. Ricarica e riparte. ☕",
-  "Sii la persona che il tuo CV promette. Ci sei quasi. 💜",
+  '"Le faremo sapere." — E tu tieni il conto. 📬',
+  'Ogni no ti avvicina al sì giusto. ✨',
+  'Ghostata? Prossima. 👻',
+  'Il silenzio dice tanto quanto una risposta. 🤐',
+  'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
+  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
+  'Non aspettare che facciano sapere — anticipa. 📞',
+  'Ogni colloquio è pratica per il colloquio giusto. 🎙️',
+  'La ricerca è un lavoro. Tu ce la stai mettendo tutta. 🔥',
+  '"Valuteremo il tuo profilo." — Intanto tu vai avanti. 🚀',
+  'Il tuo prossimo lavoro esiste già. Lo stai trovando. 💡',
+  'Resisti. Il mercato non sa ancora cosa si perde. 💪',
 ]
 
 // ─── LOADING TIPS ────────────────────────────────────────────────
