@@ -5,9 +5,13 @@ import { STATUS_CONFIG, PRIORITA_CONFIG, getLevel, getXpProgress } from '../lib/
 export function StatusBadge({ stato, size = 'sm' }) {
   const cfg = STATUS_CONFIG[stato] || STATUS_CONFIG['Inviata']
   const p = size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-2.5 py-0.5 text-xs'
+  const active = ['Colloquio','Prima call','Secondo colloquio','Vista','In attesa risposta','Offerta ricevuta','Assunta'].includes(stato)
   return (
     <span className={`status-badge ${p} font-semibold`}
-      style={{ color: cfg.color, background: cfg.bg }}>
+      style={{
+        color: active ? 'white' : cfg.color,
+        background: active ? cfg.color : cfg.bg,
+      }}>
       {cfg.emoji} {cfg.label}
     </span>
   )
