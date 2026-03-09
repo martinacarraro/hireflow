@@ -26,12 +26,21 @@ export default function AddCandidatura({ onBack, onDone }) {
     clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`)
+        const res = await fetch(
+          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`,
+          { mode: 'cors' }
+        )
+        if (!res.ok) throw new Error('no results')
         const data = await res.json()
         setSuggestions(data.slice(0, 6))
         setShowSugg(data.length > 0)
-      } catch { setSuggestions([]); setShowSugg(false) }
-    }, 300)
+      } catch {
+        // Clearbit fallback: show logo preview for guessed domain
+        const domain = q.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'
+        setSuggestions([{ name: q, domain, logo: `https://logo.clearbit.com/${domain}` }])
+        setShowSugg(true)
+      }
+    }, 350)
   }, [form.azienda])
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
