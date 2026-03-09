@@ -336,7 +336,8 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                 <CandidaturaCard
                   key={c.id} c={c}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
-                  onLongPress={() => selectMode ? null : setQuickStatusFor(c)}
+                  onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
+                  onStatusPress={() => !selectMode && setQuickStatusFor(c)}
                   selectMode={selectMode}
                   isSelected={selected.has(c.id)}
                 />
@@ -499,7 +500,7 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
+function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
@@ -557,7 +558,11 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
               <p className="font-semibold text-txt text-sm truncate">{c.azienda}</p>
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
-            <StatusBadge stato={c.stato} />
+            <button
+                onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
+                className="active:scale-90 transition-transform">
+                <StatusBadge stato={c.stato} />
+              </button>
           </div>
           {/* Date colloquio — sempre visibili se presenti */}
           {(c.data_colloquio || c.data_secondo_colloquio) && (
