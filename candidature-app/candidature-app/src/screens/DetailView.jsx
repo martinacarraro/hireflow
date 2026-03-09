@@ -246,9 +246,72 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <input className="input-field text-sm" type="email" placeholder="email@azienda.com"
                   value={form.email_hr || ''} onChange={e => set('email_hr', e.target.value)} />
               </div>
+              {/* Quick action buttons */}
+              {(form.email_hr || form.telefono_hr) && (
+                <div className="flex gap-2 mt-1">
+                  {form.email_hr && (
+                    <a href={`mailto:${form.email_hr}?subject=Candidatura ${form.ruolo || ''}&body=Gentile ${form.contatto_hr || 'recruiter'},`}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border border-border text-purple-soft active:scale-95">
+                      ✉️ Scrivi email
+                    </a>
+                  )}
+                  {form.telefono_hr && (
+                    <a href={`tel:${form.telefono_hr}`}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border border-border text-green-400 active:scale-95">
+                      📞 Chiama
+                    </a>
+                  )}
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted mb-1">📞 Telefono HR</p>
+                <input className="input-field text-sm" type="tel" placeholder="+39 333 1234567"
+                  value={form.telefono_hr || ''} onChange={e => set('telefono_hr', e.target.value)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">🔗 Profilo LinkedIn HR</p>
+                <input className="input-field text-sm" placeholder="linkedin.com/in/..."
+                  value={form.linkedin_hr || ''} onChange={e => set('linkedin_hr', e.target.value)} />
+                {form.linkedin_hr && (
+                  <a href={form.linkedin_hr.startsWith('http') ? form.linkedin_hr : 'https://' + form.linkedin_hr}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 text-xs text-blue-400 border border-blue-400/30 px-3 py-2 rounded-xl mt-1 active:scale-95">
+                    🔗 Apri LinkedIn
+                  </a>
+                )}
+              </div>
             </div>
           </Section>
         )}
+
+        {/* PROMEMORIA PERSONALIZZATO */}
+        <Section label="⏰ PROMEMORIA">
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input className="input-field text-sm flex-1" type="date"
+                value={form.reminder_date || ''}
+                onChange={e => set('reminder_date', e.target.value)} />
+              <input className="input-field text-sm w-24" type="time"
+                value={form.reminder_time || ''}
+                onChange={e => set('reminder_time', e.target.value)} />
+            </div>
+            <input className="input-field text-sm w-full" placeholder="Es: Ricontatta HR, Invia portfolio..."
+              value={form.reminder_note || ''}
+              onChange={e => set('reminder_note', e.target.value)} />
+            {form.reminder_date && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(123,47,255,0.1)' }}>
+                <span className="text-sm">⏰</span>
+                <p className="text-xs text-purple-soft">
+                  Promemoria impostato per il {form.reminder_date}
+                  {form.reminder_time ? ` alle ${form.reminder_time}` : ''}
+                  {form.reminder_note ? ` — ${form.reminder_note}` : ''}
+                </p>
+                <button onClick={() => { set('reminder_date', null); set('reminder_time', null); set('reminder_note', '') }}
+                  className="ml-auto text-muted text-xs active:scale-90">✕</button>
+              </div>
+            )}
+          </div>
+        </Section>
 
         {/* CHECKLIST */}
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
