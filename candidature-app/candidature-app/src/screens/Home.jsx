@@ -285,6 +285,13 @@ export default function Home({ onAdd, onDetail }) {
         onCancel={() => setConfirmBulkDelete(false)}
         danger
       />
+
+      {showGuestModal && (
+        <GuestConvertModal
+          onClose={() => setShowGuestModal(false)}
+          onSuccess={() => setShowGuestModal(false)}
+        />
+      )}
     </div>
   )
 }
