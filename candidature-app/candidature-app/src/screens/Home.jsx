@@ -71,7 +71,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   const [showSearch, setShowSearch] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
-  const [quickStatusFor, setQuickStatusFor] = useState(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
@@ -198,7 +197,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           showSearch={showSearch}
           onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
         />
-        {/* GUEST BANNER anche in empty state */}
         {isGuest && (
           <div className="mx-4 mt-2 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
@@ -278,7 +276,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
-        {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
@@ -344,7 +341,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                   key={c.id} c={c}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
                   onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
-                  onStatusPress={() => !selectMode && setQuickStatusFor(c)}
                   selectMode={selectMode}
                   isSelected={selected.has(c.id)}
                 />
@@ -376,52 +372,11 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           onSuccess={() => setShowGuestModal(false)}
         />
       )}
-
-      {quickStatusFor && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.6)' }}
-          onClick={() => setQuickStatusFor(null)}>
-          <div className="w-full bg-surface rounded-t-3xl p-4 pb-safe pb-8" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-            <p className="text-sm font-bold text-txt mb-3">
-              Cambia stato — <span className="text-purple-soft">{quickStatusFor.azienda}</span>
-            </p>
-            <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto">
-              {STATI.map(s => {
-                const cfg = STATUS_CONFIG[s]
-                const isCurrent = s === quickStatusFor.stato
-                return (
-                  <button key={s}
-                    onClick={async () => {
-                      await updateCandidatura(quickStatusFor.id, { stato: s })
-                      setQuickStatusFor(null)
-                    }}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold text-left active:scale-95 transition-all flex items-center gap-2 ${isCurrent ? 'ring-2 ring-purple' : ''}`}
-                    style={{ background: cfg?.bg || 'rgba(255,255,255,0.05)', color: cfg?.color || '#999', border: `1px solid ${cfg?.color}30` }}>
-                    <span>{cfg?.emoji}</span>
-                    <span>{s}</span>
-                    {isCurrent && <span className="ml-auto">✓</span>}
-                  </button>
-                )
-              })}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button onClick={() => { handleDuplicate(quickStatusFor); setQuickStatusFor(null) }}
-                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
-                📋 Duplica candidatura
-              </button>
-              <button onClick={() => setQuickStatusFor(null)}
-                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
-                ✕ Chiudi
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
-function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
+function HomeHeader({ greet, profile, unread, onBell, selectMode, onExitSelect, onSelectAll, selectedCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
@@ -506,7 +461,7 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, isSelected }) {
+function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
@@ -563,11 +518,9 @@ function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, i
               <p className="font-semibold text-txt text-sm truncate">{c.azienda}</p>
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
-            <button
-              onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
-              className="active:scale-90 transition-transform flex-shrink-0">
+            <div className="flex-shrink-0">
               <StatusBadge stato={c.stato} />
-            </button>
+            </div>
           </div>
           {(c.data_colloquio || c.data_secondo_colloquio) && (
             <div className="mt-1.5 space-y-0.5">
