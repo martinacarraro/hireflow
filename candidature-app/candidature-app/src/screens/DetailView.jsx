@@ -477,14 +477,35 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             value={form.domande_mie || ''} onChange={e => set('domande_mie', e.target.value)} />
         </Section>
 
-        {c.link_annuncio && (
-          <Section label="🔗 ANNUNCIO">
-            <a href={c.link_annuncio} target="_blank" rel="noopener noreferrer"
-              className="btn-secondary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-              🔗 Apri annuncio originale
-            </a>
-          </Section>
-        )}
+        {/* FONTE + LINK ANNUNCIO */}
+        <Section label="📌 FONTE E LINK">
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs text-muted mb-1">Dove hai trovato l'offerta</p>
+              <div className="flex flex-wrap gap-2">
+                {FONTI.map(f => (
+                  <button key={f}
+                    onPointerDown={e => { e.preventDefault(); set('fonte', f) }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95
+                      ${form.fonte === f ? 'bg-purple border-purple text-white' : 'bg-surface border-border text-muted'}`}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted mb-1">Link all'annuncio</p>
+              <input className="input-field text-sm" placeholder="https://..."
+                value={form.link_annuncio || ''} onChange={e => set('link_annuncio', e.target.value)} />
+              {form.link_annuncio && (
+                <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl mt-1 active:scale-95">
+                  🔗 Apri annuncio originale
+                </a>
+              )}
+            </div>
+          </div>
+        </Section>
 
         {/* NOTIFICHE */}
         <div className="flex items-center justify-between card">
