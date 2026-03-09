@@ -9,49 +9,78 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
 
   const handleEmail = async (e) => {
     e.preventDefault()
+    if (loading) return
     setLoading(true); setError('')
     try {
       const fn = isSignUp ? signUpWithEmail : signInWithEmail
-      const { error: err } = await fn(email, password)
-      if (err) setError(err.message)
-    } catch { setError('Errore di connessione.') }
+      const { error: err, data } = await fn(email, password)
+      if (err) {
+        // Traduci errori comuni in italiano
+        const msg = err.message
+        if (msg.includes('Invalid login')) setError('Email o password errati.')
+        else if (msg.includes('already registered')) setError('Email già registrata — prova ad accedere.')
+        else if (msg.includes('Password should')) setError('La password deve essere di almeno 6 caratteri.')
+        else setError(msg)
+      } else if (isSignUp) {
+        // Signup ok — mostra schermata conferma email
+        setEmailSent(true)
+      }
+    } catch { setError('Errore di connessione — riprova.') }
     setLoading(false)
   }
+
+  // ── SCHERMATA CONFERMA EMAIL ────────────────────────────────
+  if (emailSent) return (
+    <div className="screen purple-glow-bg relative overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center px-6 py-8">
+        <div className="w-full max-w-sm flex flex-col items-center text-center">
+          <div className="text-7xl mb-6">📬</div>
+          <h2 className="text-2xl font-bold text-txt mb-3">Controlla la tua email!</h2>
+          <p className="text-muted text-sm leading-relaxed mb-2">
+            Ti abbiamo inviato un link di conferma a
+          </p>
+          <p className="text-purple-soft font-semibold text-sm mb-4">{email}</p>
+          <div className="card w-full text-left space-y-2 mb-6">
+            <p className="text-xs text-muted">1️⃣ Apri la tua casella email</p>
+            <p className="text-xs text-muted">2️⃣ Clicca il link <span className="text-purple-soft font-medium">"Confirm your email"</span></p>
+            <p className="text-xs text-muted">3️⃣ Torna qui e accedi con le tue credenziali</p>
+          </div>
+          <p className="text-xs text-disabled mb-6">Non trovi l'email? Controlla nello spam 🗂️</p>
+          <button
+            onClick={() => { setEmailSent(false); setIsSignUp(false) }}
+            className="btn-primary w-full py-3">
+            ✅ Ho confermato — Accedi
+          </button>
+          <button onClick={() => setEmailSent(false)} className="text-xs text-muted mt-3 active:text-txt">
+            ← Torna indietro
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="screen purple-glow-bg relative overflow-y-auto">
       <div className="min-h-full flex items-center justify-center px-6 py-8">
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
+
+          {/* Logo corretto */}
           <div className="mb-3 mt-2">
-            <svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="lgbg" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#7B2FFF"/>
-                  <stop offset="100%" stop-color="#FF2D8B"/>
-                </linearGradient>
-                <linearGradient id="lgg" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#f0d9ff"/>
-                  <stop offset="100%" stop-color="#ffffff"/>
-                </linearGradient>
-              </defs>
-              <rect width="512" height="512" rx="112" fill="url(#lgbg)"/>
-              <path d="M 152 392 L 152 228 Q 152 100 256 100 Q 360 100 360 228 L 360 392 Q 334 365 318 384 Q 298 360 280 384 Q 262 360 256 384 Q 250 360 232 384 Q 214 360 194 384 Q 178 365 152 392 Z" fill="url(#lgg)"/>
-              <ellipse cx="210" cy="240" rx="30" ry="33" fill="#7B2FFF"/>
-              <ellipse cx="302" cy="240" rx="30" ry="33" fill="#7B2FFF"/>
-              <circle cx="219" cy="231" r="11" fill="white"/>
-              <circle cx="311" cy="231" r="11" fill="white"/>
-              <circle cx="217" cy="229" r="5" fill="#3d0099"/>
-              <circle cx="309" cy="229" r="5" fill="#3d0099"/>
-              <path d="M 220 294 Q 238 314 256 294 Q 274 314 292 294" fill="none" stroke="#7B2FFF" stroke-width="5" stroke-linecap="round"/>
-              <rect x="150" y="412" width="212" height="50" rx="25" fill="rgba(255,255,255,0.2)"/>
-              <circle cx="206" cy="437" r="11" fill="white"/>
-              <circle cx="256" cy="437" r="11" fill="white"/>
-              <circle cx="306" cy="437" r="11" fill="white"/>
-            </svg>
+            <img src="/logo.svg" alt="Le faremo sapere" className="w-16 h-16 rounded-2xl" 
+              onError={e => {
+                e.target.style.display = 'none'
+                e.target.nextSibling.style.display = 'flex'
+              }} />
+            <div className="w-16 h-16 rounded-2xl hidden items-center justify-center text-3xl"
+              style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' }}>
+              👻
+            </div>
           </div>
+
           <h1 className="text-3xl font-bold text-txt tracking-tight mb-1 text-center">Le faremo sapere</h1>
           <p className="text-sm text-muted italic text-center mb-6 leading-relaxed">
             "Le faremo sapere." — E tu tieni il conto.
@@ -69,24 +98,30 @@ export default function Login() {
             {isSignUp ? 'Crea account 🚀' : 'Ciao! 👋'}
           </h2>
           <p className="text-sm text-muted mb-4 w-full">
-            {isSignUp ? 'Gratis. Per sempre. I tuoi dati privati.' : 'Accedi al tuo tracker.'}
+            {isSignUp ? 'Gratis. Per sempre. I tuoi dati sono privati.' : 'Accedi al tuo tracker.'}
           </p>
 
           <form onSubmit={handleEmail} className="space-y-3 w-full">
             <input className="input-field" type="email" placeholder="La tua email"
-              value={email} onChange={e => setEmail(e.target.value)} required />
-            <input className="input-field" type="password" placeholder="Password"
-              value={password} onChange={e => setPassword(e.target.value)} required />
-            {error && <p className="text-red text-xs">{error}</p>}
-            <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2" disabled={loading}>
-              {loading ? <Spinner size={18} /> : (isSignUp ? 'Crea account' : 'Accedi')}
+              value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+            <input className="input-field" type="password" placeholder="Password (min. 6 caratteri)"
+              value={password} onChange={e => setPassword(e.target.value)} required autoComplete={isSignUp ? 'new-password' : 'current-password'} />
+            {error && <p className="text-red text-xs bg-red/10 px-3 py-2 rounded-xl">{error}</p>}
+            {isSignUp && (
+              <p className="text-xs text-muted leading-relaxed px-1">
+                📧 Dopo la registrazione ti arriverà una <span className="text-purple-soft font-medium">email di conferma</span> — clicca il link per attivare l'account.
+              </p>
+            )}
+            <button type="submit" disabled={loading}
+              className="btn-primary w-full flex items-center justify-center gap-2 py-3.5">
+              {loading ? <><Spinner size={18} /> {isSignUp ? 'Creazione account...' : 'Accesso...'}</> : (isSignUp ? '🚀 Crea account' : '→ Accedi')}
             </button>
           </form>
 
           <p className="text-center text-sm text-muted mt-3">
             {isSignUp ? 'Hai già un account?' : 'Prima volta qui?'}{' '}
-            <button onClick={() => setIsSignUp(v => !v)} className="text-purple-soft font-medium">
-              {isSignUp ? 'Accedi' : 'Registrati'}
+            <button onClick={() => { setIsSignUp(v => !v); setError('') }} className="text-purple-soft font-medium">
+              {isSignUp ? 'Accedi' : 'Registrati gratis'}
             </button>
           </p>
 
