@@ -109,8 +109,12 @@ export function AppProvider({ children }) {
     if (prev?.data_colloquio && updates.data_colloquio === undefined) {
       updates = { ...updates, data_colloquio: prev.data_colloquio }
     }
+    // Filter to only DB fields
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email']
+    const clean = {}
+    ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase
-      .from('candidature').update(updates).eq('id', id).select().single()
+      .from('candidature').update(clean).eq('id', id).select().single()
     if (error) { showToast('❌ Errore — riprova.', 'error'); return }
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
