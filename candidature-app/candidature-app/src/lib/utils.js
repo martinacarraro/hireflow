@@ -3,6 +3,13 @@
 export const STATI = ['Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
+
+export const WELFARE_OPTIONS = [
+  'Smart working', 'Smart working parziale', 'Mensa aziendale', 'Ticket restaurant',
+  'Assicurazione sanitaria', 'Welfare aziendale', 'Formazione continua', 'Auto aziendale',
+  'Stock options', 'Bonus performance', 'Asilo nido', 'Palestra', 'Flessibilità oraria',
+  'Settimana corta', 'Telefono aziendale', 'PC aziendale', 'Budget formazione',
+]
 export const TIPI_COLLOQUIO = ['📞 Telefonico','💻 Video','🏢 In presenza']
 export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
@@ -303,6 +310,54 @@ export const BADGES = [
     color: '#8B5CF6', bg: '#1a0a2a',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#8B5CF6"/><rect x="18" y="16" width="28" height="34" rx="3" fill="white" opacity="0.9"/><path d="M24 26l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M24 34l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="24" y1="44" x2="36" y2="44" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/></svg>',
     check: (s) => s.checklistComplete >= 1
+  },
+  {
+    id: 'hundred', emoji: '💯', name: 'Centurione',
+    desc: '100 candidature. Sei una macchina da guerra.',
+    shareText: '100 candidature inviate 💯 Se cercare lavoro fosse uno sport, avrei già vinto. Traccio tutto su Le faremo sapere.',
+    color: '#FF2D8B', bg: '#2a0015',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#FF2D8B"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="22" font-weight="bold" font-family="Arial">100</text></svg>',
+    check: (s) => s.total >= 100
+  },
+  {
+    id: 'speed', emoji: '⚡', name: 'Speed Runner',
+    desc: '5 candidature in un giorno solo. Impressionante.',
+    shareText: '5 candidature in un giorno ⚡ Quando ci si mette, ci si mette. Gestisco la mia ricerca lavoro su Le faremo sapere.',
+    color: '#FBBF24', bg: '#1a1500',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#FBBF24"/><path d="M36 12L20 34h14l-6 18 20-26H34z" fill="white"/></svg>',
+    check: (s) => s.todayCount >= 5
+  },
+  {
+    id: 'linked', emoji: '🔗', name: 'Link Master',
+    desc: 'Link annuncio aggiunto a 5 candidature.',
+    shareText: 'Organizzo ogni candidatura col link all'annuncio 🔗 Su Le faremo sapere tengo traccia di tutto — non perdo mai un dettaglio.',
+    color: '#0EA5E9', bg: '#0a1520',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#0EA5E9"/><path d="M26 38l12-12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M30 26l4-4a6 6 0 018.5 8.5l-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M34 38l-4 4a6 6 0 01-8.5-8.5l4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>',
+    check: (s) => s.smartParsed >= 5
+  },
+  {
+    id: 'streak3', emoji: '🗓️', name: 'Costante',
+    desc: '3 settimane consecutive con almeno 1 candidatura.',
+    shareText: '3 settimane di ricerca lavoro consecutive 🗓️ La costanza paga. Lo traccio tutto su Le faremo sapere.',
+    color: '#34D399', bg: '#0a1a10',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#34D399"/><rect x="16" y="18" width="32" height="30" rx="4" fill="white" opacity="0.9"/><rect x="16" y="18" width="32" height="8" rx="4" fill="#34D399"/><circle cx="24" cy="34" r="3" fill="#34D399"/><circle cx="32" cy="34" r="3" fill="#34D399"/><circle cx="40" cy="34" r="3" fill="#22C55E"/><circle cx="24" cy="42" r="3" fill="#34D399"/><circle cx="32" cy="42" r="3" fill="#22C55E"/></svg>',
+    check: (s) => s.weekStreak >= 3
+  },
+  {
+    id: 'secondcol', emoji: '🎙️🎙️', name: 'Finalista',
+    desc: 'Hai raggiunto il secondo colloquio. Sei in lizza.',
+    shareText: 'Secondo colloquio raggiunto 🎙️🎙️ Ci siamo quasi. Gestisco la mia ricerca lavoro su Le faremo sapere — ogni passo conta.',
+    color: '#16A34A', bg: '#0a1a08',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#16A34A"/><rect x="20" y="14" width="10" height="20" rx="5" fill="white"/><rect x="34" y="20" width="10" height="20" rx="5" fill="white" opacity="0.7"/><path d="M16 38c0 5 4 9 9 9" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 43c0 4 4 7 9 7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/></svg>',
+    check: (s) => s.secondi >= 1
+  },
+  {
+    id: 'pioneer', emoji: '🌱', name: 'Pioniera',
+    desc: 'Prima candidatura spontanea inviata.',
+    shareText: 'Ho inviato la mia prima candidatura spontanea 🌱 A volte bisogna creare le opportunità, non aspettarle. Su Le faremo sapere traccio anche queste.',
+    color: '#84CC16', bg: '#0f1a00',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#84CC16"/><path d="M32 50V32" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M32 32C32 32 24 26 22 18c6 0 10 4 10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 38C32 38 40 32 42 24c-6 0-10 4-10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+    check: (s) => s.spontanee >= 1
   },
 ]
 
