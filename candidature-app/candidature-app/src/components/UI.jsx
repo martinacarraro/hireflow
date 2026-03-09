@@ -49,31 +49,35 @@ function guessDomain(name) {
 }
 
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
-  const [status, setStatus] = React.useState('loading')
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-
-  // Use saved domain if available, otherwise guess it
   const domain = domainProp || guessDomain(name)
   const logoUrl = `https://logo.clearbit.com/${domain}`
+  const [imgSrc, setImgSrc] = React.useState(logoUrl)
+  const [failed, setFailed] = React.useState(false)
 
-  if (status !== 'fail') {
+  // Reset when domain/name changes
+  React.useEffect(() => {
+    setImgSrc(logoUrl)
+    setFailed(false)
+  }, [logoUrl])
+
+  if (!failed) {
     return (
-      <div className="rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
-        style={{ width: size, height: size, minWidth: size, background: '#fff' }}>
+      <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 bg-white"
+        style={{ width: size, height: size, minWidth: size }}>
         <img
-          src={logoUrl}
+          src={imgSrc}
           alt={name}
-          onLoad={() => setStatus('ok')}
-          onError={() => setStatus('fail')}
-          style={{ width: size, height: size, objectFit: 'contain' }}
+          onError={() => setFailed(true)}
+          style={{ width: size * 0.85, height: size * 0.85, objectFit: 'contain' }}
         />
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-center rounded-full font-bold flex-shrink-0"
+    <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
       style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
       {letter}
     </div>
