@@ -354,13 +354,19 @@ export default function Profile() {
           )
         })()}
 
-        {/* Supporto */}
-        <div className="card space-y-2">
-          <SectionLabel>SUPPORTO</SectionLabel>
-          <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
-          <div className="border-t border-border" />
-          <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
-        </div>
+      {/* Supporto */}
+<div className="card space-y-2">
+  <SectionLabel>SUPPORTO</SectionLabel>
+  <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
+  <div className="border-t border-border" />
+  <a href="https://ko-fi.com/lefaremosapere" target="_blank" rel="noopener noreferrer"
+    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all"
+    style={{ background: '#FF5E5B', color: 'white' }}>
+    ☕ Offrimi un caffè — Ko-fi
+  </a>
+  <div className="border-t border-border" />
+  <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
+</div>
 
         {/* Account */}
         {user && (
