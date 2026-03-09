@@ -235,7 +235,7 @@ export const BADGES = [
   {
     id: 'colloquio1', emoji: '🎙️', name: 'In the Game',
     desc: 'Hai ottenuto il tuo primo colloquio!',
-    shareText: 'Primo colloquio ottenuto! 🎙️ Lo sto tracciando su Le faremo sapere — l'app che mi aiuta a gestire la ricerca lavoro senza impazzire.',
+    shareText: 'Primo colloquio ottenuto! 🎙️ Lo sto tracciando su Le faremo sapere — l\'app che mi aiuta a gestire la ricerca lavoro senza impazzire.',
     color: '#22C55E', bg: '#0a2a0a',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#22C55E"/><rect x="26" y="14" width="12" height="22" rx="6" fill="white"/><path d="M20 34c0 6.627 5.373 12 12 12s12-5.373 12-12" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><line x1="32" y1="46" x2="32" y2="52" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="52" x2="38" y2="52" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>',
     check: (s) => s.colloqui >= 1
@@ -257,8 +257,8 @@ export const BADGES = [
     check: (s) => s.ghosted >= 3 && s.total > s.ghosted
   },
   {
-    id: 'offer', emoji: '🏆', name: 'Ce l'hai fatta!',
-    desc: 'Hai ricevuto un'offerta. Meritata. 🎉',
+    id: 'offer', emoji: '🏆', name: 'Ce l\'hai fatta!',
+    desc: 'Hai ricevuto un\'offerta. Meritata. 🎉',
     shareText: 'Offerta ricevuta! 🏆 Ho tracciato ogni candidatura, ogni colloquio, ogni ghosting su Le faremo sapere. Ne è valsa la pena.',
     color: '#FFD700', bg: '#1a1200',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#B8860B"/><path d="M20 18h24l-4 16H24z" fill="#FFD700"/><path d="M18 18h28v4H18z" fill="white" opacity="0.9"/><rect x="27" y="34" width="10" height="4" fill="#FFD700"/><rect x="22" y="38" width="20" height="4" rx="1" fill="white" opacity="0.9"/><circle cx="32" cy="14" r="3" fill="white"/></svg>',
@@ -275,7 +275,7 @@ export const BADGES = [
   {
     id: 'writer', emoji: '✍️', name: 'Scrittore/ice',
     desc: 'Note aggiunte a 10 candidature. Dettaglio è tutto.',
-    shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un'altra cosa.',
+    shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un\'altra cosa.',
     color: '#06B6D4', bg: '#0a1a2a',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#06B6D4"/><rect x="18" y="18" width="28" height="34" rx="3" fill="white" opacity="0.9"/><line x1="24" y1="26" x2="40" y2="26" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="32" x2="40" y2="32" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="38" x2="34" y2="38" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><path d="M36 44l8-8-3-3-8 8v3h3z" fill="#06B6D4"/></svg>',
     check: (s) => s.withNotes >= 10
