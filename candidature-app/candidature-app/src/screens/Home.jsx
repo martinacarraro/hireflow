@@ -49,10 +49,23 @@ function GuestConvertModal({ onClose, onSuccess }) {
   )
 }
 
-export default function Home({ onAdd, onDetail }) {
+export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange }) {
   const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
+  const scrollRef = useRef(null)
+
+  // Restore scroll position when returning from detail
+  useEffect(() => {
+    if (scrollRef.current && scrollPos > 0) {
+      scrollRef.current.scrollTop = scrollPos
+    }
+  }, [])
+
+  // Save scroll position as user scrolls
+  const handleScroll = useCallback((e) => {
+    onScrollChange?.(e.target.scrollTop)
+  }, [onScrollChange])
   const motto = MOTTOS[profile?.motto_index ?? 0]
   const [filtroStato, setFiltroStato] = useState(null)
   const [showNotifs, setShowNotifs] = useState(false)
@@ -202,7 +215,7 @@ export default function Home({ onAdd, onDetail }) {
         onArchiveSelected={() => selected.size > 0 && setConfirmBulkArchive(true)}
       />
 
-      <div className="flex-1 scrollable px-4 pt-2 pb-20">
+      <div className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
 
         {/* Motto */}
         {!selectMode && (
