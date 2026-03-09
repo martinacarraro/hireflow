@@ -17,7 +17,10 @@ export default function App() {
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const [showSplash, setShowSplash] = useState(true)
   const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
-    return !localStorage.getItem('lfs_seen_intro')
+    // Only show if never seen AND not already logged in (user in localStorage = had session before)
+    const hasSeen = localStorage.getItem('lfs_seen_intro')
+    const hadSession = localStorage.getItem('lfs_had_session')
+    return !hasSeen && !hadSession
   })
   const [tab, setTab] = useState('home')
   const [view, setView] = useState(null)
@@ -30,6 +33,15 @@ export default function App() {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
   }, [])
+
+  // Once user is logged in, mark so intro never shows again
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('lfs_seen_intro', '1')
+      localStorage.setItem('lfs_had_session', '1')
+      setShowFirstOnboarding(false)
+    }
+  }, [user])
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -48,6 +60,9 @@ export default function App() {
   if (showFirstOnboarding) {
     return (
       <FirstTimeIntro onDone={() => {
+        localStorage.setItem('lfs_seen_intro', '1')
+        setShowFirstOnboarding(false)
+      }} onSkip={() => {
         localStorage.setItem('lfs_seen_intro', '1')
         setShowFirstOnboarding(false)
       }} />
@@ -99,7 +114,7 @@ export default function App() {
 }
 
 // ─── FIRST-TIME INTRO (shown before login, once ever) ────────────────────────
-function FirstTimeIntro({ onDone }) {
+function FirstTimeIntro({ onDone, onSkip }) {
   const [slide, setSlide] = useState(0)
 
   const SLIDES = [
@@ -110,7 +125,7 @@ function FirstTimeIntro({ onDone }) {
           <circle cx="60" cy="60" r="60" fill="rgba(255,255,255,0.12)"/>
           <path d="M60 20C60 20 40 42 40 58a20 20 0 0040 0C80 42 60 20 60 20z" fill="white" opacity="0.9"/>
           <circle cx="60" cy="58" r="7" fill="#7B2FFF"/>
-          <path d="M48 80l-6 10M72 80l6 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <path d="M48 80l-6 10M72 80l6 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
           <circle cx="42" cy="34" r="4" fill="white" opacity="0.5"/>
           <circle cx="80" cy="28" r="6" fill="white" opacity="0.3"/>
         </svg>
@@ -129,7 +144,7 @@ function FirstTimeIntro({ onDone }) {
           <circle cx="38" cy="72" r="8" fill="#22C55E" opacity="0.9"/>
           <circle cx="60" cy="72" r="8" fill="#FBBF24" opacity="0.9"/>
           <circle cx="82" cy="72" r="8" fill="#EF4444" opacity="0.9"/>
-          <path d="M34 72l3 3 6-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M34 72l3 3 6-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
       title: 'Tutto sotto controllo',
@@ -158,7 +173,7 @@ function FirstTimeIntro({ onDone }) {
     <div className="screen flex flex-col" style={{ background: s.bg, transition: 'background 0.4s ease' }}>
       {/* Skip */}
       <div className="flex justify-end px-5 pt-safe pt-4">
-        <button onClick={onDone} className="text-white/50 text-sm active:scale-95 transition-transform">
+        <button onClick={onSkip || onDone} className="text-white/50 text-sm active:scale-95 transition-transform">
           Salta →
         </button>
       </div>
