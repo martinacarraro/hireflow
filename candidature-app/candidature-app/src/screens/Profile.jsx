@@ -237,15 +237,21 @@ export default function Profile() {
         {/* Badge */}
         <div className="card">
           <SectionLabel>I TUOI BADGE 🏅</SectionLabel>
-          <p className="text-xs text-muted mb-3">{earned.length}/{BADGES.length} sbloccati — tocca per info</p>
+          <p className="text-xs text-muted mb-3">{earned.length}/{BADGES.length} sbloccati — tocca per condividere</p>
           <div className="grid grid-cols-4 gap-2">
             {BADGES.map(badge => {
               const isEarned = earned.includes(badge.id)
               return (
                 <button key={badge.id} onClick={() => isEarned && setSelectedBadge(badge)}
-                  className={`flex flex-col items-center text-center p-2 rounded-xl border transition-all ${isEarned ? 'bg-purple/10 border-purple/30 active:scale-95' : 'bg-surface border-border opacity-40'}`}>
-                  <span className="text-2xl mb-1">{isEarned ? badge.emoji : '🔒'}</span>
-                  <p className="text-[9px] text-muted leading-tight">{isEarned ? badge.name : '???'}</p>
+                  className={`flex flex-col items-center text-center p-2 rounded-xl border transition-all active:scale-95 ${isEarned ? 'border-transparent' : 'bg-surface border-border opacity-35'}`}
+                  style={isEarned ? { background: badge.bg, borderColor: badge.color + '55' } : {}}>
+                  {isEarned
+                    ? <div className="w-10 h-10 mb-1 rounded-xl overflow-hidden" dangerouslySetInnerHTML={{ __html: badge.svg }} />
+                    : <span className="text-2xl mb-1">🔒</span>
+                  }
+                  <p className="text-[9px] leading-tight" style={{ color: isEarned ? badge.color : '#6B7280' }}>
+                    {isEarned ? badge.name : '???'}
+                  </p>
                 </button>
               )
             })}
@@ -359,11 +365,34 @@ export default function Profile() {
       {/* Badge modal */}
       {selectedBadge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/60" onClick={() => setSelectedBadge(null)}>
-          <div className="card max-w-xs w-full text-center" onClick={e => e.stopPropagation()}>
-            <span className="text-5xl block mb-3">{selectedBadge.emoji}</span>
-            <h3 className="font-bold text-txt text-lg mb-1">{selectedBadge.name}</h3>
-            <p className="text-sm text-muted leading-relaxed">{selectedBadge.desc}</p>
-            <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-purple-soft">Chiudi</button>
+          <div className="card max-w-xs w-full text-center" onClick={e => e.stopPropagation()}
+            style={{ borderTop: `3px solid ${selectedBadge.color}` }}>
+            <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
+            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{selectedBadge.name}</h3>
+            <p className="text-sm text-muted leading-relaxed mb-5">{selectedBadge.desc}</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  const text = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
+                  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://lefaremosapere-mocha.vercel.app')}&summary=${encodeURIComponent(text)}`
+                  window.open(url, '_blank')
+                }}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
+                style={{ background: '#0A66C2', color: 'white' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                Condividi su LinkedIn
+              </button>
+              <button
+                onClick={() => {
+                  const text = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
+                  navigator.clipboard.writeText(text).then(() => alert('Testo copiato! 📋'))
+                }}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
+                📋 Copia testo
+              </button>
+            </div>
+            <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">Chiudi</button>
           </div>
         </div>
       )}
