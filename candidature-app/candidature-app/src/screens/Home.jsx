@@ -50,7 +50,7 @@ function GuestConvertModal({ onClose, onSuccess }) {
 }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
@@ -198,6 +198,18 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           showSearch={showSearch}
           onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
         />
+        {/* GUEST BANNER anche in empty state */}
+        {isGuest && (
+          <div className="mx-4 mt-2 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
+            style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
+            onClick={() => setShowGuestModal(true)}>
+            <span className="text-xl">👻</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-txt">Modalità ospite — i dati non sono salvati</p>
+              <p className="text-xs text-muted">Tocca qui per creare un account gratuito →</p>
+            </div>
+          </div>
+        )}
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <EmptyState
             emoji="📭"
@@ -210,6 +222,12 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
             }
           />
         </div>
+        {showGuestModal && (
+          <GuestConvertModal
+            onClose={() => setShowGuestModal(false)}
+            onSuccess={() => setShowGuestModal(false)}
+          />
+        )}
       </div>
     )
   }
@@ -260,6 +278,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
+        {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
