@@ -12,7 +12,7 @@ const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
-  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem } = useApp()
+  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile } = useApp()
   const { user } = useApp()
   const [form, setForm] = useState({ ...c })
   const [checklist, setChecklist] = useState([])
