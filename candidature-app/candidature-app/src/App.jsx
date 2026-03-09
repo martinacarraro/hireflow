@@ -16,8 +16,12 @@ export default function App() {
   const { user, loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const [showSplash, setShowSplash] = useState(true)
+  const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
+    return !localStorage.getItem('lfs_seen_intro')
+  })
   const [tab, setTab] = useState('home')
   const [view, setView] = useState(null)
+  const [homeScrollPos, setHomeScrollPos] = useState(0)
 
   const loading = authLoading || (user && dataLoading)
 
@@ -41,6 +45,15 @@ export default function App() {
     return <Splash onDone={() => !loading && setShowSplash(false)} />
   }
 
+  if (showFirstOnboarding) {
+    return (
+      <FirstTimeIntro onDone={() => {
+        localStorage.setItem('lfs_seen_intro', '1')
+        setShowFirstOnboarding(false)
+      }} />
+    )
+  }
+
   if (!user && !isGuest) return <Login />
 
   if (user && profile && !profile.seen_onboarding) return <Onboarding />
@@ -48,7 +61,7 @@ export default function App() {
   if (view?.type === 'detail') {
     return (
       <div className="h-full flex flex-col">
-        <DetailView candidatura={view.data} onBack={() => setView(null)} onUpdate={() => {}} />
+        <DetailView candidatura={view.data} onBack={() => setView(null)} onUpdate={() => {}} restoreScroll={true} />
         <Toast toast={toast} />
         <Confetti active={confetti} />
       </div>
@@ -73,7 +86,7 @@ export default function App() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
-        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} />}
+        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} />}
         {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
         {tab === 'stats'    && <Stats />}
         {tab === 'profile'  && <Profile />}
@@ -81,6 +94,98 @@ export default function App() {
       <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />
       <Toast toast={toast} />
       <Confetti active={confetti} />
+    </div>
+  )
+}
+
+// ─── FIRST-TIME INTRO (shown before login, once ever) ────────────────────────
+function FirstTimeIntro({ onDone }) {
+  const [slide, setSlide] = useState(0)
+
+  const SLIDES = [
+    {
+      bg: 'linear-gradient(160deg, #7B2FFF 0%, #FF2D8B 100%)',
+      icon: (
+        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
+          <circle cx="60" cy="60" r="60" fill="rgba(255,255,255,0.12)"/>
+          <path d="M60 20C60 20 40 42 40 58a20 20 0 0040 0C80 42 60 20 60 20z" fill="white" opacity="0.9"/>
+          <circle cx="60" cy="58" r="7" fill="#7B2FFF"/>
+          <path d="M48 80l-6 10M72 80l6 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="42" cy="34" r="4" fill="white" opacity="0.5"/>
+          <circle cx="80" cy="28" r="6" fill="white" opacity="0.3"/>
+        </svg>
+      ),
+      title: '"Le faremo sapere."',
+      subtitle: 'E tu tieni il conto.',
+      body: 'Quante volte hai mandato un CV e non hai più sentito nulla? Questa app esiste per questo — tenere traccia di ogni candidatura, ogni colloquio, ogni silenzio.',
+    },
+    {
+      bg: 'linear-gradient(160deg, #1a0a3a 0%, #2d1060 100%)',
+      icon: (
+        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
+          <circle cx="60" cy="60" r="60" fill="rgba(123,47,255,0.2)"/>
+          <rect x="20" y="30" width="80" height="60" rx="8" fill="white" opacity="0.1" stroke="white" strokeWidth="1.5"/>
+          <rect x="20" y="30" width="80" height="18" rx="8" fill="#7B2FFF" opacity="0.8"/>
+          <circle cx="38" cy="72" r="8" fill="#22C55E" opacity="0.9"/>
+          <circle cx="60" cy="72" r="8" fill="#FBBF24" opacity="0.9"/>
+          <circle cx="82" cy="72" r="8" fill="#EF4444" opacity="0.9"/>
+          <path d="M34 72l3 3 6-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      ),
+      title: 'Tutto sotto controllo',
+      subtitle: 'Calendario, stati, scadenze.',
+      body: 'Ogni candidatura ha il suo stato — Inviata, Colloquio, In attesa, Ghostata. Il calendario ti mostra tutti i tuoi colloqui. Niente si perde.',
+    },
+    {
+      bg: 'linear-gradient(160deg, #0a1a2a 0%, #0a2a1a 100%)',
+      icon: (
+        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
+          <circle cx="60" cy="60" r="60" fill="rgba(34,197,94,0.15)"/>
+          <polygon points="60,25 70,50 97,50 75,66 83,91 60,75 37,91 45,66 23,50 50,50" fill="#FBBF24" opacity="0.9"/>
+          <circle cx="60" cy="60" r="12" fill="white" opacity="0.2"/>
+        </svg>
+      ),
+      title: 'Guadagna badge, scala livelli',
+      subtitle: 'La ricerca è una gara — vincila.',
+      body: 'Ogni candidatura vale XP. Sblocchi badge reali da condividere su LinkedIn. Mantieni lo streak settimanale. Il ghosting fa meno male se hai punti. 🏆',
+    },
+  ]
+
+  const s = SLIDES[slide]
+  const isLast = slide === SLIDES.length - 1
+
+  return (
+    <div className="screen flex flex-col" style={{ background: s.bg, transition: 'background 0.4s ease' }}>
+      {/* Skip */}
+      <div className="flex justify-end px-5 pt-safe pt-4">
+        <button onClick={onDone} className="text-white/50 text-sm active:scale-95 transition-transform">
+          Salta →
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+        {s.icon}
+        <h1 className="text-3xl font-black text-white mb-2 leading-tight">{s.title}</h1>
+        <p className="text-lg font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>{s.subtitle}</p>
+        <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{s.body}</p>
+      </div>
+
+      {/* Dots + CTA */}
+      <div className="px-8 pb-safe pb-10">
+        <div className="flex justify-center gap-2 mb-8">
+          {SLIDES.map((_, i) => (
+            <div key={i} className="rounded-full transition-all duration-300"
+              style={{ width: i === slide ? 24 : 8, height: 8, background: i === slide ? 'white' : 'rgba(255,255,255,0.3)' }} />
+          ))}
+        </div>
+        <button
+          onClick={isLast ? onDone : () => setSlide(s => s + 1)}
+          className="w-full py-4 rounded-2xl font-bold text-base active:scale-95 transition-all"
+          style={{ background: 'white', color: '#7B2FFF' }}>
+          {isLast ? '🚀 Inizia a tracciare' : 'Avanti →'}
+        </button>
+      </div>
     </div>
   )
 }
