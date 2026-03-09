@@ -55,30 +55,27 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
 
-  // Restore scroll position when returning from detail
   useEffect(() => {
     if (scrollRef.current && scrollPos > 0) {
       scrollRef.current.scrollTop = scrollPos
     }
   }, [])
 
-  // Save scroll position as user scrolls
   const handleScroll = useCallback((e) => {
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
+
   const motto = MOTTOS[profile?.motto_index ?? 0]
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
-  const [quickStatusFor, setQuickStatusFor] = useState(null) // candidatura id
-  const [reminderFor, setReminderFor] = useState(null) // candidatura for custom reminder
-
-  // Selezione multipla
+  const [quickStatusFor, setQuickStatusFor] = useState(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
   const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
@@ -124,12 +121,11 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
-
-  // Duplicate candidatura
   const handleDuplicate = async (cand) => {
     const { id, created_at, updated_at, user_id, ...rest } = cand
     await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
   }
+
   const greet = getGreeting(nome)
 
   const toggleSelect = (id) => {
@@ -140,25 +136,17 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
     })
   }
 
-  const selectAll = () => {
-    setSelected(new Set(candidatureFiltrate.map(c => c.id)))
-  }
+  const selectAll = () => setSelected(new Set(candidatureFiltrate.map(c => c.id)))
 
   const handleBulkDelete = async () => {
-    for (const id of selected) {
-      await deleteCandidatura(id)
-    }
+    for (const id of selected) await deleteCandidatura(id)
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkDelete(false)
   }
 
-  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
-
   const handleBulkArchive = async () => {
-    for (const id of selected) {
-      await updateCandidatura(id, { archiviata: true })
-    }
+    for (const id of selected) await updateCandidatura(id, { archiviata: true })
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkArchive(false)
@@ -204,7 +192,12 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   if (candidature.length === 0) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <HomeHeader greet={greet} profile={profile} unread={unreadCount} onBell={() => setShowNotifs(true)} />
+        <HomeHeader
+          greet={greet} profile={profile}
+          unread={unreadCount} onBell={() => setShowNotifs(true)}
+          showSearch={showSearch}
+          onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
+        />
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <EmptyState
             emoji="📭"
@@ -239,7 +232,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
       />
 
-      {/* Search bar */}
       {showSearch && (
         <div className="px-4 pb-2 flex-shrink-0">
           <div className="relative">
@@ -261,7 +253,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
 
       <div className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
 
-        {/* Motto */}
         {!selectMode && (
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
@@ -269,7 +260,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
-        {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
@@ -282,7 +272,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
-        {/* Filtri */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setFiltroStato(null)}
@@ -309,7 +298,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </p>
         )}
 
-        {/* Lista */}
         {STATUS_GROUP_ORDER.map(stato => {
           const items = grouped[stato]
           if (!items) return null
@@ -370,7 +358,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         />
       )}
 
-      {/* Quick status menu */}
       {quickStatusFor && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.6)' }}
           onClick={() => setQuickStatusFor(null)}>
@@ -451,11 +438,14 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
               className={`p-2 active:scale-90 transition-transform rounded-xl ${showSearch ? 'bg-purple/20' : ''}`}>
               <span className="text-xl">🔍</span>
             </button>
-         <button
-    onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
-    className="active:scale-90 transition-transform flex-shrink-0">
-    <StatusBadge stato={c.stato} />
-  </button>
+            <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform rounded-xl">
+              <span className="text-xl">🔔</span>
+              {unread > 0 && (
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red text-white text-[8px] rounded-full flex items-center justify-center font-bold px-1">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </button>
           </div>
         </>
       )}
@@ -504,7 +494,6 @@ function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, i
   const lastUpdate = new Date(c.updated_at || c.created_at)
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
 
-  // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
   const startPos = React.useRef({ x: 0, y: 0 })
   const didScroll = React.useRef(false)
@@ -556,12 +545,11 @@ function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, i
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <button
-                onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
-                className="active:scale-90 transition-transform">
-                <StatusBadge stato={c.stato} />
-              </button>
+              onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
+              className="active:scale-90 transition-transform flex-shrink-0">
+              <StatusBadge stato={c.stato} />
+            </button>
           </div>
-          {/* Date colloquio — sempre visibili se presenti */}
           {(c.data_colloquio || c.data_secondo_colloquio) && (
             <div className="mt-1.5 space-y-0.5">
               {c.data_colloquio && (
