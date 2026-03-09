@@ -32,7 +32,7 @@ export default function Stats() {
   const stats = useMemo(() => {
     const total = candidature.length
     const byStato = (s) => candidature.filter(c => c.stato === s).length
-    const colloqui = byStato('Colloquio') + byStato('In attesa') + byStato('Offerta ricevuta')
+    const colloqui = byStato('Prima call') + byStato('Colloquio') + byStato('In attesa risposta') + byStato('Secondo colloquio') + byStato('Non mi piace') + byStato('Rifiutata') + byStato('GHOSTED')
     const ghosted = byStato('GHOSTED')
     const offerte = byStato('Offerta ricevuta')
     const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
@@ -59,7 +59,7 @@ export default function Stats() {
       const end = new Date(); end.setDate(end.getDate() - i * 7)
       start.setHours(0,0,0,0); end.setHours(23,59,59,999)
       const count = candidature.filter(c => {
-        const d = new Date(c.created_at)
+        const d = new Date(c.data_invio || c.created_at)
         return d >= start && d <= end
       }).length
       const label = `W-${i}`
@@ -72,7 +72,38 @@ export default function Stats() {
       .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
       .sort((a, b) => b.giorni - a.giorni)
 
-    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList }
+    // Sentiment over time (by month)
+    const sentimentMap = {}
+    const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
+    candidature.forEach(c => {
+      if (!c.feeling) return
+      const score = FEELING_SCORES[c.feeling]
+      if (!score) return
+      const d = new Date(c.data_invio || c.created_at)
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+      if (!sentimentMap[key]) sentimentMap[key] = { total: 0, sum: 0 }
+      sentimentMap[key].total++
+      sentimentMap[key].sum += score
+    })
+    const sentimentByMonth = Object.entries(sentimentMap)
+      .sort((a,b) => a[0].localeCompare(b[0]))
+      .slice(-6)
+      .map(([key, val]) => ({
+        label: key.slice(5) + '/' + key.slice(2,4),
+        avg: Math.round((val.sum / val.total) * 10) / 10
+      }))
+
+    // Best company (most interviews)
+    const aziendaMap = {}
+    candidature.forEach(c => {
+      if (!c.azienda) return
+      if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = 0
+      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
+        aziendaMap[c.azienda]++
+    })
+    const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1]-a[1]).slice(0,3)
+
+    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende }
   }, [candidature])
 
   const kpis = [
@@ -198,6 +229,53 @@ export default function Stats() {
                 {stats.total > 0 && stats.colloqui === 0 && <p>🎯 Ancora nessun colloquio — prova a personalizzare le candidature.</p>}
               </div>
             </div>
+
+            {/* Sentiment nel tempo */}
+            {stats.sentimentByMonth.length >= 2 && (
+              <div className="card">
+                <p className="section-label">😊 FEELING COLLOQUI NEL TEMPO</p>
+                <p className="text-xs text-muted mb-3">Media feeling mensile (1=😭 5=😍)</p>
+                <div className="flex items-end gap-2 h-20 mt-2">
+                  {stats.sentimentByMonth.map((m, i) => {
+                    const pct = (m.avg / 5) * 100
+                    const col = m.avg >= 4 ? '#22C55E' : m.avg >= 3 ? '#FBBF24' : '#F87171'
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                        <span className="text-[9px] font-bold" style={{ color: col }}>{m.avg}</span>
+                        <div className="w-full rounded-t-md transition-all"
+                          style={{ height: `${pct * 0.6}px`, background: col, minHeight: 4 }} />
+                        <span className="text-[9px] text-muted">{m.label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="text-xs text-muted mt-2 italic">
+                  {stats.sentimentByMonth.length >= 2 &&
+                    stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg > stats.sentimentByMonth[0].avg
+                    ? '📈 Il tuo feeling è migliorato nel tempo!'
+                    : stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg < stats.sentimentByMonth[0].avg
+                    ? '💪 Momento difficile — ma ogni colloquio è pratica!'
+                    : '→ Feeling stabile nel tempo.'}
+                </p>
+              </div>
+            )}
+
+            {/* Top aziende */}
+            {stats.topAziende.length > 0 && (
+              <div className="card">
+                <p className="section-label">🏢 AZIENDE PIÙ ATTIVE</p>
+                <p className="text-xs text-muted mb-3">Aziende con più colloqui/avanzamenti</p>
+                <div className="space-y-2">
+                  {stats.topAziende.map(([nome, cnt], i) => (
+                    <div key={nome} className="flex items-center gap-3 py-1">
+                      <span className="text-lg">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                      <span className="flex-1 text-sm font-medium text-txt truncate">{nome}</span>
+                      <span className="text-xs text-purple-soft font-semibold">{cnt} avanzamenti</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Hall of Shame */}
             {stats.ghostedList.length > 0 && (
