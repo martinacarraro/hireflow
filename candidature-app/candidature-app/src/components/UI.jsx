@@ -51,36 +51,30 @@ function guessDomain(name) {
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  // Use saved domain if available, otherwise guess
   const domain = domainProp || guessDomain(name)
-  const logoUrl = `https://logo.clearbit.com/${domain}`
   const [failed, setFailed] = React.useState(false)
-  const [loaded, setLoaded] = React.useState(false)
 
-  React.useEffect(() => {
-    setFailed(false)
-    setLoaded(false)
-  }, [domain])
+  React.useEffect(() => { setFailed(false) }, [domain])
+
+  if (failed) {
+    return (
+      <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
+        style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
+        {letter}
+      </div>
+    )
+  }
 
   return (
-    <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
-      style={{ width: size, height: size, minWidth: size, background: (!failed && loaded) ? '#fff' : bg }}>
-      {/* Letter shown while loading or on fail */}
-      {(failed || !loaded) && (
-        <span style={{ fontSize: size * 0.42, color: text, fontWeight: 'bold', position: failed ? 'static' : 'absolute' }}>
-          {letter}
-        </span>
-      )}
-      {!failed && (
-        <img
-          key={domain}
-          src={logoUrl}
-          alt={name}
-          onLoad={() => setLoaded(true)}
-          onError={() => { setFailed(true); setLoaded(false) }}
-          style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain', display: loaded ? 'block' : 'none' }}
-        />
-      )}
+    <div className="rounded-xl overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
+      style={{ width: size, height: size, minWidth: size }}>
+      <img
+        key={domain}
+        src={`https://logo.clearbit.com/${domain}`}
+        alt={name}
+        onError={() => setFailed(true)}
+        style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
+      />
     </div>
   )
 }
