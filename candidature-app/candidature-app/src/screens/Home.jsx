@@ -50,7 +50,7 @@ function GuestConvertModal({ onClose, onSuccess }) {
 }
 
 export default function Home({ onAdd, onDetail }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, migrateGuestToAccount } = useApp()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const motto = MOTTOS[profile?.motto_index ?? 0]
@@ -81,7 +81,7 @@ export default function Home({ onAdd, onDetail }) {
   [candidature])
 
   const candidatureFiltrate = useMemo(() =>
-    filtroStato ? candidature.filter(c => c.stato === filtroStato) : candidature,
+    (filtroStato ? candidature.filter(c => c.stato === filtroStato) : candidature).filter(c => !c.archiviata),
   [candidature, filtroStato])
 
   const grouped = useMemo(() => {
@@ -116,6 +116,17 @@ export default function Home({ onAdd, onDetail }) {
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkDelete(false)
+  }
+
+  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
+
+  const handleBulkArchive = async () => {
+    for (const id of selected) {
+      await updateCandidatura(id, { archiviata: true })
+    }
+    setSelected(new Set())
+    setSelectMode(false)
+    setConfirmBulkArchive(false)
   }
 
   const exitSelectMode = () => {
@@ -188,6 +199,7 @@ export default function Home({ onAdd, onDetail }) {
         selectedCount={selected.size}
         totalCount={candidatureFiltrate.length}
         onDeleteSelected={() => selected.size > 0 && setConfirmBulkDelete(true)}
+        onArchiveSelected={() => selected.size > 0 && setConfirmBulkArchive(true)}
       />
 
       <div className="flex-1 scrollable px-4 pt-2 pb-20">
@@ -285,6 +297,13 @@ export default function Home({ onAdd, onDetail }) {
         onCancel={() => setConfirmBulkDelete(false)}
         danger
       />
+      <ConfirmDialog
+        isOpen={confirmBulkArchive}
+        title={`Archivia ${selected.size} candidature`}
+        message={`Le candidature archiviate spariscono dalla home ma restano salvate. Puoi vederle nel Profilo.`}
+        onConfirm={handleBulkArchive}
+        onCancel={() => setConfirmBulkArchive(false)}
+      />
 
       {showGuestModal && (
         <GuestConvertModal
@@ -296,7 +315,7 @@ export default function Home({ onAdd, onDetail }) {
   )
 }
 
-function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected }) {
+function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected }) {
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
@@ -307,11 +326,17 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
           </div>
           <div className="flex items-center gap-3">
             <button onClick={onSelectAll} className="text-xs text-purple-soft font-medium">Tutte</button>
+            <button onClick={onArchiveSelected}
+              disabled={selectedCount === 0}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
+                ${selectedCount > 0 ? 'bg-surface border border-border text-muted active:scale-95' : 'bg-border text-disabled'}`}>
+              📦 Archivia ({selectedCount})
+            </button>
             <button onClick={onDeleteSelected}
               disabled={selectedCount === 0}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
                 ${selectedCount > 0 ? 'bg-red text-white active:scale-95' : 'bg-border text-disabled'}`}>
-              🗑️ Elimina ({selectedCount})
+              🗑️ ({selectedCount})
             </button>
           </div>
         </>
@@ -429,20 +454,15 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             </div>
             <StatusBadge stato={c.stato} />
           </div>
-          {/* Date colloquio in base allo stato */}
-          {c.data_colloquio && ['Prima call','Colloquio','In attesa risposta'].includes(c.stato) && (
-            <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
-          )}
-          {(c.data_colloquio || c.data_secondo_colloquio) && c.stato === 'Secondo colloquio' && (
+          {/* Date colloquio — sempre visibili se presenti */}
+          {(c.data_colloquio || c.data_secondo_colloquio) && (
             <div className="mt-1.5 space-y-0.5">
-              {c.data_colloquio && <p className="text-xs text-amber">📅 1° {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>}
-              {c.data_secondo_colloquio && <p className="text-xs text-green-400">📅 2° {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>}
-            </div>
-          )}
-          {c.data_colloquio && ['Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) && (
-            <div className="mt-1.5 space-y-0.5">
-              <p className="text-xs text-muted">📅 1° coll: {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
-              {c.data_secondo_colloquio && <p className="text-xs text-muted">📅 2° coll: {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>}
+              {c.data_colloquio && (
+                <p className="text-xs text-amber">📅 {c.data_secondo_colloquio ? '1° ' : ''}{formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
+              )}
+              {c.data_secondo_colloquio && (
+                <p className="text-xs" style={{color:'#34D399'}}>📅 2° {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>
+              )}
             </div>
           )}
           <div className="flex items-center justify-between mt-2">
