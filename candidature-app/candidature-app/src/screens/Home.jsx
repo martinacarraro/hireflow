@@ -411,7 +411,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             {isSelected && <span className="text-white text-xs font-bold">✓</span>}
           </div>
         )}
-        <CompanyAvatar name={c.azienda} size={40} />
+        <CompanyAvatar name={c.azienda} size={40} domain={c.azienda_domain} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
