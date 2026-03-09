@@ -32,7 +32,7 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-export const STATUS_GROUP_ORDER = ['Secondo colloquio','Colloquio','Prima call','Vista','In attesa risposta','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED']
+export const STATUS_GROUP_ORDER = ['Secondo colloquio','Colloquio','Prima call','In attesa risposta','Vista','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED']
 
 // ─── SMART URL PARSER ────────────────────────────────────────────
 
