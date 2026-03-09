@@ -120,7 +120,7 @@ export default function AddCandidatura({ onBack, onDone }) {
                     </div>
                   </button>
                 ))}
-                <button onMouseDown={() => { setShowSugg(false); setCompanyDomain('') }}
+                <button onMouseDown={() => { setShowSugg(false); setCompanyDomain(''); set('azienda_domain', '') }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors">
                   <div className="w-8 h-8 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-purple-soft text-lg">+</span>
