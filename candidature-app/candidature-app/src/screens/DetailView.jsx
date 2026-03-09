@@ -22,6 +22,40 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [aziendaSugg, setAziendaSugg] = useState([])
   const [showAziendaSugg, setShowAziendaSugg] = useState(false)
   const aziendaTimer = useRef(null)
+  const [travelTime, setTravelTime] = useState(null)
+  const [loadingTravel, setLoadingTravel] = useState(false)
+
+  // Calcola tempo di percorrenza con OSRM (gratuito, no API key)
+  useEffect(() => {
+    if (!profile?.indirizzo_home || !form.sede) { setTravelTime(null); return }
+    let cancelled = false
+    const fetchTravel = async () => {
+      setLoadingTravel(true)
+      try {
+        // Geocode entrambi gli indirizzi con Nominatim
+        const geo = async (addr) => {
+          const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`, {
+            headers: { 'Accept-Language': 'it', 'User-Agent': 'LefaremosapereApp/1.0' }
+          })
+          const d = await r.json()
+          return d[0] ? { lat: d[0].lat, lon: d[0].lon } : null
+        }
+        const [from, to] = await Promise.all([geo(profile.indirizzo_home), geo(form.sede)])
+        if (!from || !to || cancelled) return
+        // Routing con OSRM (transit non disponibile, usiamo driving come stima)
+        const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`)
+        const d = await r.json()
+        if (cancelled) return
+        if (d.routes?.[0]) {
+          const mins = Math.round(d.routes[0].duration / 60)
+          setTravelTime(mins < 60 ? `${mins} min` : `${Math.floor(mins/60)}h ${mins%60 > 0 ? (mins%60)+'min' : ''}`.trim())
+        }
+      } catch {}
+      if (!cancelled) setLoadingTravel(false)
+    }
+    fetchTravel()
+    return () => { cancelled = true }
+  }, [profile?.indirizzo_home, form.sede])
 
   useEffect(() => {
     if (!editingAzienda) return
@@ -360,23 +394,32 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <input className="input-field text-sm" placeholder="Indirizzo (es: Via Roma 1, Milano)"
               value={form.sede || ''} onChange={e => set('sede', e.target.value)} />
             {form.sede && (
-              <div className="flex gap-2">
-                <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl active:scale-95">
-                  📍 Google Maps
-                </a>
+              <>
+                {/* Tempo percorrenza */}
                 {profile?.indirizzo_home && (
                   <a href={`https://maps.google.com/maps?saddr=${encodeURIComponent(profile.indirizzo_home)}&daddr=${encodeURIComponent(form.sede)}&dirflg=r`}
                     target="_blank" rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 text-xs text-green-400 border border-green-500/30 px-3 py-2 rounded-xl active:scale-95">
-                    🚇 Da casa mia
+                    className="flex items-center gap-2 p-2.5 rounded-xl active:scale-95 transition-all"
+                    style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                    <span className="text-base">🚗</span>
+                    {loadingTravel ? (
+                      <span className="text-xs text-muted">Calcolo percorso...</span>
+                    ) : travelTime ? (
+                      <span className="text-sm font-bold text-green-400">{travelTime} da casa</span>
+                    ) : (
+                      <span className="text-xs text-muted">Apri percorso in Maps →</span>
+                    )}
                   </a>
                 )}
-              </div>
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl active:scale-95">
+                  📍 Apri in Google Maps
+                </a>
+              </>
             )}
             {!profile?.indirizzo_home && form.sede && (
-              <p className="text-xs text-muted">💡 Aggiungi il tuo indirizzo nel Profilo per calcolare il tragitto da casa</p>
+              <p className="text-xs text-muted">💡 Aggiungi il tuo indirizzo nel Profilo per vedere il tempo di percorrenza</p>
             )}
           </div>
         </Section>
