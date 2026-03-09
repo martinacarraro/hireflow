@@ -51,41 +51,36 @@ function guessDomain(name) {
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
+  // Use saved domain if available, otherwise guess
+  const domain = domainProp || guessDomain(name)
+  const logoUrl = `https://logo.clearbit.com/${domain}`
   const [failed, setFailed] = React.useState(false)
   const [loaded, setLoaded] = React.useState(false)
-
-  // Only use logo if we have an explicit saved domain from Clearbit autocomplete
-  const logoUrl = domainProp ? `https://logo.clearbit.com/${domainProp}` : null
 
   React.useEffect(() => {
     setFailed(false)
     setLoaded(false)
-  }, [domainProp])
-
-  // No saved domain → always show letter avatar
-  if (!logoUrl || failed) {
-    return (
-      <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
-        style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
-        {letter}
-      </div>
-    )
-  }
+  }, [domain])
 
   return (
     <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
-      style={{ width: size, height: size, minWidth: size, background: loaded ? '#fff' : bg }}>
-      {!loaded && (
-        <span style={{ fontSize: size * 0.42, color: text, fontWeight: 'bold' }}>{letter}</span>
+      style={{ width: size, height: size, minWidth: size, background: (!failed && loaded) ? '#fff' : bg }}>
+      {/* Letter shown while loading or on fail */}
+      {(failed || !loaded) && (
+        <span style={{ fontSize: size * 0.42, color: text, fontWeight: 'bold', position: failed ? 'static' : 'absolute' }}>
+          {letter}
+        </span>
       )}
-      <img
-        key={logoUrl}
-        src={logoUrl}
-        alt={name}
-        onLoad={() => setLoaded(true)}
-        onError={() => setFailed(true)}
-        style={{ width: loaded ? size * 0.82 : 0, height: loaded ? size * 0.82 : 0, objectFit: 'contain' }}
-      />
+      {!failed && (
+        <img
+          key={domain}
+          src={logoUrl}
+          alt={name}
+          onLoad={() => setLoaded(true)}
+          onError={() => { setFailed(true); setLoaded(false) }}
+          style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain', display: loaded ? 'block' : 'none' }}
+        />
+      )}
     </div>
   )
 }
