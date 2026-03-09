@@ -4,9 +4,54 @@ import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, MOTTOS, daysSince, formatDateTime, getGreeting } from '../lib/utils'
 
+
+function GuestConvertModal({ onClose, onSuccess }) {
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState('')
+  const { migrateGuestToAccount } = useApp()
+
+  const handle = async () => {
+    if (!email || !password) return setError('Compila tutti i campi')
+    if (password.length < 6) return setError('Password minimo 6 caratteri')
+    setLoading(true); setError('')
+    const result = await migrateGuestToAccount(email, password)
+    setLoading(false)
+    if (result?.error) setError(result.error.message)
+    else onSuccess?.()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}>
+      <div className="w-full max-w-lg rounded-t-3xl p-6 space-y-4" style={{ background: '#1A1A2E' }}>
+        <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
+        <div className="text-center">
+          <p className="text-2xl mb-1">👻✨</p>
+          <h3 className="font-bold text-txt text-lg">Salva i tuoi progressi</h3>
+          <p className="text-muted text-sm mt-1">Crea un account gratuito e non perdi nulla — candidature, XP e badge.</p>
+        </div>
+        <input className="input-field" type="email" placeholder="La tua email"
+          value={email} onChange={e => setEmail(e.target.value)} />
+        <input className="input-field" type="password" placeholder="Scegli una password (min. 6 caratteri)"
+          value={password} onChange={e => setPassword(e.target.value)} />
+        {error && <p className="text-red text-xs text-center">{error}</p>}
+        <button onClick={handle} disabled={loading}
+          className="w-full py-3.5 rounded-2xl font-bold text-white transition-opacity"
+          style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: loading ? 0.6 : 1 }}>
+          {loading ? '⏳ Salvataggio...' : '🚀 Crea account e salva tutto'}
+        </button>
+        <button onClick={onClose} className="w-full text-center text-muted text-sm py-2">
+          Continua come ospite
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Home({ onAdd, onDetail }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura } = useApp()
-  const { user } = useAuth()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, migrateGuestToAccount } = useApp()
+  const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const motto = MOTTOS[profile?.motto_index ?? 0]
   const [filtroStato, setFiltroStato] = useState(null)
@@ -17,6 +62,7 @@ export default function Home({ onAdd, onDetail }) {
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
     { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#A855F7' },
@@ -151,6 +197,19 @@ export default function Home({ onAdd, onDetail }) {
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
             <button onClick={refreshMotto} className="text-muted text-base ml-3 active:scale-75 transition-transform">🔄</button>
+          </div>
+        )}
+
+        {/* GUEST BANNER */}
+        {isGuest && (
+          <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
+            style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
+            onClick={() => setShowGuestModal(true)}>
+            <span className="text-xl">👻</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-txt">Modalità ospite — i dati non sono salvati</p>
+              <p className="text-xs text-muted">Tocca qui per creare un account gratuito →</p>
+            </div>
           </div>
         )}
 
