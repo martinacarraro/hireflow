@@ -49,7 +49,7 @@ export default function Profile() {
     const blob = new Blob([arr], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url; a.download = 'template_candidature_hireflow.xlsx'
+    a.href = url; a.download = 'template_candidature_lefaremosapere.xlsx'
     document.body.appendChild(a); a.click()
     document.body.removeChild(a); URL.revokeObjectURL(url)
   }
@@ -132,9 +132,9 @@ export default function Profile() {
   }
 
   const handleShare = () => {
-    const url = 'https://hireflow-mocha.vercel.app'
-    const text = '🚀 Stai cercando lavoro? Ti presento Hireflow — il job tracker gratuito per tenere tutto sotto controllo: candidature, colloqui, notifiche e molto altro. Provalo!'
-    if (navigator.share) navigator.share({ title: 'Hireflow', text, url })
+    const url = 'https://lefaremosapere-mocha.vercel.app'
+    const text = '🚀 Stai cercando lavoro? Ti presento Le faremo sapere — il job tracker gratuito per tenere tutto sotto controllo: candidature, colloqui, notifiche e molto altro. Provalo!'
+    if (navigator.share) navigator.share({ title: 'Le faremo sapere', text, url })
     else navigator.clipboard.writeText(url).then(() => alert('Link copiato! 💜'))
   }
 
@@ -257,9 +257,9 @@ export default function Profile() {
         {/* Condividi */}
         <div className="card">
           <SectionLabel>CONDIVIDI CON CHI CERCA LAVORO 💌</SectionLabel>
-          <p className="text-xs text-muted mb-3">Conosci qualcuno che sta mandando candidature? Mandagli Hireflow!</p>
+          <p className="text-xs text-muted mb-3">Conosci qualcuno che sta mandando candidature? Mandagli Le faremo sapere!</p>
           <button onClick={handleShare} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            📤 Condividi Hireflow
+            📤 Condividi Le faremo sapere
           </button>
         </div>
 
@@ -299,9 +299,9 @@ export default function Profile() {
         {/* Supporto */}
         <div className="card space-y-2">
           <SectionLabel>SUPPORTO</SectionLabel>
-          <a href="mailto:feedback@hireflow.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
+          <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
           <div className="border-t border-border" />
-          <p className="text-xs text-muted text-center pt-1">Hireflow v1.0 — Fatto con 💜</p>
+          <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
         </div>
 
         {/* Account */}
