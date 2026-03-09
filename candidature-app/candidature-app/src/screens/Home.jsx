@@ -427,12 +427,21 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             </div>
             <StatusBadge stato={c.stato} />
           </div>
-          {/* Mostra data colloquio in base allo stato */}
-          {c.data_colloquio && ['Colloquio','Secondo colloquio','Prima call','In attesa risposta'].includes(c.stato) && (
+          {/* Date colloquio in base allo stato */}
+          {c.data_colloquio && ['Prima call','Colloquio','In attesa risposta'].includes(c.stato) && (
             <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
           )}
+          {(c.data_colloquio || c.data_secondo_colloquio) && c.stato === 'Secondo colloquio' && (
+            <div className="mt-1.5 space-y-0.5">
+              {c.data_colloquio && <p className="text-xs text-amber">📅 1° {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>}
+              {c.data_secondo_colloquio && <p className="text-xs text-green-400">📅 2° {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>}
+            </div>
+          )}
           {c.data_colloquio && ['Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) && (
-            <p className="text-xs text-muted mt-1.5">📅 Colloquio: {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
+            <div className="mt-1.5 space-y-0.5">
+              <p className="text-xs text-muted">📅 1° coll: {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
+              {c.data_secondo_colloquio && <p className="text-xs text-muted">📅 2° coll: {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>}
+            </div>
           )}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
