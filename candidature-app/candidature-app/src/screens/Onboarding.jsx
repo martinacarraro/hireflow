@@ -3,24 +3,24 @@ import { useApp } from '../contexts/AppContext'
 
 const SLIDES = [
   {
-    emoji: '🗂️',
-    title: 'Tutto in un posto',
-    body: 'Aggiungi ogni candidatura in secondi: azienda, ruolo, stato, sede, stipendio. Tieni traccia di tutto senza post-it, fogli Excel o tab aperti a caso.',
+    emoji: '📬',
+    title: '"Le faremo sapere."',
+    body: 'Lo dicono tutti. Ma tu tieni traccia di chi lo ha detto davvero — e di chi invece è sparito nel nulla. Benvenuta in Le faremo sapere.',
   },
   {
     emoji: '📅',
-    title: 'Colloqui sempre sotto controllo',
-    body: 'Il calendario ti mostra tutti i colloqui del mese. Ricevi notifiche il giorno prima, il giorno stesso e dopo — per non dimenticarti mai di aggiornare lo stato.',
+    title: 'Ogni colloquio, ogni risposta',
+    body: 'Calendario, notifiche e scadenze. Sai sempre chi ti deve ancora rispondere, da quanti giorni, e quando è ora di ricontattarli.',
   },
   {
-    emoji: '🔔',
-    title: 'Notifiche smart, niente spam',
-    body: 'Ti avvisiamo solo quando serve: colloquio in arrivo, azienda in silenzio da troppo tempo, o ghosting automatico dopo 60 giorni. Una notifica per evento, niente di più.',
+    emoji: '👻',
+    title: 'Ghosting rilevato.',
+    body: 'Se un\'azienda sparisce per 60 giorni, lo sappiamo. Archiviamo in automatico e tu puoi andare avanti senza pensarci.',
   },
   {
     emoji: '🏆',
-    title: 'È un gioco. E puoi vincerlo.',
-    body: 'Guadagna XP ad ogni candidatura, sblocca badge, mantieni lo streak giornaliero. Ogni candidatura è un passo avanti. L\'offerta di lavoro è il boss finale. 🎉',
+    title: 'La ricerca è una gara. Vincila.',
+    body: 'Ogni candidatura vale XP. Ogni colloquio sblocca badge. Mantieni lo streak. L\'offerta è il boss finale — e stavolta ce la fai. 🎉',
   },
 ]
 
