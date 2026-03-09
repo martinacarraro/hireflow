@@ -184,7 +184,14 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
               <p className="text-muted text-sm">Nessuna notifica ancora</p>
             </div>
           ) : notifications.map(n => (
-            <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
+            <div key={n.id}
+              onClick={() => {
+                if (n.candidaturaId) {
+                  const cand = candidature.find(c => c.id === n.candidaturaId)
+                  if (cand) { setShowNotifs(false); markAllNotificationsRead(); onDetail(cand) }
+                }
+              }}
+              className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''} ${n.candidaturaId ? 'cursor-pointer active:scale-[0.98] transition-all' : ''}`}>
               {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
@@ -193,6 +200,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                   {new Date(n.time).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
+              {n.candidaturaId && <span className="text-muted text-xs flex-shrink-0 mt-0.5">→</span>}
             </div>
           ))}
         </div>
