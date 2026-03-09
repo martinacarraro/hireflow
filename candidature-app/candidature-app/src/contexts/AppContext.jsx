@@ -49,6 +49,10 @@ export function AppProvider({ children }) {
         setLoading(false)
         checkScheduledNotifications()
         updateStreak()
+        // Auto-salva subscription se il permesso è già granted
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          requestNotificationPermission()
+        }
       })
     } else {
       setLoading(false)
@@ -395,11 +399,42 @@ export function AppProvider({ children }) {
   }, [candidature])
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const result = await Notification.requestPermission()
-      return result === 'granted'
+    if (!('Notification' in window)) return false
+    const result = await Notification.requestPermission()
+    if (result !== 'granted') return false
+
+    // Subscribe to Web Push and save subscription
+    try {
+      const reg = await navigator.serviceWorker.ready
+      const VAPID_PUBLIC = import.meta.env.VITE_VAPID_PUBLIC_KEY
+      if (!VAPID_PUBLIC) return true // no VAPID key yet, skip
+
+      let sub = await reg.pushManager.getSubscription()
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+        })
+      }
+      // Save to Supabase via API
+      if (user) {
+        await fetch('/api/save-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, subscription: sub.toJSON() }),
+        })
+      }
+    } catch (err) {
+      console.warn('Push subscription failed:', err)
     }
-    return false
+    return true
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4)
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const rawData = window.atob(base64)
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)))
   }
 
   const markAllNotificationsRead = () =>
