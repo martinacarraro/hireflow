@@ -52,6 +52,7 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
   const domain = domainProp || guessDomain(name)
+  const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
   const [failed, setFailed] = React.useState(false)
 
   React.useEffect(() => { setFailed(false) }, [domain])
@@ -70,8 +71,9 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
       style={{ width: size, height: size, minWidth: size }}>
       <img
         key={domain}
-        src={`https://logo.clearbit.com/${domain}`}
+        src={logoUrl}
         alt={name}
+        onLoad={e => { if (e.target.naturalWidth <= 16) setFailed(true) }}
         onError={() => setFailed(true)}
         style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
       />
