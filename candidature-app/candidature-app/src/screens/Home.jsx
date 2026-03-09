@@ -535,7 +535,10 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
       onMouseUp={handleTouchEnd}
       onMouseLeave={handleTouchEnd}
       className={`card mb-3 cursor-pointer active:scale-[0.98] transition-all ${isSelected ? 'ring-2 ring-purple' : ''}`}
-      style={{ borderLeft: `3px solid ${isStale ? '#FBBF24' : cfg.color}` }}>
+      style={{
+        borderLeft: `3px solid ${isStale ? '#FBBF24' : cfg.color}`,
+        opacity: ['Inviata','Spontanea','Rifiutata','Non mi piace','GHOSTED'].includes(c.stato) ? 0.72 : 1,
+      }}>
       {isStale && (
         <div className="flex items-center gap-1 mb-2 text-amber text-xs">
           <span>⚠️</span><span>Nessuna risposta da {days} giorni</span>
