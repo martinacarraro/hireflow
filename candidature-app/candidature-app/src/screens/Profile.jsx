@@ -186,13 +186,7 @@ export default function Profile() {
       </div>
 
       <div className="flex-1 scrollable px-4 pb-8 space-y-4">
-{/* Banner caffè */}
-<a href="https://ko-fi.com/lefaremosapere" target="_blank" rel="noopener noreferrer"
-  className="block w-full rounded-2xl px-4 py-3 text-center active:opacity-80 transition-all"
-  style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}>
-  <p className="text-sm font-semibold text-txt">☕ Ti piace l'app? Offrimi un caffè 💜</p>
-  <p className="text-xs text-muted mt-0.5">Un piccolo gesto per supportare il progetto</p>
-</a>
+
         {/* Avatar + nome */}
         <div className="card flex items-center gap-4">
           {foto
@@ -325,6 +319,24 @@ export default function Profile() {
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${(profile?.notifiche_push_globali ?? true) ? 'left-[26px]' : 'left-0.5'}`} />
             </button>
           </div>
+          {/* Bottone esplicito se il permesso non è ancora stato concesso */}
+          {typeof Notification !== 'undefined' && Notification.permission !== 'granted' && (
+            <button
+              onClick={async () => {
+                const ok = await requestNotificationPermission()
+                if (ok) updateProfile({ notifiche_push_globali: true })
+              }}
+              className="w-full mt-1 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color: 'white' }}>
+              🔔 Attiva notifiche push
+            </button>
+          )}
+          {typeof Notification !== 'undefined' && Notification.permission === 'granted' && (
+            <p className="text-xs text-green-400 mt-1">✅ Notifiche push attive</p>
+          )}
+          {typeof Notification !== 'undefined' && Notification.permission === 'denied' && (
+            <p className="text-[10px] text-red mt-1">❌ Notifiche bloccate — abilitale dalle impostazioni del browser.</p>
+          )}
           <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Le notifiche su mobile richiedono che l'app sia installata come PWA.</p>
         </div>
 
@@ -360,19 +372,13 @@ export default function Profile() {
           )
         })()}
 
-      {/* Supporto */}
-<div className="card space-y-2">
-  <SectionLabel>SUPPORTO</SectionLabel>
-  <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
-  <div className="border-t border-border" />
-  <a href="https://ko-fi.com/lefaremosapere" target="_blank" rel="noopener noreferrer"
-    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all"
-    style={{ background: '#FF5E5B', color: 'white' }}>
-    ☕ Offrimi un caffè — Ko-fi
-  </a>
-  <div className="border-t border-border" />
-  <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
-</div>
+        {/* Supporto */}
+        <div className="card space-y-2">
+          <SectionLabel>SUPPORTO</SectionLabel>
+          <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
+          <div className="border-t border-border" />
+          <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
+        </div>
 
         {/* Account */}
         {user && (
