@@ -26,9 +26,30 @@ export default function Login() {
       <div className="min-h-full flex items-center justify-center px-6 py-8">
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
           <div className="mb-3 mt-2">
-            <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="64" height="64" rx="14" fill="#1A1A2E"/>
-              <polygon points="38,6 18,36 30,36 26,58 46,28 34,28" fill="#34D399"/>
+            <svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="lgbg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#7B2FFF"/>
+                  <stop offset="100%" stop-color="#FF2D8B"/>
+                </linearGradient>
+                <linearGradient id="lgg" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#f0d9ff"/>
+                  <stop offset="100%" stop-color="#ffffff"/>
+                </linearGradient>
+              </defs>
+              <rect width="512" height="512" rx="112" fill="url(#lgbg)"/>
+              <path d="M 152 392 L 152 228 Q 152 100 256 100 Q 360 100 360 228 L 360 392 Q 334 365 318 384 Q 298 360 280 384 Q 262 360 256 384 Q 250 360 232 384 Q 214 360 194 384 Q 178 365 152 392 Z" fill="url(#lgg)"/>
+              <ellipse cx="210" cy="240" rx="30" ry="33" fill="#7B2FFF"/>
+              <ellipse cx="302" cy="240" rx="30" ry="33" fill="#7B2FFF"/>
+              <circle cx="219" cy="231" r="11" fill="white"/>
+              <circle cx="311" cy="231" r="11" fill="white"/>
+              <circle cx="217" cy="229" r="5" fill="#3d0099"/>
+              <circle cx="309" cy="229" r="5" fill="#3d0099"/>
+              <path d="M 220 294 Q 238 314 256 294 Q 274 314 292 294" fill="none" stroke="#7B2FFF" stroke-width="5" stroke-linecap="round"/>
+              <rect x="150" y="412" width="212" height="50" rx="25" fill="rgba(255,255,255,0.2)"/>
+              <circle cx="206" cy="437" r="11" fill="white"/>
+              <circle cx="256" cy="437" r="11" fill="white"/>
+              <circle cx="306" cy="437" r="11" fill="white"/>
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-txt tracking-tight mb-1 text-center">Le faremo sapere</h1>
