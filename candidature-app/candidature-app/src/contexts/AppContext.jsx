@@ -75,8 +75,8 @@ export function AppProvider({ children }) {
     setCandidature(prev => [row, ...prev])
     const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
     await addXP(xp)
-    showToast(`Aggiunta! 🚀 +${xp} XP`, 'success')
-    if (isFirst) triggerConfetti()
+    showToast(`🎉 Candidatura aggiunta! +${xp} XP`, 'success')
+    if (isFirst) { triggerConfetti() } else { triggerConfetti() }
     await checkBadges()
     return row
   }
@@ -159,12 +159,12 @@ export function AppProvider({ children }) {
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
-        showToast('🎙️ Colloquio! +15 XP 🎉', 'success')
+        showToast('🎙️ Colloquio ottenuto! +15 XP', 'success'); triggerConfetti()
         pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`)
         await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
         await addXP(XP_EVENTS.OFFERTA)
-        showToast('🏆 OFFERTA RICEVUTA! +20 XP 🎉🎉', 'success')
+        showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
         triggerConfetti()
         pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'Assunto') {
@@ -173,10 +173,10 @@ export function AppProvider({ children }) {
         triggerConfetti()
         pushNotification('🏆 ASSUNTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'GHOSTED') {
-        showToast(`👻 ${prev?.azienda} archiviata come GHOSTED.`, 'info')
+        showToast(`👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
         pushNotification('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
       } else {
-        showToast('✅ Stato aggiornato!', 'success')
+        showToast('✅ Salvato!', 'success')
       }
       await checkBadges()
     }
@@ -196,7 +196,7 @@ export function AppProvider({ children }) {
       setTimeout(() => recheckBadgesAfterDelete(updated), 100)
       return updated
     })
-    showToast('🗑️ Candidatura eliminata!', 'info')
+    showToast('🗑️ Eliminata.', 'info')
   }
 
   const recheckBadgesAfterDelete = async (remaining) => {
