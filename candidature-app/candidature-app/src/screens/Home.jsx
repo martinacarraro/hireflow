@@ -50,31 +50,35 @@ function GuestConvertModal({ onClose, onSuccess }) {
 }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
+  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
 
+  // Restore scroll position when returning from detail
   useEffect(() => {
     if (scrollRef.current && scrollPos > 0) {
       scrollRef.current.scrollTop = scrollPos
     }
   }, [])
 
+  // Save scroll position as user scrolls
   const handleScroll = useCallback((e) => {
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
-
   const motto = MOTTOS[profile?.motto_index ?? 0]
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
+  const [quickStatusFor, setQuickStatusFor] = useState(null) // candidatura id
+  const [reminderFor, setReminderFor] = useState(null) // candidatura for custom reminder
+
+  // Selezione multipla
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
-  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
   const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
@@ -120,11 +124,12 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
+
+  // Duplicate candidatura
   const handleDuplicate = async (cand) => {
     const { id, created_at, updated_at, user_id, ...rest } = cand
     await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
   }
-
   const greet = getGreeting(nome)
 
   const toggleSelect = (id) => {
@@ -135,17 +140,25 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
     })
   }
 
-  const selectAll = () => setSelected(new Set(candidatureFiltrate.map(c => c.id)))
+  const selectAll = () => {
+    setSelected(new Set(candidatureFiltrate.map(c => c.id)))
+  }
 
   const handleBulkDelete = async () => {
-    for (const id of selected) await deleteCandidatura(id)
+    for (const id of selected) {
+      await deleteCandidatura(id)
+    }
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkDelete(false)
   }
 
+  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
+
   const handleBulkArchive = async () => {
-    for (const id of selected) await updateCandidatura(id, { archiviata: true })
+    for (const id of selected) {
+      await updateCandidatura(id, { archiviata: true })
+    }
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkArchive(false)
@@ -159,7 +172,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   // ── NOTIFICATION PANEL ──────────────────────────────────────
   if (showNotifs) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="screen">
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
           <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
           <h2 className="font-bold text-txt">Notifiche 🔔</h2>
@@ -191,23 +204,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
   if (candidature.length === 0) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <HomeHeader
-          greet={greet} profile={profile}
-          unread={unreadCount} onBell={() => setShowNotifs(true)}
-          showSearch={showSearch}
-          onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
-        />
-        {isGuest && (
-          <div className="mx-4 mt-2 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
-            style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
-            onClick={() => setShowGuestModal(true)}>
-            <span className="text-xl">👻</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-txt">Modalità ospite — i dati non sono salvati</p>
-              <p className="text-xs text-muted">Tocca qui per creare un account gratuito →</p>
-            </div>
-          </div>
-        )}
+        <HomeHeader greet={greet} profile={profile} unread={unreadCount} onBell={() => setShowNotifs(true)} />
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <EmptyState
             emoji="📭"
@@ -220,12 +217,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
             }
           />
         </div>
-        {showGuestModal && (
-          <GuestConvertModal
-            onClose={() => setShowGuestModal(false)}
-            onSuccess={() => setShowGuestModal(false)}
-          />
-        )}
       </div>
     )
   }
@@ -248,6 +239,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
       />
 
+      {/* Search bar */}
       {showSearch && (
         <div className="px-4 pb-2 flex-shrink-0">
           <div className="relative">
@@ -269,6 +261,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
 
       <div className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
 
+        {/* Motto */}
         {!selectMode && (
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
@@ -276,6 +269,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
+        {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
@@ -288,6 +282,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </div>
         )}
 
+        {/* Filtri */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setFiltroStato(null)}
@@ -314,6 +309,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           </p>
         )}
 
+        {/* Lista */}
         {STATUS_GROUP_ORDER.map(stato => {
           const items = grouped[stato]
           if (!items) return null
@@ -341,6 +337,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
                   key={c.id} c={c}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
                   onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
+                  onStatusPress={() => !selectMode && setQuickStatusFor(c)}
                   selectMode={selectMode}
                   isSelected={selected.has(c.id)}
                 />
@@ -372,11 +369,53 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
           onSuccess={() => setShowGuestModal(false)}
         />
       )}
+
+      {/* Quick status menu */}
+      {quickStatusFor && (
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setQuickStatusFor(null)}>
+          <div className="w-full bg-surface rounded-t-3xl p-4 pb-safe pb-8" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
+            <p className="text-sm font-bold text-txt mb-3">
+              Cambia stato — <span className="text-purple-soft">{quickStatusFor.azienda}</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+              {STATI.map(s => {
+                const cfg = STATUS_CONFIG[s]
+                const isCurrent = s === quickStatusFor.stato
+                return (
+                  <button key={s}
+                    onClick={async () => {
+                      await updateCandidatura(quickStatusFor.id, { stato: s })
+                      setQuickStatusFor(null)
+                    }}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold text-left active:scale-95 transition-all flex items-center gap-2 ${isCurrent ? 'ring-2 ring-purple' : ''}`}
+                    style={{ background: cfg?.bg || 'rgba(255,255,255,0.05)', color: cfg?.color || '#999', border: `1px solid ${cfg?.color}30` }}>
+                    <span>{cfg?.emoji}</span>
+                    <span>{s}</span>
+                    {isCurrent && <span className="ml-auto">✓</span>}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button onClick={() => { handleDuplicate(quickStatusFor); setQuickStatusFor(null) }}
+                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
+                📋 Duplica candidatura
+              </button>
+              <button onClick={() => setQuickStatusFor(null)}
+                className="py-2.5 px-3 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95">
+                ✕ Chiudi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function HomeHeader({ greet, profile, unread, onBell, selectMode, onExitSelect, onSelectAll, selectedCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
+function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
@@ -412,10 +451,10 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onExitSelect, 
               className={`p-2 active:scale-90 transition-transform rounded-xl ${showSearch ? 'bg-purple/20' : ''}`}>
               <span className="text-xl">🔍</span>
             </button>
-            <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform rounded-xl">
-              <span className="text-xl">🔔</span>
+            <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
+              <span className="text-2xl">🔔</span>
               {unread > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red text-white text-[8px] rounded-full flex items-center justify-center font-bold px-1">
+                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -461,13 +500,14 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
+function CandidaturaCard({ c, onPress, onLongPress, onStatusPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
   const lastUpdate = new Date(c.updated_at || c.created_at)
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
 
+  // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
   const startPos = React.useRef({ x: 0, y: 0 })
   const didScroll = React.useRef(false)
@@ -518,10 +558,13 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
               <p className="font-semibold text-txt text-sm truncate">{c.azienda}</p>
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
-            <div className="flex-shrink-0">
-              <StatusBadge stato={c.stato} />
-            </div>
+            <button
+                onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
+                className="active:scale-90 transition-transform flex-shrink-0">
+                <StatusBadge stato={c.stato} />
+              </button>
           </div>
+          {/* Date colloquio — sempre visibili se presenti */}
           {(c.data_colloquio || c.data_secondo_colloquio) && (
             <div className="mt-1.5 space-y-0.5">
               {c.data_colloquio && (
