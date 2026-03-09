@@ -109,7 +109,7 @@ export default function AddCandidatura({ onBack, onDone }) {
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 active:bg-purple/20 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
                     <div className="w-8 h-8 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
-                      <img src={s.logo} alt={s.name}
+                      <img src={`https://logo.clearbit.com/${s.domain}`} alt={s.name}
                         onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
                         className="w-7 h-7 object-contain" />
                       <span className="text-sm font-bold hidden" style={{ color: '#8B5CF6' }}>{s.name.charAt(0)}</span>
