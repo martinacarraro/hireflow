@@ -18,6 +18,8 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [suggestions, setSuggestions] = useState([])
   const [showSugg, setShowSugg] = useState(false)
   const [companyDomain, setCompanyDomain] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importNote, setImportNote] = useState('')
   const searchTimer = useRef(null)
 
   useEffect(() => {
@@ -33,13 +35,10 @@ export default function AddCandidatura({ onBack, onDone }) {
         if (!res.ok) throw new Error('no results')
         const data = await res.json()
         setSuggestions(data.slice(0, 6))
-        setShowSugg(data.length > 0)
       } catch {
-        // Clearbit fallback: show logo preview for guessed domain
-        const domain = q.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'
-        setSuggestions([{ name: q, domain, logo: `https://logo.clearbit.com/${domain}` }])
-        setShowSugg(true)
+        setSuggestions([])
       }
+      setShowSugg(true) // sempre aperto mentre si digita
     }, 350)
   }, [form.azienda])
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
@@ -93,18 +92,20 @@ export default function AddCandidatura({ onBack, onDone }) {
             <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
               placeholder="Es: Spotify, Ferrero, Studio Rossi..."
               value={form.azienda}
-              onChange={e => { set('azienda', e.target.value); setCompanyDomain('') }}
-              onBlur={() => setTimeout(() => setShowSugg(false), 150)}
-              onFocus={() => form.azienda.trim().length > 1 && setShowSugg(true)}
+              onChange={e => { set('azienda', e.target.value); setCompanyDomain(''); setShowSugg(false) }}
+              onBlur={() => setTimeout(() => setShowSugg(false), 200)}
+              onFocus={() => { if (form.azienda.trim().length > 1) setShowSugg(true) }}
               autoComplete="off" />
-            {(showSugg || form.azienda.trim().length > 1) && (
+            {showSugg && (
               <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl"
                 style={{ background: '#1A1A2E' }}>
                 {suggestions.map(s => (
                   <button key={s.domain} type="button"
-                    onMouseDown={() => {
+                    onPointerDown={e => {
+                      e.preventDefault()
                       set('azienda', s.name)
                       setCompanyDomain(s.domain)
+                      set('azienda_domain', s.domain)
                       setShowSugg(false)
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 active:bg-purple/20 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
@@ -120,7 +121,7 @@ export default function AddCandidatura({ onBack, onDone }) {
                     </div>
                   </button>
                 ))}
-                <button onMouseDown={() => { setShowSugg(false); setCompanyDomain(''); set('azienda_domain', '') }}
+                <button onPointerDown={e => { e.preventDefault(); setShowSugg(false); setCompanyDomain(''); set('azienda_domain', '') }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors">
                   <div className="w-8 h-8 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-purple-soft text-lg">+</span>
@@ -179,10 +180,10 @@ export default function AddCandidatura({ onBack, onDone }) {
             onChange={v => set('fonte', v)} />
         </Field>
 
-        <Field label="🔗 Link offerta">
+        <Field label="🔗 Link annuncio — importa dati automaticamente">
           <div className="flex gap-2">
             <input className="input-field flex-1 text-sm" type="url"
-              placeholder="https://..."
+              placeholder="Incolla link LinkedIn, Indeed, sito..."
               value={form.link_annuncio} onChange={e => set('link_annuncio', e.target.value)} />
             {form.link_annuncio && (
               <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
@@ -191,6 +192,54 @@ export default function AddCandidatura({ onBack, onDone }) {
               </a>
             )}
           </div>
+          {form.link_annuncio && (
+            <button
+              onClick={async () => {
+                setImporting(true)
+                setImportNote('')
+                try {
+                  const jinaUrl = `https://r.jina.ai/${form.link_annuncio}`
+                  const res = await fetch(jinaUrl, { headers: { 'Accept': 'text/plain' } })
+                  const text = await res.text()
+                  const snippet = text.slice(0, 4000)
+                  const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      model: 'claude-sonnet-4-20250514',
+                      max_tokens: 500,
+                      messages: [{
+                        role: 'user',
+                        content: `Estrai da questo testo di un annuncio di lavoro i seguenti campi in JSON. Rispondi SOLO con JSON puro, nessun altro testo:
+{"azienda": "nome azienda", "ruolo": "titolo posizione", "sede": "città o Remote", "descrizione": "max 200 caratteri descrizione ruolo"}
+
+Testo annuncio:
+${snippet}`
+                      }]
+                    })
+                  })
+                  const data = await apiRes.json()
+                  const raw = data.content?.[0]?.text || '{}'
+                  const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
+                  if (parsed.azienda) set('azienda', parsed.azienda)
+                  if (parsed.ruolo) set('ruolo', parsed.ruolo)
+                  if (parsed.sede) set('sede', parsed.sede)
+                  if (parsed.descrizione) set('note', parsed.descrizione)
+                  setImportNote('✅ Dati importati! Controlla e correggi se necessario.')
+                } catch(e) {
+                  setImportNote('⚠️ Impossibile leggere questa pagina. Compila manualmente.')
+                }
+                setImporting(false)
+              }}
+              disabled={importing}
+              className="mt-2 w-full py-2.5 rounded-xl text-sm font-semibold border border-purple/40 text-purple-soft active:scale-95 transition-all flex items-center justify-center gap-2"
+              style={{ background: 'rgba(123,47,255,0.1)' }}>
+              {importing
+                ? <><span className="animate-spin">⏳</span> Importo dati...</>
+                : <> ✨ Importa dati automaticamente</>}
+            </button>
+          )}
+          {importNote && <p className="text-xs mt-1" style={{ color: importNote.startsWith('✅') ? '#34D399' : '#FBBF24' }}>{importNote}</p>}
         </Field>
 
         <Field label="⚡ Priorità">
