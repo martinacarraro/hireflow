@@ -11,8 +11,13 @@ export function StatusBadge({ stato, size = 'sm' }) {
       style={{
         color: active ? 'white' : cfg.color,
         background: active ? cfg.color : cfg.bg,
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 3,
       }}>
-      {cfg.emoji} {cfg.label}
+      <span>{cfg.emoji}</span><span>{cfg.label}</span>
     </span>
   )
 }
