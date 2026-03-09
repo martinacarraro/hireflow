@@ -427,8 +427,12 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
             </div>
             <StatusBadge stato={c.stato} />
           </div>
-          {c.data_colloquio && (
+          {/* Mostra data colloquio in base allo stato */}
+          {c.data_colloquio && ['Colloquio','Secondo colloquio','Prima call','In attesa risposta'].includes(c.stato) && (
             <p className="text-xs text-amber mt-1.5">📅 {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
+          )}
+          {c.data_colloquio && ['Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) && (
+            <p className="text-xs text-muted mt-1.5">📅 Colloquio: {formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
           )}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
