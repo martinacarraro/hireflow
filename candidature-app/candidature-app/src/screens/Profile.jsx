@@ -186,7 +186,13 @@ export default function Profile() {
       </div>
 
       <div className="flex-1 scrollable px-4 pb-8 space-y-4">
-
+{/* Banner caffè */}
+<a href="https://ko-fi.com/lefaremosapere" target="_blank" rel="noopener noreferrer"
+  className="block w-full rounded-2xl px-4 py-3 text-center active:opacity-80 transition-all"
+  style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}>
+  <p className="text-sm font-semibold text-txt">☕ Ti piace l'app? Offrimi un caffè 💜</p>
+  <p className="text-xs text-muted mt-0.5">Un piccolo gesto per supportare il progetto</p>
+</a>
         {/* Avatar + nome */}
         <div className="card flex items-center gap-4">
           {foto
