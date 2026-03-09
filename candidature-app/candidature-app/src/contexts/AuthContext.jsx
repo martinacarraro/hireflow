@@ -31,7 +31,8 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  const enterAsGuest = () => {
+  const enterAsGuest = async () => {
+    await supabase.auth.signOut()
     setIsGuest(true)
   }
 
