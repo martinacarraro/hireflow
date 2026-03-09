@@ -297,11 +297,23 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <input className="input-field text-sm" placeholder="Indirizzo (es: Via Roma 1, Milano)"
               value={form.sede || ''} onChange={e => set('sede', e.target.value)} />
             {form.sede && (
-              <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl active:scale-95">
-                📍 Apri in Google Maps
-              </a>
+              <div className="flex gap-2">
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl active:scale-95">
+                  📍 Google Maps
+                </a>
+                {profile?.indirizzo_home && (
+                  <a href={`https://maps.google.com/maps?saddr=${encodeURIComponent(profile.indirizzo_home)}&daddr=${encodeURIComponent(form.sede)}&dirflg=r`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 text-xs text-green-400 border border-green-500/30 px-3 py-2 rounded-xl active:scale-95">
+                    🚇 Da casa mia
+                  </a>
+                )}
+              </div>
+            )}
+            {!profile?.indirizzo_home && form.sede && (
+              <p className="text-xs text-muted">💡 Aggiungi il tuo indirizzo nel Profilo per calcolare il tragitto da casa</p>
             )}
           </div>
         </Section>
