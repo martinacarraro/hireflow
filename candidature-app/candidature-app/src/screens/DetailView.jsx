@@ -119,7 +119,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                             onMouseDown={() => { set('azienda', s.name); set('azienda_domain', s.domain); setShowAziendaSugg(false); setEditingAzienda(false) }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
                             <div className="w-7 h-7 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
-                              <img src={s.logo} alt={s.name} className="w-6 h-6 object-contain" onError={e => e.target.style.display='none'} />
+                              <img src={`https://logo.clearbit.com/${s.domain}`} alt={s.name} className="w-6 h-6 object-contain" onError={e => e.target.style.display='none'} />
                             </div>
                             <div className="text-left min-w-0">
                               <p className="text-sm font-medium text-txt truncate">{s.name}</p>
