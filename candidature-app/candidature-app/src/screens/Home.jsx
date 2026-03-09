@@ -451,14 +451,11 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
               className={`p-2 active:scale-90 transition-transform rounded-xl ${showSearch ? 'bg-purple/20' : ''}`}>
               <span className="text-xl">🔍</span>
             </button>
-            <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
-              <span className="text-2xl">🔔</span>
-              {unread > 0 && (
-                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              )}
-            </button>
+         <button
+    onPointerDown={e => { e.stopPropagation(); onStatusPress?.() }}
+    className="active:scale-90 transition-transform flex-shrink-0">
+    <StatusBadge stato={c.stato} />
+  </button>
           </div>
         </>
       )}
