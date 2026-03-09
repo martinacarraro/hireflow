@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     // Only send fields that exist in the DB schema
-    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','data_secondo_colloquio','ora_secondo_colloquio']
+    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','data_secondo_colloquio','ora_secondo_colloquio','archiviata']
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
@@ -137,12 +137,18 @@ export function AppProvider({ children }) {
 
   const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id)
-    // Preserve data_colloquio if it was set before and not explicitly being cleared
-    if (prev?.data_colloquio && updates.data_colloquio === undefined) {
+    // Preserve data_colloquio e ora_colloquio — non cancellarli MAI se già presenti nel DB
+    if (prev?.data_colloquio && !updates.data_colloquio) {
       updates = { ...updates, data_colloquio: prev.data_colloquio }
     }
+    if (prev?.ora_colloquio && !updates.ora_colloquio) {
+      updates = { ...updates, ora_colloquio: prev.ora_colloquio }
+    }
+    if (prev?.data_secondo_colloquio && !updates.data_secondo_colloquio) {
+      updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
+    }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','data_secondo_colloquio','ora_secondo_colloquio']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','data_secondo_colloquio','ora_secondo_colloquio','archiviata']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase
