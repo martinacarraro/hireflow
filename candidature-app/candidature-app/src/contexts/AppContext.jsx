@@ -193,14 +193,21 @@ export function AppProvider({ children }) {
   }
 
   const deleteCandidatura = async (id) => {
+    const cand = candidature.find(c => c.id === id)
     await supabase.from('candidature').delete().eq('id', id)
     setCandidature(cs => {
       const updated = cs.filter(c => c.id !== id)
-      // Recalculate badges with remaining candidature
       setTimeout(() => recheckBadgesAfterDelete(updated), 100)
       return updated
     })
-    showToast('🗑️ Eliminata.', 'info')
+    // Sottrai XP guadagnati con questa candidatura
+    if (cand) {
+      const lost = xpForCandidatura(cand)
+      await removeXP(lost)
+      showToast(`🗑️ Eliminata. -${lost} XP`, 'info')
+    } else {
+      showToast('🗑️ Eliminata.', 'info')
+    }
   }
 
   const recheckBadgesAfterDelete = async (remaining) => {
@@ -252,6 +259,27 @@ export function AppProvider({ children }) {
     const newXP = (profile.xp_points || 0) + amount
     await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
     setProfile(p => ({ ...p, xp_points: newXP }))
+  }
+
+  const removeXP = async (amount) => {
+    if (!profile) return
+    const newXP = Math.max(0, (profile.xp_points || 0) - amount)
+    await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
+    setProfile(p => ({ ...p, xp_points: newXP }))
+  }
+
+  // Calcola quanti XP ha generato una candidatura
+  const xpForCandidatura = (cand) => {
+    let xp = XP_EVENTS.ADD_CANDIDATURA // 5 base
+    if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(cand.stato)) {
+      xp += XP_EVENTS.GOT_COLLOQUIO // +15
+    }
+    if (cand.stato === 'Offerta ricevuta' || cand.stato === 'Assunta') {
+      xp += XP_EVENTS.OFFERTA // +20
+    }
+    if (cand.feeling) xp += XP_EVENTS.FEELING_ADDED // +3
+    if (cand.note && cand.note.length > 10) xp += XP_EVENTS.NOTE_ADDED // +3
+    return xp
   }
 
   const updateProfile = async (updates) => {
