@@ -95,9 +95,9 @@ export default function AddCandidatura({ onBack, onDone }) {
               value={form.azienda}
               onChange={e => { set('azienda', e.target.value); setCompanyDomain('') }}
               onBlur={() => setTimeout(() => setShowSugg(false), 150)}
-              onFocus={() => suggestions.length > 0 && setShowSugg(true)}
+              onFocus={() => form.azienda.trim().length > 1 && setShowSugg(true)}
               autoComplete="off" />
-            {showSugg && (
+            {(showSugg || form.azienda.trim().length > 1) && (
               <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl"
                 style={{ background: '#1A1A2E' }}>
                 {suggestions.map(s => (
