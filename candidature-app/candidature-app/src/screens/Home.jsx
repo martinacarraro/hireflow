@@ -375,6 +375,8 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
+  const lastUpdate = new Date(c.updated_at || c.created_at)
+  const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
 
   // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
@@ -446,7 +448,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              {c.priorita && <PriorityBadge priorita={c.priorita} />}
+              {c.priorita && isRecent && <PriorityBadge priorita={c.priorita} />}
               <span className="text-xs text-muted font-medium">{days}gg fa</span>
             </div>
           </div>
