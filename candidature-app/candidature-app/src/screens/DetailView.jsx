@@ -5,7 +5,7 @@ import {
 } from '../components/UI'
 import {
   STATI, PRIORITA, FEELING_OPTIONS, STATUS_CONFIG, PRIORITA_CONFIG,
-  TIPI_COLLOQUIO, FONTI, daysSince, formatDate
+  TIPI_COLLOQUIO, FONTI, WELFARE_OPTIONS, daysSince, formatDate
 } from '../lib/utils'
 
 const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
@@ -321,6 +321,28 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 value={form.stipendio_max || ''} onChange={e => set('stipendio_max', e.target.value ? parseInt(e.target.value) : null)} />
             </div>
           </div>
+        </Section>
+
+        {/* WELFARE / BENEFIT */}
+        <Section label="🎁 BENEFIT E WELFARE">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {WELFARE_OPTIONS.map(opt => {
+              const selected = (form.welfare || []).includes(opt)
+              return (
+                <button key={opt}
+                  onClick={() => {
+                    const cur = form.welfare || []
+                    set('welfare', selected ? cur.filter(w => w !== opt) : [...cur, opt])
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs border transition-all active:scale-95
+                    ${selected ? 'bg-green-500/20 border-green-500/60 text-green-400' : 'border-border text-muted'}`}>
+                  {selected ? '✓ ' : ''}{opt}
+                </button>
+              )
+            })}
+          </div>
+          <input className="input-field text-sm" placeholder="Altri benefit (es: auto aziendale, bonus firma...)"
+            value={form.welfare_note || ''} onChange={e => set('welfare_note', e.target.value)} />
         </Section>
 
         {/* FEELING */}
