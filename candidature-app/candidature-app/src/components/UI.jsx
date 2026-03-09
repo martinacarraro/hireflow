@@ -51,46 +51,41 @@ function guessDomain(name) {
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  const domain = domainProp || guessDomain(name)
-
-  // Try multiple logo sources in order
-  const sources = [
-    `https://logo.clearbit.com/${domain}`,
-    `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`,
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-  ]
-  const [srcIdx, setSrcIdx] = React.useState(0)
   const [failed, setFailed] = React.useState(false)
+  const [loaded, setLoaded] = React.useState(false)
+
+  // Only use logo if we have an explicit saved domain from Clearbit autocomplete
+  const logoUrl = domainProp ? `https://logo.clearbit.com/${domainProp}` : null
 
   React.useEffect(() => {
-    setSrcIdx(0)
     setFailed(false)
-  }, [domain])
+    setLoaded(false)
+  }, [domainProp])
 
-  const handleError = () => {
-    if (srcIdx < sources.length - 1) setSrcIdx(i => i + 1)
-    else setFailed(true)
-  }
-
-  if (!failed) {
+  // No saved domain → always show letter avatar
+  if (!logoUrl || failed) {
     return (
-      <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 bg-white"
-        style={{ width: size, height: size, minWidth: size }}>
-        <img
-          key={sources[srcIdx]}
-          src={sources[srcIdx]}
-          alt={name}
-          onError={handleError}
-          style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
-        />
+      <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
+        style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
+        {letter}
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
-      style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
-      {letter}
+    <div className="rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
+      style={{ width: size, height: size, minWidth: size, background: loaded ? '#fff' : bg }}>
+      {!loaded && (
+        <span style={{ fontSize: size * 0.42, color: text, fontWeight: 'bold' }}>{letter}</span>
+      )}
+      <img
+        key={logoUrl}
+        src={logoUrl}
+        alt={name}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        style={{ width: loaded ? size * 0.82 : 0, height: loaded ? size * 0.82 : 0, objectFit: 'contain' }}
+      />
     </div>
   )
 }
