@@ -191,7 +191,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </Section>
 
         {/* COLLOQUIO */}
-        {STATI_CON_COLLOQUIO.includes(form.stato) && (
+        {(
           <Section label="🎙️ DETTAGLI COLLOQUIO">
             <div className="space-y-3">
               <p className="text-xs text-disabled font-semibold uppercase tracking-wide">1° Colloquio</p>
@@ -207,7 +207,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                     value={form.ora_colloquio || ''} onChange={e => set('ora_colloquio', e.target.value)} />
                 </div>
               </div>
-              {['Secondo colloquio','In attesa risposta'].includes(form.stato) && (
+              {(
                 <>
                   <p className="text-xs text-disabled font-semibold uppercase tracking-wide mt-2">2° Colloquio</p>
                   <div className="flex gap-3">
