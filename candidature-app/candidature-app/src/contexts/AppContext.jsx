@@ -105,6 +105,10 @@ export function AppProvider({ children }) {
 
   const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id)
+    // Preserve data_colloquio if it was set before and not explicitly being cleared
+    if (prev?.data_colloquio && updates.data_colloquio === undefined) {
+      updates = { ...updates, data_colloquio: prev.data_colloquio }
+    }
     const { data: row, error } = await supabase
       .from('candidature').update(updates).eq('id', id).select().single()
     if (error) { showToast('❌ Errore — riprova.', 'error'); return }
