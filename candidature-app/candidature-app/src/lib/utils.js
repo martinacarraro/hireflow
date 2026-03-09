@@ -2,7 +2,7 @@
 
 export const STATI = ['Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
 export const PRIORITA = ['Alta','Media','Bassa']
-export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Referral','Sito aziendale','Altro']
+export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
 export const TIPI_COLLOQUIO = ['📞 Telefonico','💻 Video','🏢 In presenza']
 export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
@@ -200,20 +200,110 @@ export function getXpProgress(xp = 0) {
 }
 
 export const BADGES = [
-  { id: 'first',       emoji: '🚀', name: 'Prima Candidatura',    desc: 'Hai aggiunto la tua prima candidatura!',            check: (s) => s.total >= 1 },
-  { id: 'ten',         emoji: '🎯', name: 'Cecchino/a',             desc: '10 candidature totali inviate.',                   check: (s) => s.total >= 10 },
-  { id: 'twentyfive',  emoji: '💫', name: 'Instancabile',         desc: '25 candidature totali.',                           check: (s) => s.total >= 25 },
-  { id: 'fifty',       emoji: '👑', name: 'Leggenda',             desc: '50 candidature — sei inarrestabile.',              check: (s) => s.total >= 50 },
-  { id: 'colloquio1',  emoji: '🎙️', name: 'In the Game',          desc: 'Hai ottenuto il tuo primo colloquio!',             check: (s) => s.colloqui >= 1 },
-  { id: 'fire',        emoji: '🔥', name: 'On Fire',              desc: '3 colloqui in un mese.',                           check: (s) => s.colloquiThisMonth >= 3 },
-  { id: 'checklist',   emoji: '📋', name: 'Organizzato/a',     desc: 'Checklist completa prima di un colloquio.',        check: (s) => s.checklistComplete >= 1 },
-  { id: 'resilient',   emoji: '💜', name: 'Resiliente',           desc: 'Hai continuato dopo 3 ghosting.',                  check: (s) => s.ghosted >= 3 && s.total > s.ghosted },
-  { id: 'offer',       emoji: '🏆', name: 'Ce l\'hai fatta!',     desc: 'Hai ricevuto un\'offerta. Meritata. 🎉',           check: (s) => s.offerte >= 1 },
-  { id: 'ghosthunter', emoji: '👻', name: 'Ghost Hunter',         desc: '5 aziende marchiate GHOSTED. Classici.',           check: (s) => s.ghosted >= 5 },
-  { id: 'writer',      emoji: '✍️', name: 'Scrittore/ice',           desc: 'Note aggiunte a 10 candidature.',                  check: (s) => s.withNotes >= 10 },
-  { id: 'smart',       emoji: '🔗', name: 'Smart Applier',        desc: '5 candidature via smart link parser.',             check: (s) => s.smartParsed >= 5 },
-  { id: 'dates',       emoji: '📅', name: 'Puntuale',             desc: 'Data aggiunta a 5 colloqui.',                      check: (s) => s.withDates >= 5 },
-  { id: 'world',       emoji: '🌍', name: 'Cosmopolita',          desc: 'Candidature in 3+ paesi diversi.',                 check: (s) => s.countries >= 3 },
+  {
+    id: 'first', emoji: '🚀', name: 'Prima Candidatura',
+    desc: 'Hai aggiunto la tua prima candidatura!',
+    shareText: 'Ho appena mandato la mia prima candidatura e la sto tracciando su Le faremo sapere 🚀 Il mio viaggio nella ricerca lavoro inizia qui.',
+    color: '#7B2FFF', bg: '#1a0a3a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#7B2FFF"/><path d="M32 12C32 12 22 24 22 34a10 10 0 0020 0C42 24 32 12 32 12z" fill="white" opacity="0.9"/><circle cx="32" cy="34" r="4" fill="#7B2FFF"/><path d="M24 44l-4 6M40 44l4 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+    check: (s) => s.total >= 1
+  },
+  {
+    id: 'ten', emoji: '🎯', name: 'Cecchino/a',
+    desc: '10 candidature inviate — mira che non erra.',
+    shareText: 'Ho inviato 10 candidature e le sto tracciando tutte su Le faremo sapere 🎯 Organizzazione è metà della battaglia.',
+    color: '#EF4444', bg: '#2a0a0a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#EF4444"/><circle cx="32" cy="32" r="18" stroke="white" stroke-width="2.5" fill="none"/><circle cx="32" cy="32" r="10" stroke="white" stroke-width="2.5" fill="none"/><circle cx="32" cy="32" r="4" fill="white"/><line x1="32" y1="10" x2="32" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="48" x2="32" y2="54" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="10" y1="32" x2="16" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="32" x2="54" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    check: (s) => s.total >= 10
+  },
+  {
+    id: 'twentyfive', emoji: '💫', name: 'Instancabile',
+    desc: '25 candidature — non ti ferma nessuno.',
+    shareText: 'Quota 25 candidature raggiunta! 💫 Uso Le faremo sapere per non perdere il filo della mia ricerca lavoro. Funziona.',
+    color: '#F59E0B', bg: '#2a1a00',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#F59E0B"/><polygon points="32,10 36,26 52,26 39,36 43,52 32,42 21,52 25,36 12,26 28,26" fill="white"/></svg>',
+    check: (s) => s.total >= 25
+  },
+  {
+    id: 'fifty', emoji: '👑', name: 'Leggenda',
+    desc: '50 candidature — sei inarrestabile.',
+    shareText: '50 candidature. Cinquanta. 👑 Sì, le sto tracciando tutte su Le faremo sapere. Perché "le faremo sapere" non è una risposta.',
+    color: '#FFD700', bg: '#1a1500',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#B8860B"/><path d="M12 42h40v4H12z" fill="#FFD700"/><path d="M12 42L20 24l12 12 12-16 8 22z" fill="#FFD700"/><circle cx="20" cy="24" r="3" fill="white"/><circle cx="32" cy="36" r="3" fill="white"/><circle cx="44" cy="20" r="3" fill="white"/></svg>',
+    check: (s) => s.total >= 50
+  },
+  {
+    id: 'colloquio1', emoji: '🎙️', name: 'In the Game',
+    desc: 'Hai ottenuto il tuo primo colloquio!',
+    shareText: 'Primo colloquio ottenuto! 🎙️ Lo sto tracciando su Le faremo sapere — l'app che mi aiuta a gestire la ricerca lavoro senza impazzire.',
+    color: '#22C55E', bg: '#0a2a0a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#22C55E"/><rect x="26" y="14" width="12" height="22" rx="6" fill="white"/><path d="M20 34c0 6.627 5.373 12 12 12s12-5.373 12-12" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><line x1="32" y1="46" x2="32" y2="52" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="52" x2="38" y2="52" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    check: (s) => s.colloqui >= 1
+  },
+  {
+    id: 'fire', emoji: '🔥', name: 'On Fire',
+    desc: '3+ colloqui in un mese — sei caldissima.',
+    shareText: '3 colloqui in un mese 🔥 La mia ricerca lavoro è in modalità turbo. Gestisco tutto con Le faremo sapere.',
+    color: '#F97316', bg: '#2a1000',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#F97316"/><path d="M32 52C22 52 16 44 16 36c0-6 3-10 6-13 0 4 2 6 4 6-1-4 1-10 6-16 1 6 4 9 7 11-1-3 0-6 2-8 3 4 5 9 5 14 0 10-6 22-14 22z" fill="white" opacity="0.95"/><path d="M32 46c-4 0-8-4-8-9 0-3 2-5 3-6 0 2 1 4 3 4 0-2 1-5 3-7 1 3 3 5 3 8 2-1 2-3 2-4 2 2 3 5 3 7 0 5-5 7-9 7z" fill="#F97316"/></svg>',
+    check: (s) => s.colloquiThisMonth >= 3
+  },
+  {
+    id: 'resilient', emoji: '💜', name: 'Resiliente',
+    desc: 'Ghostata 3 volte e hai continuato. Rispetto.',
+    shareText: 'Tre ghosting. Ho continuato lo stesso. 💜 Chi usa Le faremo sapere sa che i no fanno parte del gioco — e li traccia pure quelli.',
+    color: '#A855F7', bg: '#1a0a2a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#A855F7"/><path d="M32 48l-14-14a10 10 0 0114-14 10 10 0 0114 14z" fill="white"/><circle cx="26" cy="28" r="2" fill="#A855F7"/><circle cx="38" cy="28" r="2" fill="#A855F7"/><path d="M28 38c0 0 2 2 4 2s4-2 4-2" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>',
+    check: (s) => s.ghosted >= 3 && s.total > s.ghosted
+  },
+  {
+    id: 'offer', emoji: '🏆', name: 'Ce l'hai fatta!',
+    desc: 'Hai ricevuto un'offerta. Meritata. 🎉',
+    shareText: 'Offerta ricevuta! 🏆 Ho tracciato ogni candidatura, ogni colloquio, ogni ghosting su Le faremo sapere. Ne è valsa la pena.',
+    color: '#FFD700', bg: '#1a1200',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#B8860B"/><path d="M20 18h24l-4 16H24z" fill="#FFD700"/><path d="M18 18h28v4H18z" fill="white" opacity="0.9"/><rect x="27" y="34" width="10" height="4" fill="#FFD700"/><rect x="22" y="38" width="20" height="4" rx="1" fill="white" opacity="0.9"/><circle cx="32" cy="14" r="3" fill="white"/></svg>',
+    check: (s) => s.offerte >= 1
+  },
+  {
+    id: 'ghosthunter', emoji: '👻', name: 'Ghost Hunter',
+    desc: '5 aziende marchiate GHOSTED. Classici.',
+    shareText: '5 ghost. Cinque. 👻 Le ho segnate tutte su Le faremo sapere. Il silenzio dice tanto quanto una risposta.',
+    color: '#6B7280', bg: '#111827',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#374151"/><path d="M20 48V30a12 12 0 0124 0v18l-4-4-4 4-4-4-4 4-4-4-4 4z" fill="white" opacity="0.9"/><circle cx="27" cy="30" r="3" fill="#374151"/><circle cx="37" cy="30" r="3" fill="#374151"/><circle cx="28.5" cy="29" r="1" fill="white"/><circle cx="38.5" cy="29" r="1" fill="white"/></svg>',
+    check: (s) => s.ghosted >= 5
+  },
+  {
+    id: 'writer', emoji: '✍️', name: 'Scrittore/ice',
+    desc: 'Note aggiunte a 10 candidature. Dettaglio è tutto.',
+    shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un'altra cosa.',
+    color: '#06B6D4', bg: '#0a1a2a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#06B6D4"/><rect x="18" y="18" width="28" height="34" rx="3" fill="white" opacity="0.9"/><line x1="24" y1="26" x2="40" y2="26" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="32" x2="40" y2="32" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="38" x2="34" y2="38" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><path d="M36 44l8-8-3-3-8 8v3h3z" fill="#06B6D4"/></svg>',
+    check: (s) => s.withNotes >= 10
+  },
+  {
+    id: 'dates', emoji: '📅', name: 'Puntuale',
+    desc: 'Data aggiunta a 5 colloqui. Mai in ritardo.',
+    shareText: 'Mai perso un colloquio per disorganizzazione 📅 Uso Le faremo sapere per tenere tutte le date sotto controllo.',
+    color: '#3B82F6', bg: '#0a1020',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#3B82F6"/><rect x="16" y="20" width="32" height="28" rx="4" fill="white" opacity="0.9"/><rect x="16" y="20" width="32" height="8" rx="4" fill="#3B82F6"/><line x1="24" y1="16" x2="24" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="16" x2="40" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M24 36l5 5 11-9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+    check: (s) => s.withDates >= 5
+  },
+  {
+    id: 'world', emoji: '🌍', name: 'Cosmopolita',
+    desc: 'Candidature in 3+ paesi. Il mondo è il tuo ufficio.',
+    shareText: 'Sto cercando lavoro in più paesi 🌍 Con Le faremo sapere gestisco tutto in un posto solo — Italia, Europa e oltre.',
+    color: '#10B981', bg: '#0a1a10',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><circle cx="32" cy="32" r="16" fill="white" opacity="0.15" stroke="white" stroke-width="1.5"/><ellipse cx="32" cy="32" rx="8" ry="16" stroke="white" stroke-width="1.5" fill="none"/><line x1="16" y1="32" x2="48" y2="32" stroke="white" stroke-width="1.5"/><line x1="18" y1="24" x2="46" y2="24" stroke="white" stroke-width="1.5"/><line x1="18" y1="40" x2="46" y2="40" stroke="white" stroke-width="1.5"/></svg>',
+    check: (s) => s.countries >= 3
+  },
+  {
+    id: 'checklist', emoji: '📋', name: 'Organizzato/a',
+    desc: 'Checklist completa prima di un colloquio.',
+    shareText: 'Nessun colloquio senza preparazione ✅ Con Le faremo sapere ho la checklist sempre pronta. Dettaglio che fa la differenza.',
+    color: '#8B5CF6', bg: '#1a0a2a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#8B5CF6"/><rect x="18" y="16" width="28" height="34" rx="3" fill="white" opacity="0.9"/><path d="M24 26l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M24 34l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="24" y1="44" x2="36" y2="44" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/></svg>',
+    check: (s) => s.checklistComplete >= 1
+  },
 ]
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
