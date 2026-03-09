@@ -179,6 +179,20 @@ export default function AddCandidatura({ onBack, onDone }) {
             onChange={v => set('fonte', v)} />
         </Field>
 
+        <Field label="🔗 Link offerta">
+          <div className="flex gap-2">
+            <input className="input-field flex-1 text-sm" type="url"
+              placeholder="https://..."
+              value={form.link_annuncio} onChange={e => set('link_annuncio', e.target.value)} />
+            {form.link_annuncio && (
+              <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
+                className="flex-shrink-0 px-3 py-2 rounded-xl border border-border text-muted text-sm active:scale-95 transition-all">
+                ↗
+              </a>
+            )}
+          </div>
+        </Field>
+
         <Field label="⚡ Priorità">
           <ChoicePicker value={form.priorita} options={PRIORITA}
             onChange={v => set('priorita', v)} />
