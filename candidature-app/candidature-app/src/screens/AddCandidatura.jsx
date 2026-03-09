@@ -58,7 +58,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     setLoading(true)
     const payload = {
       ...form,
-      azienda_domain: companyDomain || undefined,
+      azienda_domain: companyDomain,  // '' = no logo, 'domain.com' = logo, undefined = not set
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
       data_colloquio: form.data_colloquio || null,
