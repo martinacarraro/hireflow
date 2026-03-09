@@ -112,7 +112,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                       onChange={e => { set('azienda', e.target.value); set('azienda_domain', '') }}
                       onBlur={() => setTimeout(() => { setShowAziendaSugg(false); setEditingAzienda(false) }, 150)}
                     />
-                    {showAziendaSugg && (
+                    {(showAziendaSugg || form.azienda.trim().length > 1) && (
                       <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl" style={{ background: '#1A1A2E' }}>
                         {aziendaSugg.map(s => (
                           <button key={s.domain} type="button"
