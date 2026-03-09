@@ -5,7 +5,7 @@ import { STATUS_CONFIG, formatDate } from '../lib/utils'
 
 const MESI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
 const MESI_FULL = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
-const STATI_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
+const STATI_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED']
 
 export default function Calendar({ onDetail }) {
   const { candidature, unreadCount, notifications, markAllNotificationsRead } = useApp()
@@ -40,7 +40,7 @@ export default function Calendar({ onDetail }) {
   // All events (candidature with colloquio date OR data_invio)
   const eventi = useMemo(() => {
     return candidature
-      .filter(c => STATI_COLLOQUIO.includes(c.stato) && c.data_colloquio)
+      .filter(c => c.data_colloquio)
       .map(c => ({
         ...c,
         _date: new Date(c.data_colloquio),
