@@ -390,8 +390,10 @@ export default function Profile() {
               <button
                 onClick={() => {
                   const postText = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
-                  // Copy to clipboard first, then open LinkedIn so user can paste
-                  try { await navigator.clipboard.writeText(postText) } catch {}
+                  // Copy to clipboard, then open LinkedIn
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(postText).catch(() => {})
+                  }
                   const linkedinUrl = `https://www.linkedin.com/feed/?shareActive=true`
                   window.open(linkedinUrl, '_blank')
                   setTimeout(() => alert('📋 Testo copiato! Incollalo nel post LinkedIn che si è aperto.'), 500)
