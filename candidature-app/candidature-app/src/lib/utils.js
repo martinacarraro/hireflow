@@ -330,7 +330,7 @@ export const BADGES = [
   {
     id: 'linked', emoji: '🔗', name: 'Link Master',
     desc: 'Link annuncio aggiunto a 5 candidature.',
-    shareText: 'Organizzo ogni candidatura col link all'annuncio 🔗 Su Le faremo sapere tengo traccia di tutto — non perdo mai un dettaglio.',
+    shareText: 'Organizzo ogni candidatura col link all\'annuncio 🔗 Su Le faremo sapere tengo traccia di tutto — non perdo mai un dettaglio.',
     color: '#0EA5E9', bg: '#0a1520',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#0EA5E9"/><path d="M26 38l12-12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M30 26l4-4a6 6 0 018.5 8.5l-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M34 38l-4 4a6 6 0 01-8.5-8.5l4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>',
     check: (s) => s.smartParsed >= 5
