@@ -20,13 +20,15 @@ const TEMPLATE_B64 = 'UEsDBBQAAAAIAKpoZlxGx01IlQAAAM0AAAAQAAAAZG9jUHJvcHMvYXBwLn
 
 export default function Profile() {
   const { profile, updateProfile, notifications, markAllNotificationsRead,
-    unreadCount, refreshMotto, requestNotificationPermission, addBulkCandidature } = useApp()
+    unreadCount, refreshMotto, requestNotificationPermission, addBulkCandidature,
+    candidature: tutteLeCandidature, updateCandidatura } = useApp()
   const { user, signOut } = useAuth()
 
   const [confirmSignOut, setConfirmSignOut]   = useState(false)
   const [confirmDelete, setConfirmDelete]     = useState(false)
   const [showNotifs, setShowNotifs]           = useState(false)
   const [editBio, setEditBio]                 = useState(false)
+  const [showArchive, setShowArchive]         = useState(false)
   const [editNome, setEditNome]               = useState(false)
   const [bio, setBio]                         = useState(profile?.bio_lavoro || '')
   const [nomeEdit, setNomeEdit]               = useState(profile?.nome || '')
@@ -101,13 +103,16 @@ export default function Profile() {
           azienda: String(col(r, 'aziend', 'company') || '?').trim(),
           ruolo: String(col(r, 'ruol', 'role', 'posiz', 'job', 'titolo') || '—').trim(),
           stato: resolveStato(col(r, 'stato', 'status')),
-          data_invio: (() => {
-            const dataBase = fmtDate(col(r, 'data cand', 'data invio', 'invio', 'data')) || today
-            const dataColl = fmtDate(col(r, 'data coll', 'colloquio'))
-            // Se c'è una data colloquio, usala come ultima data di contatto
-            return dataColl && dataColl > dataBase ? dataColl : dataBase
+          data_invio: fmtDate(col(r, 'data cand', 'data invio', 'invio', 'data')) || today,
+          data_colloquio: (() => {
+            const dataColl = fmtDate(col(r, 'data coll', 'colloquio', 'data 1° colloquio', 'data colloquio'))
+            const stato = resolveStato(col(r, 'stato', 'status'))
+            const statiConColloquio = ['In attesa risposta','Colloquio','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED','Prima call']
+            // Se lo stato implica che un colloquio è avvenuto, preserva la data
+            if (dataColl && statiConColloquio.includes(stato)) return dataColl
+            if (dataColl && ['Colloquio','Secondo colloquio','Prima call'].includes(stato)) return dataColl
+            return dataColl || null
           })(),
-          data_colloquio: fmtDate(col(r, 'data coll', 'colloquio')) || null,
           notifiche_push: true,
         }))
 
@@ -295,6 +300,38 @@ export default function Profile() {
           </div>
           <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Le notifiche su mobile richiedono che l'app sia installata come PWA.</p>
         </div>
+
+        {/* Archivio */}
+        {(() => {
+          const archiviate = tutteLeCandidature.filter(c => c.archiviata)
+          if (archiviate.length === 0) return null
+          return (
+            <div className="card space-y-2">
+              <button onClick={() => setShowArchive(v => !v)}
+                className="w-full flex items-center justify-between py-1">
+                <SectionLabel>📦 ARCHIVIO ({archiviate.length})</SectionLabel>
+                <span className="text-muted text-xs">{showArchive ? '▲ chiudi' : '▼ mostra'}</span>
+              </button>
+              {showArchive && (
+                <div className="space-y-2 pt-1">
+                  {archiviate.map(c => (
+                    <div key={c.id} className="flex items-center justify-between gap-2 py-2 border-t border-border/50">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-txt truncate">{c.azienda}</p>
+                        <p className="text-xs text-muted truncate">{c.ruolo}</p>
+                      </div>
+                      <button
+                        onClick={() => updateCandidatura(c.id, { archiviata: false })}
+                        className="flex-shrink-0 text-xs text-purple-soft border border-purple/40 px-3 py-1.5 rounded-full active:scale-95 transition-all">
+                        Ripristina
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Supporto */}
         <div className="card space-y-2">
