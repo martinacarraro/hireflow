@@ -51,19 +51,20 @@ function guessDomain(name) {
 export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  const domain = domainProp || guessDomain(name)
+  const domain = guessDomain(name)
 
-  // Se dominio salvato dall'autocomplete → Clearbit HD poi Google Favicon
-  // Se nome scritto a mano (no domainProp) → solo Google Favicon, mai Clearbit (evita loghi sbagliati)
-  const sources = React.useMemo(() => domainProp
-    ? [
-        `https://logo.clearbit.com/${domainProp}`,
-        `https://www.google.com/s2/favicons?domain=${domainProp}&sz=128`,
-      ]
-    : [
-        `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-      ],
-  [domain, domainProp])
+  // domainProp = '' → utente ha scelto "nome personalizzato" → SEMPRE lettera, niente logo
+  // domainProp = stringa → scelto da autocomplete → Clearbit → Google Favicon
+  // domainProp = undefined/null → non impostato → Google Favicon con dominio indovinato
+  const forceNoLogo = domainProp === ''
+  const sources = React.useMemo(() => {
+    if (forceNoLogo) return []
+    if (domainProp) return [
+      `https://logo.clearbit.com/${domainProp}`,
+      `https://www.google.com/s2/favicons?domain=${domainProp}&sz=128`,
+    ]
+    return [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`]
+  }, [domain, domainProp, forceNoLogo])
 
   const [idx, setIdx] = React.useState(0)
   const [failed, setFailed] = React.useState(false)
@@ -79,7 +80,7 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
     if (idx === 1 && e.target.naturalWidth <= 16) handleError()
   }
 
-  if (failed) {
+  if (failed || forceNoLogo) {
     return (
       <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
         style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
