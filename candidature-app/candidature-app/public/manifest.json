@@ -23,46 +23,46 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/screen1.png",
+      "src": "/screenshots/Screen1 - home.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Home — accedi e inizia a tracciare"
+      "label": "Home"
     },
     {
-      "src": "/screenshots/screen2.png",
+      "src": "/screenshots/Screen2 - nuova candidatura.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Aggiungi una nuova candidatura in 30 secondi"
+      "label": "Nuova candidatura"
     },
     {
-      "src": "/screenshots/screen3.png",
+      "src": "/screenshots/Screen3 - candidature.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Tutte le tue candidature organizzate"
+      "label": "Candidature"
     },
     {
-      "src": "/screenshots/screen4.png",
+      "src": "/screenshots/Screen4 - calendario.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Calendario colloqui"
+      "label": "Calendario"
     },
     {
-      "src": "/screenshots/screen5.png",
+      "src": "/screenshots/Screen5 - stats.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Le tue statistiche e progressi"
+      "label": "Statistiche"
     },
     {
-      "src": "/screenshots/screen6.png",
+      "src": "/screenshots/Screen6 - stats2.jpg",
       "sizes": "1080x2400",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Analisi dettagliata delle candidature"
+      "label": "Statistiche dettaglio"
     }
   ]
 }
