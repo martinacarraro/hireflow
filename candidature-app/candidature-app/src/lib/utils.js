@@ -188,7 +188,7 @@ export const XP_EVENTS = {
 
 export const LEVELS = [
   { min: 0,    max: 49,   lv: 1, name: 'In cerca',         emoji: '🌱' },
-  { min: 50,   max: 149,  lv: 2, name: 'Determinata',      emoji: '⚡' },
+  { min: 50,   max: 149,  lv: 2, name: 'Determinat*',      emoji: '⚡' },
   { min: 150,  max: 299,  lv: 3, name: 'In forma',         emoji: '🔥' },
   { min: 300,  max: 499,  lv: 4, name: 'Warrior',          emoji: '⚔️' },
   { min: 500,  max: 999,  lv: 5, name: 'Pro della Ricerca',emoji: '🎯' },
@@ -216,7 +216,7 @@ export const BADGES = [
     check: (s) => s.total >= 1
   },
   {
-    id: 'ten', emoji: '🎯', name: 'Cecchino/a',
+    id: 'ten', emoji: '🎯', name: 'Cecchin*',
     desc: '10 candidature inviate — mira che non erra.',
     shareText: 'Ho inviato 10 candidature e le sto tracciando tutte su Le faremo sapere 🎯 Organizzazione è metà della battaglia.',
     color: '#EF4444', bg: '#2a0a0a',
@@ -280,7 +280,7 @@ export const BADGES = [
     check: (s) => s.ghosted >= 5
   },
   {
-    id: 'writer', emoji: '✍️', name: 'Scrittore/ice',
+    id: 'writer', emoji: '✍️', name: 'Scrittor*',
     desc: 'Note aggiunte a 10 candidature. Dettaglio è tutto.',
     shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un\'altra cosa.',
     color: '#06B6D4', bg: '#0a1a2a',
@@ -374,13 +374,13 @@ export const BADGES = [
 export const MOTTOS = [
   '"Le faremo sapere." — E tu tieni il conto. 📬',
   'Ogni no ti avvicina al sì giusto. ✨',
-  'Ghostata? Prossima. 👻',
+  'Ghostat*? Prossima. 👻',
   'Il silenzio dice tanto quanto una risposta. 🤐',
   'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
   'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
   'Non aspettare che facciano sapere — anticipa. 📞',
   'Ogni colloquio è pratica per il colloquio giusto. 🎙️',
-  'La ricerca è un lavoro. Tu ce la stai mettendo tutta. 🔥',
+  'La ricerca è un lavoro. Ce la stai mettendo tutta. 🔥',
   '"Valuteremo il tuo profilo." — Intanto tu vai avanti. 🚀',
   'Il tuo prossimo lavoro esiste già. Lo stai trovando. 💡',
   'Resisti. Il mercato non sa ancora cosa si perde. 💪',
@@ -393,7 +393,7 @@ export const LOADING_TIPS = [
   { cat: '🎙️ Colloquio', text: "La domanda 'Hai domande per noi?' NON è retorica. Preparane almeno 2." },
   { cat: '🎙️ Colloquio', text: "Parla dei risultati con numeri: 'Ho aumentato X del 30%' batte 'Lavoravo su X'." },
   { cat: '🎙️ Colloquio', text: "Se non capisci una domanda, chiedi di ripeterla. È attenzione, non ignoranza." },
-  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come proattiva." },
+  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come proattiv*." },
   { cat: '🎙️ Colloquio', text: "Dopo il colloquio, manda una mail di ringraziamento entro 24h. Pochi lo fanno. Quei pochi si ricordano." },
   { cat: '🎙️ Colloquio', text: "Sul salario: cerca la media su LinkedIn o Glassdoor prima di rispondere. Non sparare alla cieca." },
   { cat: '📄 CV',         text: "Il CV perfetto è su una pagina (se hai meno di 10 anni di esperienza). Meno è più." },
@@ -411,7 +411,7 @@ export const LOADING_TIPS = [
   { cat: '🏆 Offerta',   text: "Prima di firmare, leggi il contratto completo. È normale, è professionale, è il tuo diritto." },
   { cat: '🏆 Offerta',   text: "Confronta il pacchetto totale: RAL, benefit, ferie, smart working. Lo stipendio è solo una parte." },
   { cat: '🚀 Pro tip',   text: "Tenere traccia delle candidature (come fai qui!) riduce l'ansia del 'chissà quante ne ho mandate'." },
-  { cat: '🚀 Pro tip',   text: "Stai usando questa app? Sei già più organizzata del 90% delle persone in cerca di lavoro." },
+  { cat: '🚀 Pro tip',   text: "Stai usando questa app? Sei già più organizzat* del 90% delle persone in cerca di lavoro." },
   { cat: '🚀 Pro tip',   text: "Candidarsi alle 9-11 di mattina aumenta le chance di essere visti. I recruiter iniziano la giornata freschi." },
   { cat: '🚀 Pro tip',   text: "Un messaggio diretto al recruiter su LinkedIn dopo la candidatura può fare la differenza." },
 ]

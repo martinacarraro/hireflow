@@ -224,7 +224,7 @@ export default function Stats() {
                 {stats.tasso >= 15 && <p>🔥 Tasso di risposta {stats.tasso}% — sopra la media. Stai facendo benissimo!</p>}
                 {stats.tasso < 10 && stats.total > 5 && <p>💪 Tasso {stats.tasso}%  — la media è ~10%. Prova a personalizzare di più il CV.</p>}
                 {stats.avgAttesa > 14 && <p>⏳ Attesa media di {stats.avgAttesa} giorni — considera dei follow-up!</p>}
-                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno ghostata. Il problema è loro, non tu. 💜</p>}
+                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno ghostat*. Il problema è loro, non tu. 💜</p>}
                 {stats.offerte >= 1 && <p>🏆 {stats.offerte} offerta ricevuta. Ce l'hai fatta!</p>}
                 {stats.total > 0 && stats.colloqui === 0 && <p>🎯 Ancora nessun colloquio — prova a personalizzare le candidature.</p>}
               </div>

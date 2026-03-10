@@ -178,7 +178,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         <div className="pb-8">
-          <p className="text-center text-xs text-muted">💜 Respira. Sei preparata. In bocca al lupo!</p>
+          <p className="text-center text-xs text-muted">💜 Respira. Sei prontissim*. In bocca al lupo!</p>
         </div>
       </div>
     </div>
