@@ -89,9 +89,8 @@ export default function App() {
           <div className="text-center">
             <p className="text-5xl mb-4">✅</p>
             <h2 className="text-xl font-bold text-white mb-2">Password aggiornata!</h2>
-            <p className="text-sm text-gray-400 mb-6">Ora puoi accedere con la nuova password.</p>
-            <button onClick={() => { window.location.replace(window.location.origin) }}
-              className="btn-primary w-full py-3">Vai al login</button>
+            <p className="text-sm text-gray-400 mb-6">Riapri l'app e accedi con la tua nuova password.</p>
+            <p className="text-xs text-gray-500">Puoi chiudere questa pagina 👻</p>
           </div>
         ) : (
           <>
@@ -105,12 +104,16 @@ export default function App() {
               if (newPassword.length < 6) return
               setResetLoading(true)
               const { error } = await supabase.auth.updateUser({ password: newPassword })
-              if (!error) setResetDone(true)
               setResetLoading(false)
+              if (error) {
+                alert('Errore: ' + error.message)
+              } else {
+                setResetDone(true)
+              }
             }} disabled={resetLoading || newPassword.length < 6}
               className="btn-primary w-full py-3"
               style={{ opacity: newPassword.length >= 6 ? 1 : 0.4 }}>
-              {resetLoading ? '⏳...' : '✅ Salva nuova password'}
+              {resetLoading ? '⏳ Salvataggio...' : '✅ Salva nuova password'}
             </button>
           </>
         )}
