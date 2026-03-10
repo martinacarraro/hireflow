@@ -7,7 +7,6 @@ export const STATI = [
   'Colloquio',
   'Secondo colloquio',
   'Offerta ricevuta',
-  'Assunta',
   'In attesa risposta',
   'Rifiutata',
   'Non mi piace',
@@ -28,7 +27,9 @@ export const FEELING_OPTIONS = ['😍','🙂','😐','😬','🤷']
 
 export const STATUS_CONFIG = {
   'Offerta ricevuta':   { color: '#10B981', bg: 'rgba(16,185,129,0.15)',  emoji: '🏆', label: 'Offerta' },
-  'Assunta':            { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  emoji: '🌟', label: 'Assunta' },
+  'Assunta': { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', emoji: '🌟', label: 'Assunt*' },
+  'Assunto':  { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', emoji: '🌟', label: 'Assunto' },
+'Assunt*':  { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', emoji: '🌟', label: 'Assunt*' },
   'Spontanea':          { color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', emoji: '💡', label: 'Spontanea' },
   'Inviata':            { color: '#3B82F6', bg: 'rgba(59,130,246,0.15)',  emoji: '📤', label: 'Inviata' },
   'Vista':              { color: '#F97316', bg: 'rgba(249,115,22,0.15)',  emoji: '👀', label: 'Vista' },

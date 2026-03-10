@@ -200,7 +200,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   <button onClick={async () => {
                     const genere = profile?.genere
                     const nomeAssunta = genere === 'm' ? 'Assunto' : genere === 'f' ? 'Assunta' : 'Assunt*'
-                    set('stato', 'Assunta')
+                    const statoAssunta = profile?.genere === 'f' ? 'Assunta' : profile?.genere === 'm' ? 'Assunto' : 'Assunt*'
+set('stato', statoAssunta)
                     set('offerta_risposta', 'si')
                     await handleSave()
                     await addXP(50)
