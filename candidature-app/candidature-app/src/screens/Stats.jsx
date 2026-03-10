@@ -36,11 +36,11 @@ export default function Stats() {
     const ghosted = byStato('GHOSTED')
 
     // Distribution by stato
-    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta','Spontanea']
+    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
     const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
     const offerte = byStato('Offerta ricevuta')
     const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
-    const inAttesa = candidature.filter(c => c.stato === 'In attesa')
+    const inAttesa = candidature.filter(c => c.stato === 'In attesa risposta')
     const avgAttesa = inAttesa.length
       ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
       : 0
