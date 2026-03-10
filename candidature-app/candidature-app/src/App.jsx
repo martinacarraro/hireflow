@@ -53,8 +53,11 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
-  if (showSplash || loading) {
-    return <Splash onDone={() => !loading && setShowSplash(false)} />
+  if (loading) {
+    return <Splash onDone={() => {}} />
+  }
+  if (showSplash) {
+    return <Splash onDone={() => setShowSplash(false)} />
   }
 
   if (showFirstOnboarding) {
