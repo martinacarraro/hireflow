@@ -114,11 +114,16 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
 }
 
 // ─── LEVEL BADGE ─────────────────────────────────────────────────
-export function LevelBadge({ xp = 0 }) {
+export function LevelBadge({ xp = 0, genere }) {
   const lv = getLevel(xp)
+  const name = lv.name.endsWith('*')
+    ? (genere === 'f' ? lv.name.slice(0,-1) + 'a'
+     : genere === 'm' ? lv.name.slice(0,-1) + 'o'
+     : lv.name)
+    : lv.name
   return (
     <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple text-white">
-      {lv.emoji} Lv.{lv.lv} {lv.name}
+      {lv.emoji} Lv.{lv.lv} {name}
     </span>
   )
 }
@@ -134,7 +139,7 @@ export function logXpEvent(label, amount) {
   } catch {}
 }
 
-export function XpBar({ xp = 0 }) {
+export function XpBar({ xp = 0, genere }) {
   const lv = getLevel(xp)
   const pct = getXpProgress(xp)
   const next = lv.max === 99999 ? '∞' : lv.max
@@ -145,7 +150,7 @@ export function XpBar({ xp = 0 }) {
   return (
     <div>
       <div className="flex justify-between text-xs text-muted mb-1">
-        <span>{lv.emoji} Lv.{lv.lv} — {lv.name}</span>
+        <span>{lv.emoji} Lv.{lv.lv} — {lv.name.endsWith('*') ? (genere === 'f' ? lv.name.slice(0,-1)+'a' : genere === 'm' ? lv.name.slice(0,-1)+'o' : lv.name) : lv.name}</span>
         <button onClick={() => setShowLog(v => !v)} className="text-purple-soft font-medium">
           {xp} / {next} XP {showLog ? '▴' : '▾'}
         </button>
@@ -290,7 +295,7 @@ export function TabBar({ active, onChange, unread = 0 }) {
     { id: 'profile',  icon: '👤', label: 'Profilo' },
   ]
   return (
-    <div className="bg-surface border-t border-border flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="bg-surface border-t border-border flex-shrink-0 overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-end h-16">
         {tabs.map(t => (
           <button key={t.id} onClick={() => onChange(t.id)}
