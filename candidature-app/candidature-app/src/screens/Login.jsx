@@ -3,12 +3,14 @@ import { useAuth } from '../contexts/AuthContext'
 import { Spinner } from '../components/UI'
 
 export default function Login() {
-  const { signInWithEmail, signUpWithEmail, enterAsGuest } = useAuth()
+  const { signInWithEmail, signUpWithEmail, enterAsGuest, resetPassword } = useAuth()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [forgotPw, setForgotPw] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
 
   const handleEmail = async (e) => {
@@ -34,6 +36,46 @@ export default function Login() {
     setLoading(false)
   }
 
+
+  // ── PASSWORD DIMENTICATA ─────────────────────────────────────
+  if (forgotPw) return (
+    <div className="screen purple-glow-bg relative overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center px-6 py-8">
+        <div className="w-full max-w-sm flex flex-col items-center text-center">
+          {resetSent ? (
+            <>
+              <div className="text-6xl mb-4">📬</div>
+              <h2 className="text-xl font-bold text-txt mb-2">Email inviata!</h2>
+              <p className="text-sm text-muted mb-6">Controlla la tua casella email e clicca il link per reimpostare la password.</p>
+              <button onClick={() => { setForgotPw(false); setResetSent(false) }}
+                className="btn-primary w-full py-3">← Torna al login</button>
+            </>
+          ) : (
+            <>
+              <div className="text-6xl mb-4">🔑</div>
+              <h2 className="text-xl font-bold text-txt mb-2">Password dimenticata?</h2>
+              <p className="text-sm text-muted mb-6">Inserisci la tua email e ti mandiamo un link per reimpostarla.</p>
+              <input className="input-field w-full mb-3" type="email" placeholder="La tua email"
+                value={email} onChange={e => setEmail(e.target.value)} autoFocus />
+              {error && <p className="text-red text-xs mb-3">{error}</p>}
+              <button onClick={async () => {
+                if (!email) { setError('Inserisci la tua email'); return }
+                setLoading(true); setError('')
+                const { error: err } = await resetPassword(email)
+                if (err) setError(err.message)
+                else setResetSent(true)
+                setLoading(false)
+              }} disabled={loading} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
+                {loading ? <Spinner size={18} /> : '📧 Invia link di reset'}
+              </button>
+              <button onClick={() => { setForgotPw(false); setError('') }}
+                className="text-xs text-muted mt-3 active:text-txt">← Torna al login</button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="screen purple-glow-bg relative overflow-y-auto">
@@ -79,6 +121,12 @@ export default function Login() {
             <input className="input-field" type="password" placeholder="Password (min. 6 caratteri)"
               value={password} onChange={e => setPassword(e.target.value)} required autoComplete={isSignUp ? 'new-password' : 'current-password'} />
             {error && <p className="text-red text-xs bg-red/10 px-3 py-2 rounded-xl">{error}</p>}
+            {!isSignUp && (
+              <button type="button" onClick={() => { setForgotPw(true); setError('') }}
+                className="text-xs text-muted text-right w-full active:text-purple-soft">
+                Password dimenticata?
+              </button>
+            )}
 
             <button type="submit" disabled={loading}
               className="btn-primary w-full flex items-center justify-center gap-2 py-3.5">
