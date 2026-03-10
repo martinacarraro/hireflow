@@ -26,18 +26,24 @@ export function AuthProvider({ children }) {
   const signUpWithEmail = (email, password) =>
     supabase.auth.signUp({ email, password })
 
+  const convertGuestToAccount = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return { error }
+    // onAuthStateChange will set user and isGuest=false automatically
+    return { data }
+  }
+
   const signOut = async () => {
     setIsGuest(false)
     await supabase.auth.signOut()
   }
 
-  const enterAsGuest = async () => {
-    await supabase.auth.signOut()
+  const enterAsGuest = () => {
     setIsGuest(true)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, isGuest, signInWithEmail, signUpWithEmail, signOut, enterAsGuest }}>
+    <AuthContext.Provider value={{ user, loading, isGuest, signInWithEmail, signUpWithEmail, signOut, enterAsGuest, convertGuestToAccount }}>
       {children}
     </AuthContext.Provider>
   )
