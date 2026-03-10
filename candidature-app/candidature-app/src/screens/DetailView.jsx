@@ -47,8 +47,14 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   }, [form.azienda, editingAzienda])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [interviewMode, setInterviewMode] = useState(false)
 
   const days = daysSince(c.data_invio)
+  const isColloquioOggi = form.data_colloquio && (() => {
+    const today = new Date(); today.setHours(0,0,0,0)
+    const d = new Date(form.data_colloquio); d.setHours(0,0,0,0)
+    return d.getTime() === today.getTime()
+  })()
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSaved(false) }
 
@@ -91,6 +97,92 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const doneCount = checklist.filter(i => i.fatto).length
   const checklistPct = checklist.length ? (doneCount / checklist.length) * 100 : 0
   const cfg = STATUS_CONFIG[form.stato] || STATUS_CONFIG['Inviata']
+
+  // ── MODALITÀ INTERVISTA ────────────────────────────────────────
+  if (interviewMode) return (
+    <div className="screen" style={{ background: '#0a0a1a' }}>
+      <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 flex-shrink-0">
+        <button onClick={() => setInterviewMode(false)} className="text-muted text-lg">←</button>
+        <p className="text-sm font-bold text-purple-soft">🎙️ Modalità Intervista</p>
+        <div />
+      </div>
+      <div className="flex-1 scrollable px-5 py-4 space-y-4">
+        {/* Azienda + orario */}
+        <div className="text-center py-4">
+          <p className="text-5xl mb-3">🎙️</p>
+          <h2 className="text-2xl font-bold text-txt">{form.azienda}</h2>
+          <p className="text-muted text-sm mt-1">{form.ruolo}</p>
+          {form.ora_colloquio && (
+            <p className="text-purple-soft font-bold text-lg mt-2">⏰ {form.ora_colloquio.slice(0,5)}</p>
+          )}
+        </div>
+
+        {/* Checklist rapida */}
+        {checklist.length > 0 && (
+          <div className="card" style={{ borderColor: 'rgba(139,92,246,0.3)' }}>
+            <p className="text-xs font-bold text-purple-soft mb-3 uppercase tracking-wider">✅ Checklist pre-colloquio</p>
+            <div className="space-y-2">
+              {checklist.map(item => (
+                <button key={item.id} onClick={() => handleToggleChecklist(item)}
+                  className="w-full flex items-center gap-3 py-2 text-left active:scale-95 transition-all">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                    ${item.fatto ? 'bg-green-500 border-green-500' : 'border-border'}`}>
+                    {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
+                  </div>
+                  <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>{item.task}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Domande da fare */}
+        {form.domande_mie && (
+          <div className="card" style={{ borderColor: 'rgba(34,197,94,0.3)' }}>
+            <p className="text-xs font-bold text-green-400 mb-2 uppercase tracking-wider">🙋 Le mie domande</p>
+            <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.domande_mie}</p>
+          </div>
+        )}
+
+        {/* Note */}
+        {form.note && (
+          <div className="card">
+            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">📝 Le mie note</p>
+            <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
+          </div>
+        )}
+
+        {/* Contatto HR */}
+        {(form.contatto_hr || form.email_hr) && (
+          <div className="card">
+            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">👤 Contatto</p>
+            {form.contatto_hr && <p className="text-sm text-txt font-semibold">{form.contatto_hr}</p>}
+            {form.email_hr && (
+              <a href={`mailto:${form.email_hr}`} className="text-xs text-purple-soft mt-1 block">{form.email_hr}</a>
+            )}
+          </div>
+        )}
+
+        {/* Sede / come arrivare */}
+        {form.sede && (
+          <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
+            target="_blank" rel="noopener noreferrer"
+            className="card flex items-center gap-3 active:scale-95 transition-all" style={{ borderColor: 'rgba(34,197,94,0.3)' }}>
+            <span className="text-2xl">🗺️</span>
+            <div>
+              <p className="text-sm font-semibold text-txt">Come arrivo</p>
+              <p className="text-xs text-muted">{form.sede}</p>
+            </div>
+            <span className="ml-auto text-muted">→</span>
+          </a>
+        )}
+
+        <div className="pb-8">
+          <p className="text-center text-xs text-muted">💜 Respira. Sei preparata. In bocca al lupo!</p>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="screen">
@@ -149,6 +241,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </div>
         <div className="flex items-center gap-2 px-5 pb-4">
           <StatusBadge stato={form.stato} size="lg" />
+          {isColloquioOggi && (
+            <button onClick={() => setInterviewMode(true)}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"
+              style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color: 'white' }}>
+              🎙️ Modalità Intervista
+            </button>
+          )}
           {form.priorita && <span className="text-sm">{PRIORITA_CONFIG[form.priorita]?.emoji}</span>}
           <span className="text-xs text-muted ml-auto">{days}gg fa</span>
           {form.fonte && (
