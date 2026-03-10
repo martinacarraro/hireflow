@@ -286,3 +286,20 @@ function FirstTimeIntro({ onDone, onSkip }) {
     </div>
   )
 }
+if (view?.type === 'detail') {
+  return (
+    <div className="h-full flex flex-col">
+      <DetailView 
+        candidatura={view.data} 
+        onBack={() => setView(null)} 
+        onUpdate={() => {
+          // Qui aggiungi la tua funzione che ricarica i dati da Supabase
+          // Se usi useApp(), probabilmente è refreshData()
+        }} 
+        restoreScroll={true} 
+      />
+      <Toast toast={toast} />
+      <Confetti active={confetti} />
+    </div>
+  )
+}
