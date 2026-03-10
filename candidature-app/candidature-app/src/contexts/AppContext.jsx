@@ -23,7 +23,13 @@ export function AppProvider({ children }) {
     const { data } = await supabase
       .from('user_profiles').select('*').eq('id', user.id).single()
     if (data) {
-      setProfile(data)
+      // Auto-set referral code if missing
+    if (!data.referral_code) {
+      const code = makeReferralCode(uid)
+      await supabase.from('user_profiles').update({ referral_code: code }).eq('id', uid)
+      data.referral_code = code
+    }
+    setProfile(data)
     } else {
       const nome = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Utente'
       const { data: newProfile } = await supabase
@@ -163,7 +169,7 @@ export function AppProvider({ children }) {
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
-        showToast(profile?.genere === 'm' ? '🎙️ Colloquio ottenuto! +15 XP' : profile?.genere === 'nb' ? '🎙️ Colloquio ottenut*! +15 XP' : '🎙️ Colloquio ottenuta! +15 XP', 'success'); triggerConfetti()
+        showToast(profile?.genere === 'f' ? '🎙️ Colloquio ottenuta! +15 XP' : profile?.genere === 'm' ? '🎙️ Colloquio ottenuto! +15 XP' : '🎙️ Colloquio ottenut*! +15 XP', 'success'); triggerConfetti()
         pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`, id)
         await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
@@ -173,7 +179,7 @@ export function AppProvider({ children }) {
         pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', profile?.genere === 'm' ? 'CE L\'HAI FATTA! 💜🚀' : 'CE L\'HAI FATTA! 💜🚀', id)
       } else if (updates.stato === 'Assunto') {
         await addXP(XP_EVENTS.OFFERTA)
-        showToast(profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : profile?.genere === 'nb' ? '🏆 SEI STAT* ASSUNT*! 🎉🎉' : '🏆 SEI STATA ASSUNTA! 🎉🎉', 'success')
+        showToast(profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉', 'success')
         triggerConfetti()
         pushNotification('🏆 ASSUNTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
       } else if (updates.stato === 'GHOSTED') {

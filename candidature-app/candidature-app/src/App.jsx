@@ -147,6 +147,11 @@ export default function App() {
 
   const handleTabChange = (t) => {
     if (t === 'add') { setView({ type: 'add' }); return }
+    if (t === tab) {
+      // già sulla stessa tab → scroll to top
+      setHomeScrollPos(0)
+      return
+    }
     setTab(t)
   }
 

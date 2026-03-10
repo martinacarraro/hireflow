@@ -186,6 +186,14 @@ export const XP_EVENTS = {
   SMART_PARSE:       2,
 }
 
+// Helper per testo gendered
+export function g(profile, f, m, nb) {
+  const gen = profile?.genere
+  if (gen === 'f') return f
+  if (gen === 'm') return m
+  return nb // nb o non specificato
+}
+
 export const LEVELS = [
   { min: 0,    max: 49,   lv: 1, name: 'In cerca',         emoji: '🌱' },
   { min: 50,   max: 149,  lv: 2, name: 'Determinat*',      emoji: '⚡' },
@@ -360,9 +368,9 @@ export const BADGES = [
     check: (s) => s.spontanee >= 1
   },
   {
-    id: 'ambassador', emoji: '💌', name: 'Ambasciatrice',
+    id: 'ambassador', emoji: '💌', name: 'Ambasciator*',
     desc: 'Hai invitato un\'amica ad usare Le faremo sapere. Grazie! 💜',
-    shareText: 'Ho appena guadagnato il badge Ambasciatrice 💌 su Le faremo sapere — il tracker gratuito per chi cerca lavoro. L\'ho consigliato a una mia amica perché questa app merita davvero.',
+    shareText: 'Ho appena guadagnato il badge Ambasciator* 💌 su Le faremo sapere — il tracker gratuito per chi cerca lavoro. Lo consiglio a tutt* perché questa app merita davvero.',
     color: '#EC4899', bg: '#1a0010',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#EC4899"/><path d="M12 22h40v22H12z" rx="3" fill="white" opacity="0.2"/><path d="M12 22l20 14 20-14" stroke="white" stroke-width="2.5" stroke-linecap="round"/><rect x="12" y="22" width="40" height="22" rx="3" stroke="white" stroke-width="2.5"/></svg>',
     check: (s) => s.referral >= 1
@@ -374,7 +382,7 @@ export const BADGES = [
 export const MOTTOS = [
   '"Le faremo sapere." — E tu tieni il conto. 📬',
   'Ogni no ti avvicina al sì giusto. ✨',
-  'Ghostat*? Prossima. 👻',
+  'Ghostat*? Vai avant*. 👻',
   'Il silenzio dice tanto quanto una risposta. 🤐',
   'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
   'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
@@ -393,7 +401,7 @@ export const LOADING_TIPS = [
   { cat: '🎙️ Colloquio', text: "La domanda 'Hai domande per noi?' NON è retorica. Preparane almeno 2." },
   { cat: '🎙️ Colloquio', text: "Parla dei risultati con numeri: 'Ho aumentato X del 30%' batte 'Lavoravo su X'." },
   { cat: '🎙️ Colloquio', text: "Se non capisci una domanda, chiedi di ripeterla. È attenzione, non ignoranza." },
-  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come proattiv*." },
+  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come qualcuno che sa il fatto suo." },
   { cat: '🎙️ Colloquio', text: "Dopo il colloquio, manda una mail di ringraziamento entro 24h. Pochi lo fanno. Quei pochi si ricordano." },
   { cat: '🎙️ Colloquio', text: "Sul salario: cerca la media su LinkedIn o Glassdoor prima di rispondere. Non sparare alla cieca." },
   { cat: '📄 CV',         text: "Il CV perfetto è su una pagina (se hai meno di 10 anni di esperienza). Meno è più." },
