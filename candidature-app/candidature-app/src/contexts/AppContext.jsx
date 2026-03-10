@@ -18,18 +18,19 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const sentNotifs = useRef(new Set()) // dedup per sessione
 
+  const makeReferralCode = (id) => id.replace(/-/g,'').slice(0,8).toUpperCase()
+
   const loadProfile = useCallback(async () => {
     if (!user) return
     const { data } = await supabase
       .from('user_profiles').select('*').eq('id', user.id).single()
     if (data) {
-      // Auto-set referral code if missing
-    if (!data.referral_code) {
-      const code = makeReferralCode(uid)
-      await supabase.from('user_profiles').update({ referral_code: code }).eq('id', uid)
-      data.referral_code = code
-    }
-    setProfile(data)
+      if (!data.referral_code) {
+        const code = makeReferralCode(user.id)
+        await supabase.from('user_profiles').update({ referral_code: code }).eq('id', user.id)
+        data.referral_code = code
+      }
+      setProfile(data)
     } else {
       const nome = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Utente'
       const { data: newProfile } = await supabase

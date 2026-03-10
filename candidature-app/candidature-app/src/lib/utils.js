@@ -224,7 +224,7 @@ export const BADGES = [
     check: (s) => s.total >= 1
   },
   {
-    id: 'ten', emoji: '🎯', name: 'Cecchin*',
+    id: 'ten', emoji: '🎯', name: 'Cecchin*', nameF: 'Cecchina', nameM: 'Cecchino',
     desc: '10 candidature inviate — mira che non erra.',
     shareText: 'Ho inviato 10 candidature e le sto tracciando tutte su Le faremo sapere 🎯 Organizzazione è metà della battaglia.',
     color: '#EF4444', bg: '#2a0a0a',
@@ -288,7 +288,7 @@ export const BADGES = [
     check: (s) => s.ghosted >= 5
   },
   {
-    id: 'writer', emoji: '✍️', name: 'Scrittor*',
+    id: 'writer', emoji: '✍️', name: 'Scrittor*', nameF: 'Scrittrice', nameM: 'Scrittore',
     desc: 'Note aggiunte a 10 candidature. Dettaglio è tutto.',
     shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un\'altra cosa.',
     color: '#06B6D4', bg: '#0a1a2a',
@@ -368,7 +368,7 @@ export const BADGES = [
     check: (s) => s.spontanee >= 1
   },
   {
-    id: 'ambassador', emoji: '💌', name: 'Ambasciator*',
+    id: 'ambassador', emoji: '💌', name: 'Ambasciator*', nameF: 'Ambasciatrice', nameM: 'Ambasciatore',
     desc: 'Hai invitato un\'amica ad usare Le faremo sapere. Grazie! 💜',
     shareText: 'Ho appena guadagnato il badge Ambasciator* 💌 su Le faremo sapere — il tracker gratuito per chi cerca lavoro. Lo consiglio a tutt* perché questa app merita davvero.',
     color: '#EC4899', bg: '#1a0010',

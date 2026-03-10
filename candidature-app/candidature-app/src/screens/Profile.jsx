@@ -19,6 +19,20 @@ const SETTORI = [
 ]
 const FONTI = ['Instagram','TikTok','LinkedIn','Amico/a','Google','Reddit','Altro']
 
+const getBadgeName = (badge, genere) => {
+  if (badge.nameF && badge.nameM) {
+    if (genere === 'f') return badge.nameF
+    if (genere === 'm') return badge.nameM
+    return badge.name // * version
+  }
+  // For other badges with * - resolve
+  const n = badge.name
+  if (!n.endsWith('*')) return n
+  if (genere === 'f') return n.slice(0,-1) + 'a'
+  if (genere === 'm') return n.slice(0,-1) + 'o'
+  return n
+}
+
 const STATI_VALIDI = ['Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
 const STATO_ALIAS = {
   'inviata': 'Inviata', 'inviata!': 'Inviata', 'spontanea': 'Spontanea', 'vista': 'Vista',
@@ -293,7 +307,7 @@ export default function Profile() {
                     : <span className="text-2xl mb-1">🔒</span>
                   }
                   <p className="text-[9px] leading-tight" style={{ color: isEarned ? badge.color : '#6B7280' }}>
-                    {isEarned ? badge.name : '???'}
+                    {isEarned ? getBadgeName(badge, profile?.genere) : '???'}
                   </p>
                 </button>
               )
@@ -585,7 +599,7 @@ export default function Profile() {
             style={{ borderTop: `3px solid ${selectedBadge.color}` }}>
             <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
               dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
-            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{selectedBadge.name}</h3>
+            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere)}</h3>
             <p className="text-sm text-muted leading-relaxed mb-5">{selectedBadge.desc}</p>
             <div className="space-y-2">
               <button
@@ -607,7 +621,7 @@ export default function Profile() {
               <button
                 onClick={() => {
                   const link = `https://lefaremosapere-mocha.vercel.app?badge=${selectedBadge.id}`
-                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${selectedBadge.name}\n👉 ${link}`
+                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${getBadgeName(selectedBadge, profile?.genere)}\n👉 ${link}`
                   navigator.clipboard.writeText(text).then(() => {
                     alert('Link e testo copiati! 📋 Incollali dove vuoi.')
                   })
