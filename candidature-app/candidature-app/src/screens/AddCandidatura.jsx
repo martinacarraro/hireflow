@@ -88,7 +88,7 @@ export default function AddCandidatura({ onBack, onDone }) {
         {/* FONDAMENTALI */}
         <SectionLabel>I FONDAMENTALI ✱</SectionLabel>
 
-        <Field label="🏢 Azienda">
+        <Field label="🏢 Azienda *">
           <div className="relative">
             <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
               placeholder="Es: Spotify, Ferrero, Studio Rossi..."
@@ -135,20 +135,20 @@ export default function AddCandidatura({ onBack, onDone }) {
           {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
         </Field>
 
-        <Field label="💼 Ruolo">
+        <Field label="💼 Ruolo *">
           <input className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
             placeholder="Es: UX Designer, Data Analyst, PM..."
             value={form.ruolo} onChange={e => set('ruolo', e.target.value)} />
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
-        <Field label="📋 Stato">
+        <Field label="📋 Stato *">
           <ChoicePicker value={form.stato} options={STATI}
             onChange={v => set('stato', v)} colorFn={statusColor} />
         </Field>
 
         {/* DATE */}
-        <Field label="📅 Data candidatura">
+        <Field label="📅 Data candidatura *">
           <input className="input-field" type="date"
             value={form.data_invio} onChange={e => set('data_invio', e.target.value)} />
         </Field>
@@ -182,7 +182,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">📣 Seleziona la fonte — ci aiuta a capire dove funziona meglio 🙏</p>}
         </Field>
 
-        <Field label="🔗 Link annuncio — importa dati automaticamente">
+        <Field label="🔗 Link annuncio">
           <div className="flex gap-2">
             <input className="input-field flex-1 text-sm" type="url"
               placeholder="Incolla link LinkedIn, Indeed, sito..."

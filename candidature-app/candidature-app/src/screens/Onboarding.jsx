@@ -33,6 +33,8 @@ export default function Onboarding() {
   const [settoreCustom, setSettoreCustom] = useState('')
   const [fonte, setFonte] = useState('')
   const [fonteCustom, setFonteCustom] = useState('')
+  const [citta, setCitta] = useState('')
+  const [notifDone, setNotifDone] = useState(false)
 
   const SLIDES = [
     { emoji: '📬', title: '"Le faremo sapere."', body: 'Lo dicono tutti. Ma tu tieni traccia di chi lo ha detto davvero — e di chi invece è sparito nel nulla.' },
@@ -51,9 +53,9 @@ export default function Onboarding() {
       eta: eta ? parseInt(eta) : null,
       settore: finalSettore,
       come_conosciuto: finalFonte,
+      indirizzo_home: citta.trim() || null,
       seen_onboarding: true,
     })
-    await requestNotificationPermission()
     triggerConfetti()
     await markOnboarded()
     setLoading(false)
@@ -93,7 +95,7 @@ export default function Onboarding() {
   }
 
   if (step === 1) return (
-    <StepWrapper title="Come ti chiami?" emoji="👋" step={1} total={5}
+    <StepWrapper title="Come ti chiami?" emoji="👋" step={1} total={7}
       onNext={() => setStep(2)} canNext={nome.trim().length > 0} nextLabel="Avanti →">
       <input className="input-field text-lg text-center font-semibold"
         placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
@@ -104,7 +106,7 @@ export default function Onboarding() {
   )
 
   if (step === 2) return (
-    <StepWrapper title="Sei:" emoji="🌈" step={2} total={5}
+    <StepWrapper title="Sei:" emoji="🌈" step={2} total={7}
       onNext={() => setStep(3)} canNext={genere !== ''}
       onSkip={() => { setGenere('x'); setStep(3) }} nextLabel="Avanti →">
       <div className="grid grid-cols-2 gap-3">
@@ -125,7 +127,7 @@ export default function Onboarding() {
     const etaNum = parseInt(eta)
     const etaInvalid = eta !== '' && (isNaN(etaNum) || etaNum < 16 || etaNum > 100)
     return (
-      <StepWrapper title="Quanti anni hai?" emoji="🎂" step={3} total={5}
+      <StepWrapper title="Quanti anni hai?" emoji="🎂" step={3} total={7}
         onNext={() => setStep(4)} canNext={!etaInvalid}
         onSkip={() => setStep(4)} nextLabel="Avanti →">
         <input className="input-field text-lg text-center font-semibold"
@@ -141,7 +143,7 @@ export default function Onboarding() {
   }
 
   if (step === 4) return (
-    <StepWrapper title="In che settore cerchi?" emoji="💼" step={4} total={5}
+    <StepWrapper title="In che settore cerchi?" emoji="💼" step={4} total={7}
       onNext={() => setStep(5)} canNext={settore !== ''}
       onSkip={() => { setSettore('Altro'); setStep(5) }} nextLabel="Avanti →">
       <div className="flex flex-wrap gap-2 justify-center">
@@ -161,9 +163,9 @@ export default function Onboarding() {
   )
 
   if (step === 5) return (
-    <StepWrapper title="Come ci hai trovato?" emoji="🔍" step={5} total={5}
-      onNext={finish} canNext={fonte !== ''} loading={loading}
-      onSkip={finish} nextLabel="Inizia! 🚀">
+    <StepWrapper title="Come ci hai trovato?" emoji="🔍" step={5} total={7}
+      onNext={() => setStep(6)} canNext={fonte !== ''}
+      onSkip={() => setStep(6)} nextLabel="Avanti →">
       <div className="grid grid-cols-2 gap-3">
         {FONTI.map(f => (
           <button key={f} onClick={() => setFonte(f)}
@@ -178,6 +180,46 @@ export default function Onboarding() {
           value={fonteCustom} onChange={e => setFonteCustom(e.target.value)} autoFocus />
       )}
     </StepWrapper>
+  )
+
+  if (step === 6) return (
+    <StepWrapper title="Dove vivi?" emoji="📍" step={6} total={7}
+      onNext={() => setStep(7)} canNext={true}
+      onSkip={() => setStep(7)} nextLabel="Avanti →">
+      <input className="input-field text-base text-center"
+        placeholder="Es: Milano, Roma, Torino..."
+        value={citta} onChange={e => setCitta(e.target.value)}
+        autoFocus onKeyDown={e => e.key === 'Enter' && setStep(7)} />
+      <p className="text-xs text-muted text-center mt-3 leading-relaxed">
+        📍 Lo usiamo per calcolare la distanza dai luoghi dei colloqui — così sai subito se conviene andare di persona o chiedere il remote. 🗺️
+      </p>
+    </StepWrapper>
+  )
+
+  if (step === 7) return (
+    <div className="screen purple-glow-bg">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+        <div className="text-7xl mb-6">🔔</div>
+        <h2 className="text-2xl font-bold text-txt mb-3">Vuoi ricevere notifiche?</h2>
+        <p className="text-base text-muted leading-relaxed mb-8">
+          Ti avvisiamo quando si avvicina un colloquio, quando hai promemoria impostati e quando un'azienda non risponde da troppo tempo. Niente spam, solo cose utili. 💜
+        </p>
+        <button onClick={async () => {
+          setLoading(true)
+          await requestNotificationPermission()
+          setNotifDone(true)
+          await finish()
+        }} disabled={loading} className="btn-primary w-full py-4 text-base mb-3">
+          {loading ? '⏳ Un attimo...' : '🔔 Sì, attiva le notifiche'}
+        </button>
+        <button onClick={async () => {
+          setLoading(true)
+          await finish()
+        }} disabled={loading} className="text-sm text-muted py-2 active:text-txt">
+          No grazie, le attiverò dopo
+        </button>
+      </div>
+    </div>
   )
 
   return null

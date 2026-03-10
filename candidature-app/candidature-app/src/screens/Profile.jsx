@@ -286,10 +286,10 @@ export default function Profile() {
         </div>
 
         {/* XP */}
+        {/* LE TUE INFO */}
         <div className="card">
           <SectionLabel>LE TUE INFO 📋</SectionLabel>
           <div className="space-y-2 mb-2">
-            {/* Genere */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">Genere</span>
               <span className="text-xs text-txt font-medium">
@@ -300,21 +300,18 @@ export default function Profile() {
                 : <span className="text-disabled italic">Non specificato</span>}
               </span>
             </div>
-            {/* Età */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">Età</span>
               <span className="text-xs text-txt font-medium">
                 {profile?.eta ? `${profile.eta} anni` : <span className="text-disabled italic">Non specificata</span>}
               </span>
             </div>
-            {/* Settore */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">Settore</span>
               <span className="text-xs text-txt font-medium">
                 {profile?.settore || <span className="text-disabled italic">Non specificato</span>}
               </span>
             </div>
-            {/* Fonte */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">Come ci hai trovato</span>
               <span className="text-xs text-txt font-medium">
@@ -331,7 +328,10 @@ export default function Profile() {
           }} className="text-xs text-purple-soft font-semibold active:opacity-70">
             ✏️ Modifica info
           </button>
+        </div>
 
+        {/* IL TUO LIVELLO */}
+        <div className="card">
           <SectionLabel>IL TUO LIVELLO ⭐</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
           {xp === 0 && (
