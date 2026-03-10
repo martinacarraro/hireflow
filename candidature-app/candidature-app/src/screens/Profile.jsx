@@ -23,14 +23,28 @@ const getBadgeName = (badge, genere) => {
   if (badge.nameF && badge.nameM) {
     if (genere === 'f') return badge.nameF
     if (genere === 'm') return badge.nameM
-    return badge.name // * version
+    return badge.name
   }
-  // For other badges with * - resolve
   const n = badge.name
   if (!n.endsWith('*')) return n
   if (genere === 'f') return n.slice(0,-1) + 'a'
   if (genere === 'm') return n.slice(0,-1) + 'o'
   return n
+}
+
+const getBadgeDesc = (badge, genere) => {
+  if (badge.descF && badge.descM) {
+    if (genere === 'f') return badge.descF
+    if (genere === 'm') return badge.descM
+    return badge.desc
+  }
+  const d = badge.desc || ''
+  // resolve inline * endings
+  return d.replace(/(\w+)\*/g, (match, word) => {
+    if (genere === 'f') return word + 'a'
+    if (genere === 'm') return word + 'o'
+    return match
+  })
 }
 
 const STATI_VALIDI = ['Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
@@ -577,7 +591,7 @@ export default function Profile() {
             <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
               dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
             <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere)}</h3>
-            <p className="text-sm text-muted leading-relaxed mb-5">{selectedBadge.desc}</p>
+            <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere)}</p>
             <div className="space-y-2">
               <button
                 onClick={() => {

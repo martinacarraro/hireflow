@@ -333,9 +333,10 @@ export function AppProvider({ children }) {
     for (const badge of BADGES) {
       if (!earned.includes(badge.id) && badge.check(stats)) {
         newBadges.push(badge.id)
-        showToast(`🎉 Badge sbloccato: ${badge.name}!`, 'success')
+        const bName = profile?.genere === 'f' && badge.nameF ? badge.nameF : profile?.genere === 'm' && badge.nameM ? badge.nameM : badge.name
+        showToast(`🎉 Badge sbloccato: ${bName}!`, 'success')
         triggerConfetti()
-        pushNotification(`🏅 Badge: ${badge.name}!`, badge.desc)
+        pushNotification(`🏅 Badge: ${bName}!`, bDesc || badge.desc)
       }
     }
     if (newBadges.length) {

@@ -257,7 +257,9 @@ export const BADGES = [
   },
   {
     id: 'fire', emoji: '🔥', name: 'On Fire',
-    desc: '3+ colloqui in un mese — sei caldissima.',
+    desc: '3+ colloqui in un mese — sei caldissim*.',
+    descF: '3+ colloqui in un mese — sei caldissima.',
+    descM: '3+ colloqui in un mese — sei caldissimo.',
     shareText: '3 colloqui in un mese 🔥 La mia ricerca lavoro è in modalità turbo. Gestisco tutto con Le faremo sapere.',
     color: '#F97316', bg: '#2a1000',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#F97316"/><path d="M32 52C22 52 16 44 16 36c0-6 3-10 6-13 0 4 2 6 4 6-1-4 1-10 6-16 1 6 4 9 7 11-1-3 0-6 2-8 3 4 5 9 5 14 0 10-6 22-14 22z" fill="white" opacity="0.95"/><path d="M32 46c-4 0-8-4-8-9 0-3 2-5 3-6 0 2 1 4 3 4 0-2 1-5 3-7 1 3 3 5 3 8 2-1 2-3 2-4 2 2 3 5 3 7 0 5-5 7-9 7z" fill="#F97316"/></svg>',
@@ -265,7 +267,9 @@ export const BADGES = [
   },
   {
     id: 'resilient', emoji: '💜', name: 'Resiliente',
-    desc: 'Ghostata 3 volte e hai continuato. Rispetto.',
+    desc: 'Ghostat* 3 volte e hai continuato. Rispetto.',
+    descF: 'Ghostata 3 volte e hai continuato. Rispetto.',
+    descM: 'Ghostato 3 volte e hai continuato. Rispetto.',
     shareText: 'Tre ghosting. Ho continuato lo stesso. 💜 Chi usa Le faremo sapere sa che i no fanno parte del gioco — e li traccia pure quelli.',
     color: '#A855F7', bg: '#1a0a2a',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#A855F7"/><path d="M32 48l-14-14a10 10 0 0114-14 10 10 0 0114 14z" fill="white"/><circle cx="26" cy="28" r="2" fill="#A855F7"/><circle cx="38" cy="28" r="2" fill="#A855F7"/><path d="M28 38c0 0 2 2 4 2s4-2 4-2" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>',
@@ -312,7 +316,7 @@ export const BADGES = [
     check: (s) => s.countries >= 3
   },
   {
-    id: 'checklist', emoji: '📋', name: 'Organizzato/a',
+    id: 'checklist', emoji: '📋', name: 'Organizzat*', nameF: 'Organizzata', nameM: 'Organizzato',
     desc: 'Checklist completa prima di un colloquio.',
     shareText: 'Nessun colloquio senza preparazione ✅ Con Le faremo sapere ho la checklist sempre pronta. Dettaglio che fa la differenza.',
     color: '#8B5CF6', bg: '#1a0a2a',
@@ -360,7 +364,7 @@ export const BADGES = [
     check: (s) => s.secondi >= 1
   },
   {
-    id: 'pioneer', emoji: '🌱', name: 'Pioniera',
+    id: 'pioneer', emoji: '🌱', name: 'Pioneer*', nameF: 'Pioniera', nameM: 'Pioniere',
     desc: 'Prima candidatura spontanea inviata.',
     shareText: 'Ho inviato la mia prima candidatura spontanea 🌱 A volte bisogna creare le opportunità, non aspettarle. Su Le faremo sapere traccio anche queste.',
     color: '#84CC16', bg: '#0f1a00',
