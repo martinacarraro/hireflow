@@ -90,7 +90,7 @@ export default function App() {
             <p className="text-5xl mb-4">✅</p>
             <h2 className="text-xl font-bold text-white mb-2">Password aggiornata!</h2>
             <p className="text-sm text-gray-400 mb-6">Ora puoi accedere con la nuova password.</p>
-            <button onClick={() => { setShowResetPassword(false); setResetDone(false); window.location.hash = '' }}
+            <button onClick={() => { window.location.replace(window.location.origin) }}
               className="btn-primary w-full py-3">Vai al login</button>
           </div>
         ) : (
