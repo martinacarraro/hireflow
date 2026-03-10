@@ -106,7 +106,12 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         c.azienda?.toLowerCase().includes(q) ||
         c.ruolo?.toLowerCase().includes(q) ||
         c.sede?.toLowerCase().includes(q) ||
-        c.note?.toLowerCase().includes(q)
+        c.note?.toLowerCase().includes(q) ||
+        c.domande_fatte?.toLowerCase().includes(q) ||
+        c.domande_mie?.toLowerCase().includes(q) ||
+        c.contatto_hr?.toLowerCase().includes(q) ||
+        c.welfare_note?.toLowerCase().includes(q) ||
+        c.fonte?.toLowerCase().includes(q)
       )
     }
     return list
