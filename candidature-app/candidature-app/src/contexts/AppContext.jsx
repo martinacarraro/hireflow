@@ -362,7 +362,7 @@ export function AppProvider({ children }) {
       if (weeks[i] === nowWeek - i) weekStreak++
       else break
     }
-    return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak }
+    const referral = (profile?.referral_count || 0); return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak, referral }
   }
 
   const computeStats = () => computeStatsFrom(candidature)
@@ -424,6 +424,23 @@ export function AppProvider({ children }) {
         }
       }
     })
+
+    // Utente inattivo da 7+ giorni
+    if (profile?.ultimo_accesso) {
+      const lastActive = new Date(profile.ultimo_accesso)
+      const diffDays = Math.floor((new Date() - lastActive) / (1000 * 60 * 60 * 24))
+      const inactiveKey = `inactivity_notif_${profile.ultimo_accesso}`
+      if (diffDays >= 7 && !localStorage.getItem(inactiveKey)) {
+        const activeCount = candidature.filter(c => ['Colloquio','Prima call','In attesa risposta'].includes(c.stato)).length
+        pushNotification(
+          '👋 Bentornat* nella ricerca!',
+          activeCount > 0
+            ? `Hai ${activeCount} candidature attive che aspettano aggiornamenti. 💪`
+            : 'È ora di aggiungere nuove candidature. Non mollare! 💜'
+        )
+        localStorage.setItem(inactiveKey, '1')
+      }
+    }
   }, [candidature])
 
   const requestNotificationPermission = async () => {
