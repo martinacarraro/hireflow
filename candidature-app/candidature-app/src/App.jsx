@@ -60,11 +60,26 @@ export default function App() {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault()
-      e.returnValue = 'Vuoi davvero uscire da Hireflow?'
+      e.returnValue = 'Vuoi davvero uscire da Le faremo sapere?'
       return e.returnValue
     }
+    // Push a dummy state so Android back button triggers popstate instead of closing
+    window.history.pushState({ lfs: true }, '')
+    const handlePopState = (e) => {
+      const confirmed = window.confirm('Vuoi davvero uscire da Le faremo sapere?')
+      if (confirmed) {
+        window.history.go(-1)
+      } else {
+        // Re-push so back button works again next time
+        window.history.pushState({ lfs: true }, '')
+      }
+    }
     window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('popstate', handlePopState)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('popstate', handlePopState)
+    }
   }, [])
 
   if (showSplash || loading) {

@@ -51,7 +51,7 @@ export default function Stats() {
       if (c.fonte) {
         if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
         fonteMap[c.fonte].total++
-        if (['Colloquio','In attesa','Offerta ricevuta'].includes(c.stato))
+        if (['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta'].includes(c.stato))
           fonteMap[c.fonte].colloqui++
       }
     })
