@@ -115,7 +115,7 @@ export default function Onboarding() {
           </button>
         ))}
       </div>
-      <p className="text-xs text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
+      <p className="text-[10px] text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
     </StepWrapper>
   )
 

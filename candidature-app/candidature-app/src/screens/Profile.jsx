@@ -379,10 +379,40 @@ export default function Profile() {
           )
         })()}
 
+        {/* Referral */}
+        <div className="card">
+          <SectionLabel>💌 INVITA UN'AMICA</SectionLabel>
+          <p className="text-xs text-muted mb-3 leading-relaxed">
+            Conosci qualcuna che sta cercando lavoro? Condividi l'app — sblocchi il badge esclusivo <span className="text-pink-400 font-semibold">💌 Ambasciatrice</span>!
+          </p>
+          <button onClick={async () => {
+            const url = 'https://lefaremosapere.vercel.app'
+            const text = '🚀 Stai cercando lavoro? Ti presento Le faremo sapere — il tracker gratuito per candidature, colloqui e notifiche. Provalo!'
+            if (navigator.share) navigator.share({ title: 'Le faremo sapere', text, url })
+            else { navigator.clipboard.writeText(url + ' — ' + text); alert('Link copiato! 💜') }
+            await updateProfile({ referral_count: (profile?.referral_count || 0) + 1 })
+          }} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
+            💌 Invita un'amica
+          </button>
+        </div>
+
+        {/* Privacy */}
+        <div className="card">
+          <SectionLabel>🔒 PRIVACY & TERMINI</SectionLabel>
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-between py-2 text-sm text-txt active:opacity-70">
+            <span>Privacy Policy</span><span className="text-muted">→</span>
+          </a>
+          <div className="border-t border-border" />
+          <p className="text-[10px] text-muted mt-2 leading-relaxed">
+            I tuoi dati sono salvati su Supabase (EU) e non vengono mai condivisi con terzi.
+          </p>
+        </div>
+
         {/* Supporto */}
         <div className="card space-y-2">
           <SectionLabel>SUPPORTO</SectionLabel>
-          <a href="mailto:feedback@lefaremosapere.app" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
+          <a href="mailto:lefaremosapereapp@gmail.com" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
           <div className="border-t border-border" />
           <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
         </div>
