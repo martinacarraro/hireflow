@@ -9,7 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [emailSent, setEmailSent] = useState(false)
+
 
   const handleEmail = async (e) => {
     e.preventDefault()
@@ -26,8 +26,9 @@ export default function Login() {
         else if (msg.includes('Password should')) setError('La password deve essere di almeno 6 caratteri.')
         else setError(msg)
       } else if (isSignUp) {
-        // Signup ok — mostra schermata conferma email
-        setEmailSent(true)
+        // Signup ok — passa direttamente al login
+        setIsSignUp(false)
+        setError('')
       }
     } catch { setError('Errore di connessione — riprova.') }
     setLoading(false)
@@ -107,11 +108,7 @@ export default function Login() {
             <input className="input-field" type="password" placeholder="Password (min. 6 caratteri)"
               value={password} onChange={e => setPassword(e.target.value)} required autoComplete={isSignUp ? 'new-password' : 'current-password'} />
             {error && <p className="text-red text-xs bg-red/10 px-3 py-2 rounded-xl">{error}</p>}
-            {isSignUp && (
-              <p className="text-xs text-muted leading-relaxed px-1">
-                📧 Dopo la registrazione ti arriverà una <span className="text-purple-soft font-medium">email di conferma</span> — clicca il link per attivare l'account.
-              </p>
-            )}
+
             <button type="submit" disabled={loading}
               className="btn-primary w-full flex items-center justify-center gap-2 py-3.5">
               {loading ? <><Spinner size={18} /> {isSignUp ? 'Creazione account...' : 'Accesso...'}</> : (isSignUp ? '🚀 Crea account' : '→ Accedi')}

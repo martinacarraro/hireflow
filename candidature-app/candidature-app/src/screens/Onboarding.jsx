@@ -102,7 +102,7 @@ export default function Onboarding() {
   )
 
   if (step === 2) return (
-    <StepWrapper title="Come vuoi che ti chiamiamo?" emoji="🌈" step={2} total={5}
+    <StepWrapper title="Sei:" emoji="🌈" step={2} total={5}
       onNext={() => setStep(3)} canNext={genere !== ''}
       onSkip={() => { setGenere('x'); setStep(3) }} nextLabel="Avanti →">
       <div className="grid grid-cols-2 gap-3">
