@@ -28,7 +28,6 @@ export default function Onboarding() {
 
   const [nome, setNome] = useState(profile?.nome || '')
   const [genere, setGenere] = useState('')
-  const [refCode, setRefCode] = useState(new URLSearchParams(window.location.search).get('ref') || '')
   const [eta, setEta] = useState('')
   const [settore, setSettore] = useState('')
   const [settoreCustom, setSettoreCustom] = useState('')
@@ -54,19 +53,6 @@ export default function Onboarding() {
       come_conosciuto: finalFonte,
       seen_onboarding: true,
     })
-    // Credit referrer if code provided
-    if (refCode.trim()) {
-      const { data: referrer } = await supabase
-        .from('user_profiles')
-        .select('id, referral_count')
-        .eq('referral_code', refCode.trim().toUpperCase())
-        .single()
-      if (referrer) {
-        await supabase.from('user_profiles')
-          .update({ referral_count: (referrer.referral_count || 0) + 1 })
-          .eq('id', referrer.id)
-      }
-    }
     await requestNotificationPermission()
     triggerConfetti()
     await markOnboarded()
@@ -113,12 +99,7 @@ export default function Onboarding() {
         placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && nome.trim() && setStep(2)} />
       <p className="text-xs text-muted text-center mt-2">Ti chiameremo così nell'app 💜</p>
-      <div className="mt-6">
-        <p className="text-xs text-muted text-center mb-2">Hai un codice referral? (facoltativo)</p>
-        <input className="input-field text-sm text-center tracking-widest uppercase"
-          placeholder="Es: A1B2C3D4" value={refCode} onChange={e => setRefCode(e.target.value.toUpperCase())}
-          maxLength={8} />
-      </div>
+
     </StepWrapper>
   )
 

@@ -70,8 +70,6 @@ export default function Profile() {
   const [infoSettore, setInfoSettore]         = useState(profile?.settore || '')
   const [infoSettoreCustom, setInfoSettoreCustom] = useState('')
   const [infoFonte, setInfoFonte]             = useState(profile?.come_conosciuto || '')
-  const [refCodeInput, setRefCodeInput]       = useState('')
-  const [refCodeMsg, setRefCodeMsg]           = useState('')
   const fileRef = useRef()
 
   const nome   = profile?.nome || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utente'
@@ -429,65 +427,6 @@ export default function Profile() {
             </div>
           )}
 
-          <SectionLabel>💌 INVITA QUALCUN*</SectionLabel>
-          <p className="text-xs text-muted mb-3 leading-relaxed">
-            Conosci qualcun* che sta cercando lavoro? Condividi l'app — sblocchi il badge esclusivo <span className="text-pink-400 font-semibold">💌 Ambasciator*</span>!
-          </p>
-          {/* Enter someone else's referral code */}
-          {!profile?.referral_used && (
-            <div className="card bg-surface/50 mb-3">
-              <p className="text-xs text-muted mb-2">Hai ricevuto un codice da qualcun*? Inseriscilo qui:</p>
-              <div className="flex gap-2">
-                <input className="input-field flex-1 text-sm text-center tracking-widest uppercase py-2"
-                  placeholder="Es: A1B2C3D4" value={refCodeInput}
-                  onChange={e => setRefCodeInput(e.target.value.toUpperCase())} maxLength={8} />
-                <button onClick={async () => {
-                  if (!refCodeInput.trim()) return
-                  const { data: referrer } = await supabase.from('user_profiles')
-                    .select('id, referral_count').eq('referral_code', refCodeInput.trim()).single()
-                  if (!referrer || referrer.id === profile?.id) {
-                    setRefCodeMsg('❌ Codice non valido')
-                  } else {
-                    await supabase.from('user_profiles')
-                      .update({ referral_count: (referrer.referral_count || 0) + 1 }).eq('id', referrer.id)
-                    await updateProfile({ referral_used: true })
-                    setRefCodeMsg('✅ Codice applicato! Grazie 💜')
-                    setRefCodeInput('')
-                  }
-                }} className="btn-primary px-4 py-2 text-xs">✓</button>
-              </div>
-              {refCodeMsg && <p className="text-xs mt-2 text-center">{refCodeMsg}</p>}
-            </div>
-          )}
-
-          {profile?.referral_code && (
-            <div className="card bg-surface/50 mb-3 flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs text-muted">Il tuo codice referral</p>
-                <p className="font-bold text-purple-soft tracking-widest">{profile.referral_code}</p>
-              </div>
-              <button onClick={() => { navigator.clipboard.writeText(profile.referral_code); alert('Codice copiato! 💜') }}
-                className="text-xs border border-border px-3 py-1.5 rounded-full text-muted active:scale-95">
-                📋 Copia
-              </button>
-            </div>
-          )}
-          <p className="text-xs text-muted mb-3 leading-relaxed">
-            Chi si registra con il tuo codice ti regala il badge 💌 — lo inserisce durante l'onboarding o nel profilo.
-          </p>
-          <button onClick={async () => {
-            const code = profile?.referral_code || ''
-            const url = 'https://lefaremosapere.vercel.app'
-            const text = `🚀 Stai cercando lavoro? Prova Le faremo sapere — il tracker gratuito per candidature e colloqui. Usa il mio codice ${code} quando ti registri! 💜`
-            if (navigator.share) navigator.share({ title: 'Le faremo sapere', text, url })
-            else { navigator.clipboard.writeText(text + ' ' + url); alert('Link copiato! 💜') }
-          }} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            💌 Condividi il tuo codice
-          </button>
-        </div>
-
-        {/* Privacy */}
-        <div className="card">
           <SectionLabel>🔒 PRIVACY & TERMINI</SectionLabel>
           <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-between py-2 text-sm text-txt active:opacity-70">
