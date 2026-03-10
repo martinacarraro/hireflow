@@ -59,6 +59,7 @@ export default function Onboarding() {
     })
     triggerConfetti()
     await markOnboarded()
+    localStorage.setItem('lfs_onboarding_done', '1')
     setLoading(false)
   }
 

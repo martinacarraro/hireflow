@@ -303,8 +303,8 @@ export function TabBar({ active, onChange, unread = 0 }) {
               ${active === t.id && !t.special ? 'text-purple' : 'text-disabled'}`}>
             {t.special ? (
               <div className="flex flex-col items-center" style={{ marginBottom: '4px' }}>
-                <span className="flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold bg-purple text-white shadow-btn"
-                  style={{ marginTop: '-28px', boxShadow: '0 0 0 4px #0E0E1A, 0 4px 20px rgba(139,92,246,0.5)' }}>
+                <span className="flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold text-white shadow-btn"
+                  style={{ marginTop: '-28px', background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', boxShadow: '0 0 0 4px #0E0E1A, 0 6px 24px rgba(255,45,139,0.4)' }}>
                   {t.icon}
                 </span>
               </div>

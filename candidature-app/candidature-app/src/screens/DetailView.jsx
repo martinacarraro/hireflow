@@ -12,7 +12,7 @@ const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
-  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile } = useApp()
+  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP } = useApp()
   const { user } = useApp()
   const [form, setForm] = useState({ ...c })
   const [isDirty, setIsDirty] = useState(false)
@@ -49,6 +49,10 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [interviewMode, setInterviewMode] = useState(false)
+  const [showAssuntaCelebration, setShowAssuntaCelebration] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackStep, setFeedbackStep] = useState(0)
+  const [feedbackAnswers, setFeedbackAnswers] = useState({})
 
   const days = daysSince(c.data_invio)
   const isColloquioOggi = form.data_colloquio && (() => {
@@ -78,9 +82,14 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       ora_colloquio: form.ora_colloquio || null,
       data_secondo_colloquio: form.data_secondo_colloquio || null,
       ora_secondo_colloquio: form.ora_secondo_colloquio || null,
+      offerta_ral: form.offerta_ral || null,
+      offerta_scadenza: form.offerta_scadenza || null,
+      offerta_note: form.offerta_note || null,
+      offerta_risposta: form.offerta_risposta || null,
     })
     setSaving(false)
     setSaved(true)
+    setIsDirty(false)
     onUpdate?.()
   }
 
@@ -172,6 +181,56 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <p className="text-sm font-semibold text-txt">Scopri il tragitto in Google Maps</p>
             <span className="ml-auto text-muted">→</span>
           </a>
+        )}
+
+        {/* OFFERTA RICEVUTA - view mode */}
+        {form.stato === 'Offerta ricevuta' && (
+          <div className="card" style={{ borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.04)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🏆</span>
+              <p className="text-sm font-bold text-green-400 uppercase tracking-wider">Dettagli Offerta</p>
+            </div>
+            {form.offerta_ral && <div className="flex justify-between py-1.5 border-b border-border"><span className="text-xs text-muted">💰 RAL offerta</span><span className="text-sm font-semibold text-green-400">€{parseInt(form.offerta_ral).toLocaleString('it-IT')}</span></div>}
+            {form.offerta_scadenza && <div className="flex justify-between py-1.5 border-b border-border"><span className="text-xs text-muted">⏰ Rispondere entro</span><span className="text-sm font-semibold text-txt">{new Date(form.offerta_scadenza).toLocaleDateString('it-IT', {day:'numeric',month:'long',year:'numeric'})}</span></div>}
+            {form.offerta_note && <div className="mt-2"><p className="text-xs text-muted mb-1">📋 Note offerta</p><p className="text-sm text-txt leading-relaxed">{form.offerta_note}</p></div>}
+            {!form.offerta_risposta && (
+              <div className="mt-4">
+                <p className="text-xs text-muted text-center mb-3">Hai deciso?</p>
+                <div className="flex gap-3">
+                  <button onClick={async () => {
+                    const genere = profile?.genere
+                    const nomeAssunta = genere === 'm' ? 'Assunto' : genere === 'f' ? 'Assunta' : 'Assunt*'
+                    set('stato', 'Assunta')
+                    set('offerta_risposta', 'si')
+                    await handleSave()
+                    await addXP(50)
+                    triggerConfetti()
+                    setShowAssuntaCelebration(true)
+                  }} className="flex-1 py-3 rounded-xl font-bold text-sm text-white active:scale-95 transition-all"
+                    style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                    ✅ Sì, accetto!
+                  </button>
+                  <button onClick={async () => {
+                    set('offerta_risposta', 'no')
+                    set('stato', 'Rifiutata')
+                    await handleSave()
+                  }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
+                    ❌ No, declino
+                  </button>
+                </div>
+              </div>
+            )}
+            {form.offerta_risposta === 'si' && (
+              <div className="mt-3 text-center">
+                <p className="text-green-400 font-bold text-sm">🌟 Offerta accettata! Congratulazioni!</p>
+              </div>
+            )}
+            {form.offerta_risposta === 'no' && (
+              <div className="mt-3 text-center">
+                <p className="text-muted text-sm">Offerta declinata. Prossima opportunità in arrivo! 💪</p>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="pb-8">
@@ -421,6 +480,30 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </Section>
         )}
 
+        {/* OFFERTA RICEVUTA - edit mode */}
+        {form.stato === 'Offerta ricevuta' && (
+          <Section label="🏆 DETTAGLI OFFERTA">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted mb-1">💰 RAL offerta (€)</p>
+                <input className="input-field text-sm" type="number" placeholder="Es: 35000"
+                  value={form.offerta_ral || ''} onChange={e => set('offerta_ral', e.target.value)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">⏰ Rispondere entro</p>
+                <input className="input-field text-sm" type="date"
+                  value={form.offerta_scadenza || ''} onChange={e => set('offerta_scadenza', e.target.value)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">📋 Note offerta (smart working, benefit, ecc.)</p>
+                <textarea className="input-field text-sm" rows={3}
+                  placeholder="Es: 2 giorni da casa, ticket restaurant, 25 gg ferie..."
+                  value={form.offerta_note || ''} onChange={e => set('offerta_note', e.target.value)} />
+              </div>
+            </div>
+          </Section>
+        )}
+
         {/* SEDE */}
         <Section label="📍 SEDE">
           <div className="space-y-2">
@@ -586,6 +669,93 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         onCancel={() => setConfirmDelete(false)}
         danger
       />
+
+      {/* 🌟 ASSUNTA CELEBRATION MODAL */}
+      {showAssuntaCelebration && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
+          <div className="card w-full max-w-sm text-center" style={{ borderColor: 'rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,47,255,0.08))' }}>
+            <div className="text-6xl mb-3">🎉</div>
+            <h2 className="text-xl font-bold text-txt mb-1" style={{ fontFamily: 'var(--font-heading, sans-serif)' }}>
+              {profile?.genere === 'f' ? 'Sei stata assunta!' : profile?.genere === 'm' ? 'Sei stato assunto!' : 'Sei stat* assunt*!'}
+            </h2>
+            <p className="text-2xl font-bold mb-2" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+              {form.azienda} 🌟
+            </p>
+            <p className="text-sm text-muted leading-relaxed mb-4">
+              {profile?.nome ? `${profile.nome}, ce` : 'Ce'} l'hai fatta davvero. Ogni candidatura, ogni ghosting, ogni attesa — ne valeva la pena. Ora vai e fai cose grandi. 💜
+            </p>
+            <div className="text-xs text-muted mb-4 bg-surface rounded-xl p-3">
+              🔥 +50 XP guadagnati · Badge "Ce l'hai fatta!" sbloccato
+            </div>
+            <button onClick={() => { setShowAssuntaCelebration(false); setShowFeedback(true) }}
+              className="btn-primary w-full py-3 text-sm font-bold mb-2">
+              🚀 Grazie! Un ultimo passo →
+            </button>
+            <button onClick={() => setShowAssuntaCelebration(false)}
+              className="text-xs text-muted py-1">
+              Chiudi
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 📋 FEEDBACK SURVEY */}
+      {showFeedback && (() => {
+        const QUESTIONS = [
+          { id: 'utilità', q: 'Quanto ti ha aiutato l'app nella ricerca lavoro?', opts: ['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco', '😕 Per niente'] },
+          { id: 'prima', q: 'Tenevi già traccia delle candidature prima?', opts: ['📊 Sì, su Excel', '📝 Sì, su note/agenda', '🧠 Solo a memoria', '🆕 Prima volta'] },
+          { id: 'funzione', q: 'La funzione che hai usato di più?', opts: ['📋 Tracciare candidature', '📅 Calendario', '🔔 Notifiche', '📊 Statistiche'] },
+          { id: 'consiglieresti', q: 'La consiglieresti a chi cerca lavoro?', opts: ['💯 Assolutamente sì', '👍 Probabilmente sì', '🤔 Non sono sicur*', '👎 No'] },
+        ]
+        const isLastQ = feedbackStep >= QUESTIONS.length
+        const q = QUESTIONS[feedbackStep]
+        return (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
+            style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
+            <div className="card w-full max-w-sm" style={{ borderColor: 'rgba(123,47,255,0.3)' }}>
+              {!isLastQ ? (
+                <>
+                  {/* progress */}
+                  <div className="flex gap-1.5 mb-4">
+                    {QUESTIONS.map((_, i) => (
+                      <div key={i} className="h-1 flex-1 rounded-full"
+                        style={{ background: i <= feedbackStep ? '#7B2FFF' : '#1e1e38', transition: 'background 0.3s' }} />
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted text-center mb-1">{feedbackStep + 1} / {QUESTIONS.length}</p>
+                  <h3 className="text-base font-bold text-txt text-center mb-4 leading-snug">{q.q}</h3>
+                  <div className="space-y-2">
+                    {q.opts.map(opt => (
+                      <button key={opt} onClick={() => {
+                        setFeedbackAnswers(prev => ({ ...prev, [q.id]: opt }))
+                        setFeedbackStep(s => s + 1)
+                      }} className="w-full text-left px-4 py-3 rounded-xl text-sm border border-border text-txt active:bg-purple/10 active:border-purple/40 transition-all">
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => setShowFeedback(false)} className="text-xs text-muted text-center w-full mt-3 py-1">
+                    Salta feedback
+                  </button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-5xl mb-3">💜</div>
+                  <h3 className="text-lg font-bold text-txt mb-2">Grazie mille!</h3>
+                  <p className="text-sm text-muted leading-relaxed mb-5">
+                    Il tuo feedback ci aiuta a migliorare l'app per chi verrà dopo. Ora vai — hai un lavoro da iniziare! 🚀
+                  </p>
+                  <button onClick={() => setShowFeedback(false)} className="btn-primary w-full py-3 text-sm font-bold">
+                    Chiudi e festeggia! 🎉
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
     </div>
   )
 }

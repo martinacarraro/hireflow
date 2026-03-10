@@ -141,7 +141,9 @@ export default function App() {
 
   if (!user && !isGuest) return <Login />
 
-  if (user && !dataLoading && profile && profile.seen_onboarding === false) return <Onboarding />
+  // Show onboarding only if: profile loaded, AND seen_onboarding is explicitly false or null, AND not already done via localStorage
+  const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
+  if (user && !dataLoading && profile && !hasSeenOnboarding) return <Onboarding />
 
   if (view?.type === 'detail') {
     return (

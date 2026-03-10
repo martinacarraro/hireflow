@@ -2,57 +2,47 @@ import { useState, useEffect } from 'react'
 
 const STEPS = [
   {
-    id: 'home',
-    emoji: '🏠',
-    title: 'La tua Home',
-    body: 'Qui vedi tutte le candidature attive, le KPI principali e la frase del giorno. Scorri per trovare quella che cerchi.',
-    arrow: null, // no arrow, just centered card
-    highlight: null,
-    position: 'center',
+    id: 'welcome',
+    emoji: '👋',
+    title: 'Benvenut*!',
+    body: 'Questo breve tour ti mostra le funzioni principali. Puoi saltarlo in qualsiasi momento.',
+    spotlight: null,
+    tooltipPos: 'center',
   },
   {
     id: 'add',
     emoji: '➕',
-    title: 'Aggiungi una candidatura',
-    body: 'Premi il tasto + per aggiungere una nuova candidatura. Inserisci azienda, ruolo, stato e fonte — in pochi secondi è tutto tracciato.',
-    arrow: 'bottom-center',
-    position: 'top',
-    targetStyle: { bottom: '72px', left: '50%', transform: 'translateX(-50%)' },
+    title: 'Aggiungi candidature',
+    body: 'Premi questo tasto per aggiungere una nuova candidatura. Ci vogliono 30 secondi.',
+    spotlight: { type: 'circle', anchorBottom: 62, size: 80 },
+    tooltipPos: 'top',
+    arrow: 'down',
   },
   {
     id: 'tabs',
     emoji: '📊',
     title: 'Le sezioni',
-    body: '📅 Calendario — vedi i tuoi colloqui per data.\n📊 Stats — analizza la tua ricerca con grafici e insight.\n👤 Profilo — livello XP, badge sbloccati e impostazioni.',
-    arrow: 'bottom',
-    position: 'top',
-    targetStyle: { bottom: '60px', left: '0', right: '0' },
+    body: '📅 Calendario → colloqui per data\n📊 Stats → grafici e insight\n👤 Profilo → livello, badge e impostazioni',
+    spotlight: { type: 'rect', anchorBottom: 0, height: 88 },
+    tooltipPos: 'top',
+    arrow: 'down',
   },
   {
-    id: 'card',
-    emoji: '👆',
-    title: 'Tocca una candidatura',
-    body: 'Tocca una candidatura per aprirla e vedere tutti i dettagli: colloqui, note, promemoria, referente e molto altro. Puoi modificare tutto in tempo reale.',
-    arrow: 'top',
-    position: 'bottom',
-    targetStyle: { top: '200px', left: '16px', right: '16px' },
+    id: 'home',
+    emoji: '🏠',
+    title: 'Le tue candidature',
+    body: 'Qui vedi tutto in ordine. Tocca una candidatura per aprire i dettagli, aggiornarla e aggiungere note.',
+    spotlight: { type: 'rect', anchorTop: 135, height: 200 },
+    tooltipPos: 'bottom',
+    arrow: 'up',
   },
   {
     id: 'excel',
     emoji: '📊',
     title: 'Hai già candidature?',
-    body: 'Vai in Profilo → Importa Candidature. Scarica il template Excel, compilalo con le tue candidature esistenti e caricalo — l\'app si completa da sola in secondi! 🚀',
-    arrow: null,
-    position: 'center',
-  },
-  {
-    id: 'done',
-    emoji: '🚀',
-    title: 'Sei pront*!',
-    body: 'Il mercato del lavoro non aspetta — ma tu ora sei organizzat*. In bocca al lupo! 💜',
-    arrow: null,
-    position: 'center',
-    isLast: true,
+    body: 'Vai in Profilo → Importa Candidature: scarica il template Excel, compilalo con le tue candidature e caricalo. L\'app si completa da sola! 🚀',
+    spotlight: null,
+    tooltipPos: 'center',
   },
 ]
 
@@ -61,135 +51,151 @@ export default function Tutorial({ onDone }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    setTimeout(() => setVisible(true), 100)
+    const t = setTimeout(() => setVisible(true), 150)
+    return () => clearTimeout(t)
   }, [])
 
-  const current = STEPS[step]
+  const cur = STEPS[step]
   const isLast = step === STEPS.length - 1
 
   const next = () => {
-    if (isLast) {
-      setVisible(false)
-      setTimeout(onDone, 300)
-    } else {
-      setStep(s => s + 1)
-    }
+    if (isLast) { setVisible(false); setTimeout(onDone, 250) }
+    else setStep(s => s + 1)
   }
+  const skip = () => { setVisible(false); setTimeout(onDone, 250) }
 
-  const skip = () => {
-    setVisible(false)
-    setTimeout(onDone, 300)
-  }
-
-  // Arrow component
-  const Arrow = ({ dir }) => {
-    const styles = {
-      'bottom-center': {
-        wrapper: { position: 'absolute', bottom: '82px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-        line: { width: 2, height: 40, background: 'linear-gradient(to bottom, rgba(123,47,255,0), #7B2FFF)', borderRadius: 2 },
-        tip: { width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '10px solid #7B2FFF' },
-      },
-      'bottom': {
-        wrapper: { position: 'absolute', bottom: '78px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-        line: { width: 2, height: 30, background: 'linear-gradient(to bottom, rgba(123,47,255,0), #7B2FFF)', borderRadius: 2 },
-        tip: { width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '10px solid #7B2FFF' },
-      },
-      'top': {
-        wrapper: { position: 'absolute', top: '185px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-        line: { width: 2, height: 30, background: 'linear-gradient(to top, rgba(123,47,255,0), #7B2FFF)', borderRadius: 2, order: 2 },
-        tip: { width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '10px solid #7B2FFF', order: 1 },
-      },
+  // Spotlight geometry
+  const sp = cur.spotlight
+  const spotlightCss = sp ? (() => {
+    const pad = 8
+    if (sp.type === 'circle') {
+      const d = sp.size + pad * 2
+      return {
+        position: 'absolute',
+        width: d, height: d, borderRadius: '50%',
+        bottom: sp.anchorBottom - pad,
+        left: '50%', transform: 'translateX(-50%)',
+        boxShadow: '0 0 0 9999px rgba(0,0,0,0.80)',
+        border: '2px solid rgba(123,47,255,0.7)',
+        zIndex: 1, pointerEvents: 'none',
+        animation: 'tut-pulse 1.6s ease-in-out infinite',
+      }
     }
-    const s = styles[dir]
-    if (!s) return null
-    return (
-      <div style={s.wrapper}>
-        <div style={s.tip} />
-        <div style={s.line} />
-      </div>
-    )
-  }
+    if (sp.type === 'rect') {
+      const base = {
+        position: 'absolute',
+        left: 12, right: 12,
+        height: sp.height + pad * 2,
+        borderRadius: 16,
+        boxShadow: '0 0 0 9999px rgba(0,0,0,0.80)',
+        border: '2px solid rgba(123,47,255,0.6)',
+        zIndex: 1, pointerEvents: 'none',
+        animation: 'tut-pulse 1.6s ease-in-out infinite',
+      }
+      if (sp.anchorBottom !== undefined) return { ...base, bottom: sp.anchorBottom - pad }
+      if (sp.anchorTop !== undefined) return { ...base, top: sp.anchorTop - pad }
+      return base
+    }
+    return {}
+  })() : null
+
+  // Arrow position
+  const arrowEl = (() => {
+    if (!cur.arrow || !sp) return null
+    const base = { position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }
+    if (cur.arrow === 'down') {
+      const btm = sp.type === 'circle'
+        ? sp.anchorBottom + sp.size + 20
+        : (sp.anchorBottom !== undefined ? sp.anchorBottom + sp.height + 20 : 100)
+      return (
+        <div style={{ ...base, bottom: btm }}>
+          <div style={{ width: 2, height: 26, background: 'linear-gradient(to bottom, #7B2FFF, rgba(123,47,255,0))', borderRadius: 2 }} />
+          <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '9px solid #7B2FFF', marginTop: -3 }} />
+        </div>
+      )
+    }
+    if (cur.arrow === 'up') {
+      const t = sp.anchorTop !== undefined ? sp.anchorTop - 46 : 150
+      return (
+        <div style={{ ...base, top: t }}>
+          <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '9px solid #7B2FFF' }} />
+          <div style={{ width: 2, height: 26, background: 'linear-gradient(to top, rgba(123,47,255,0), #7B2FFF)', borderRadius: 2 }} />
+        </div>
+      )
+    }
+    return null
+  })()
+
+  // Tooltip position
+  const tooltipStyle = (() => {
+    const base = { position: 'absolute', width: 'calc(100% - 32px)', maxWidth: 340, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }
+    if (!sp || cur.tooltipPos === 'center') return { ...base, top: '50%', transform: 'translate(-50%,-50%)' }
+    if (cur.tooltipPos === 'top') {
+      const btm = sp.type === 'circle'
+        ? sp.anchorBottom + sp.size + 60
+        : (sp.anchorBottom !== undefined ? sp.anchorBottom + sp.height + 50 : 120)
+      return { ...base, bottom: btm }
+    }
+    if (cur.tooltipPos === 'bottom') {
+      const t = sp.anchorTop !== undefined ? sp.anchorTop + sp.height + 50 : 300
+      return { ...base, top: t }
+    }
+    return base
+  })()
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9998,
-        background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(2px)',
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 0.3s',
-        display: 'flex',
-        alignItems: current.position === 'top' ? 'flex-start'
-          : current.position === 'bottom' ? 'flex-end'
-          : 'center',
-        justifyContent: 'center',
-        padding: current.position === 'top' ? '110px 20px 0' : current.position === 'bottom' ? '0 20px 130px' : '20px',
-      }}
-      onClick={next}
-    >
-      {/* Arrows */}
-      {current.arrow && <Arrow dir={current.arrow} />}
-
-      {/* Card */}
+    <>
+      <style>{`@keyframes tut-pulse { 0%,100%{border-color:rgba(123,47,255,.7)} 50%{border-color:rgba(255,45,139,.9)} }`}</style>
       <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#16162a',
-          border: '1px solid rgba(123,47,255,0.3)',
-          borderRadius: 20,
-          padding: '20px 22px',
-          maxWidth: 320,
-          width: '100%',
-          boxShadow: '0 0 40px rgba(123,47,255,0.2)',
-          transform: visible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'transform 0.3s',
-        }}
+        style={{ position: 'fixed', inset: 0, zIndex: 9998, overflow: 'hidden', opacity: visible ? 1 : 0, transition: 'opacity 0.3s' }}
+        onClick={next}
       >
-        {/* Progress dots */}
-        <div style={{ display: 'flex', gap: 5, marginBottom: 14, justifyContent: 'center' }}>
-          {STEPS.map((_, i) => (
-            <div key={i} style={{
-              width: i === step ? 20 : 6,
-              height: 6,
-              borderRadius: 3,
-              background: i === step ? '#7B2FFF' : i < step ? 'rgba(123,47,255,0.4)' : '#1e1e38',
-              transition: 'all 0.3s',
-            }} />
-          ))}
-        </div>
+        {/* Background dim only when no spotlight */}
+        {!sp && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.82)' }} />}
 
-        <div style={{ fontSize: 32, textAlign: 'center', marginBottom: 8 }}>{current.emoji}</div>
-        <h3 style={{ fontSize: 17, fontWeight: 700, color: 'white', textAlign: 'center', marginBottom: 8 }}>
-          {current.title}
-        </h3>
-        <p style={{ fontSize: 13, color: '#aaa', lineHeight: 1.6, textAlign: 'center', whiteSpace: 'pre-line' }}>
-          {current.body}
-        </p>
+        {/* Spotlight cutout */}
+        {sp && <div style={spotlightCss} />}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-          <button
-            onClick={skip}
-            style={{
-              flex: 1, padding: '10px 0', borderRadius: 12,
-              background: 'transparent', border: '1px solid #1e1e38',
-              color: '#555', fontSize: 13, cursor: 'pointer',
-            }}
-          >
-            Salta
-          </button>
-          <button
-            onClick={next}
-            style={{
-              flex: 2, padding: '10px 0', borderRadius: 12,
-              background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)',
-              border: 'none', color: 'white', fontSize: 13,
-              fontWeight: 600, cursor: 'pointer',
-            }}
-          >
-            {isLast ? 'Inizia! 🚀' : 'Avanti →'}
-          </button>
+        {/* Arrow */}
+        {arrowEl}
+
+        {/* Tooltip */}
+        <div style={tooltipStyle} onClick={e => e.stopPropagation()}>
+          <div style={{
+            background: '#16162a',
+            border: '1px solid rgba(123,47,255,0.35)',
+            borderRadius: 20,
+            padding: '18px 20px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.7), 0 0 20px rgba(123,47,255,0.12)',
+            transition: 'transform 0.3s',
+            transform: visible ? 'scale(1)' : 'scale(0.95)',
+          }}>
+            {/* Progress bar */}
+            <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
+              {STEPS.map((_, i) => (
+                <div key={i} style={{
+                  height: 4, flex: 1, borderRadius: 2,
+                  background: i === step ? 'linear-gradient(90deg,#7B2FFF,#FF2D8B)' : i < step ? 'rgba(123,47,255,0.4)' : '#1e1e38',
+                  transition: 'background 0.3s',
+                }} />
+              ))}
+            </div>
+
+            <div style={{ fontSize: 28, textAlign: 'center', marginBottom: 5 }}>{cur.emoji}</div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'white', textAlign: 'center', marginBottom: 7 }}>{cur.title}</h3>
+            <p style={{ fontSize: 12.5, color: '#999', lineHeight: 1.65, textAlign: 'center', whiteSpace: 'pre-line' }}>{cur.body}</p>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button onClick={skip} style={{ flex: 1, padding: '9px 0', borderRadius: 12, background: 'transparent', border: '1px solid #1e1e38', color: '#555', fontSize: 12, cursor: 'pointer' }}>
+                Salta
+              </button>
+              <button onClick={next} style={{ flex: 2, padding: '9px 0', borderRadius: 12, background: 'linear-gradient(135deg,#7B2FFF,#FF2D8B)', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                {isLast ? '🚀 Inizia!' : 'Avanti →'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
