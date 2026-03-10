@@ -703,11 +703,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       {/* 📋 FEEDBACK SURVEY */}
       {showFeedback && (() => {
         const QUESTIONS = [
-          { id: 'utilità', q: 'Quanto ti ha aiutato l'app nella ricerca lavoro?', opts: ['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco', '😕 Per niente'] },
-          { id: 'prima', q: 'Tenevi già traccia delle candidature prima?', opts: ['📊 Sì, su Excel', '📝 Sì, su note/agenda', '🧠 Solo a memoria', '🆕 Prima volta'] },
-          { id: 'funzione', q: 'La funzione che hai usato di più?', opts: ['📋 Tracciare candidature', '📅 Calendario', '🔔 Notifiche', '📊 Statistiche'] },
-          { id: 'consiglieresti', q: 'La consiglieresti a chi cerca lavoro?', opts: ['💯 Assolutamente sì', '👍 Probabilmente sì', '🤔 Non sono sicur*', '👎 No'] },
-        ]
+  { id: 'utilita', q: "Quanto ti ha aiutato l'app nella ricerca lavoro?", opts: ['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco', '😕 Per niente'] },
+  { id: 'prima', q: "Tenevi già traccia delle candidature prima?", opts: ['📊 Sì, su Excel', '📝 Sì, su note/agenda', '🧠 Solo a memoria', '🆕 Prima volta'] },
+  { id: 'funzione', q: "La funzione che hai usato di più?", opts: ['📋 Tracciare candidature', '📅 Calendario', '🔔 Notifiche', '📊 Statistiche'] },
+  { id: 'consiglieresti', q: "La consiglieresti a chi cerca lavoro?", opts: ['💯 Assolutamente sì', '👍 Probabilmente sì', '🤔 Non sono sicur*', '👎 No'] },
+]
+        
         const isLastQ = feedbackStep >= QUESTIONS.length
         const q = QUESTIONS[feedbackStep]
         return (
