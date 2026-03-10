@@ -175,7 +175,7 @@ export default function App() {
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
         {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
         {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
-        {tab === 'stats'    && <Stats />}
+        {tab === 'stats'    && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
         {tab === 'profile'  && <Profile />}
       </div>
       <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />

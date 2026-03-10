@@ -1,337 +1,255 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { useApp } from '../contexts/AppContext'
-import { STATUS_CONFIG, daysSince } from '../lib/utils'
 
-export default function Stats() {
-  const { candidature, unreadCount, notifications, markAllNotificationsRead, profile } = useApp()
-  const [showNotifs, setShowNotifs] = useState(false)
+const SETTORI = [
+  'Marketing', 'Comunicazione', 'Tech/IT', 'Design/UX', 'HR/Recruiting',
+  'Finance/Contabilità', 'Commerciale/Vendite', 'Legale', 'Sanità/Pharma',
+  'Istruzione/Formazione', 'Moda/Retail', 'Logistica/Operations',
+  'Giornalismo/Media', 'Architettura/Ingegneria', 'Arte/Cultura',
+  'Turismo/Hospitality', 'Agricoltura/Ambiente', 'Altro',
+]
 
-  if (showNotifs) return (
-    <div className="screen">
-      <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
-        <h2 className="font-bold text-txt">Notifiche 🔔</h2>
+const FONTI = ['Instagram', 'LinkedIn', 'Passaparola', 'Google/Ricerca', 'TikTok', 'Altro']
+
+const GENERI = [
+  { value: 'f', label: 'Donna', emoji: '👩' },
+  { value: 'm', label: 'Uomo', emoji: '👨' },
+  { value: 'nb', label: 'Non binario/a', emoji: '🧑' },
+  { value: 'x', label: 'Preferisco non dirlo', emoji: '🤍' },
+]
+
+export default function Onboarding() {
+  const { markOnboarded, updateProfile, requestNotificationPermission, triggerConfetti, profile } = useApp()
+
+  const [step, setStep] = useState(0)
+  const [slide, setSlide] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  const [nome, setNome] = useState(profile?.nome || '')
+  const [genere, setGenere] = useState('')
+  const [eta, setEta] = useState('')
+  const [settore, setSettore] = useState('')
+  const [settoreCustom, setSettoreCustom] = useState('')
+  const [fonte, setFonte] = useState('')
+  const [fonteCustom, setFonteCustom] = useState('')
+  const [citta, setCitta] = useState('')
+  const [notifDone, setNotifDone] = useState(false)
+
+  const SLIDES = [
+    { emoji: '📬', title: '"Le faremo sapere."', body: 'Lo dicono tutti. Ma tu tieni traccia di chi lo ha detto davvero — e di chi invece è sparito nel nulla.' },
+    { emoji: '📅', title: 'Ogni colloquio, ogni risposta', body: 'Calendario, notifiche e scadenze. Sai sempre chi ti deve ancora rispondere e da quanti giorni.' },
+    { emoji: '👻', title: 'Ghosting rilevato.', body: "Se un'azienda sparisce per 60 giorni, lo sappiamo. Archiviamo in automatico e tu vai avanti." },
+    { emoji: '🏆', title: 'La ricerca è una gara.', body: "Ogni candidatura vale XP. Ogni colloquio sblocca badge. L'offerta è il boss finale — e stavolta ce la fai. 🎉" },
+    { emoji: '📊', title: 'Hai già candidature?', body: 'Nessun problema — scarica il nostro template Excel dal Profilo, compilalo con le tue candidature e caricalo. L\'app si completa da sola in pochi secondi! 🚀' },
+  ]
+
+  const finish = async () => {
+    setLoading(true)
+    const finalSettore = settore === 'Altro' ? (settoreCustom || 'Altro') : settore
+    const finalFonte = fonte === 'Altro' ? (fonteCustom || 'Altro') : fonte
+    await updateProfile({
+      nome: nome.trim() || profile?.nome,
+      genere,
+      eta: eta ? parseInt(eta) : null,
+      settore: finalSettore,
+      come_conosciuto: finalFonte,
+      indirizzo_home: citta.trim() || null,
+      seen_onboarding: true,
+    })
+    triggerConfetti()
+    await markOnboarded()
+    setLoading(false)
+  }
+
+  if (step === 0) {
+    const s = SLIDES[slide]
+    const isLast = slide === SLIDES.length - 1
+    return (
+      <div className="screen purple-glow-bg relative">
+        <div className="flex items-center justify-between px-5 pt-safe pt-4">
+          <div className="flex gap-1.5">
+            {SLIDES.map((_, i) => (
+              <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-6 bg-purple' : 'w-1.5 bg-border'}`} />
+            ))}
+          </div>
+          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">Salta →</button>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div className="w-48 h-48 rounded-full mb-2" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }} />
+          <div className="text-7xl mb-6 -mt-40" key={`emoji-${slide}`}>{s.emoji}</div>
+          <h2 className="text-2xl font-bold text-txt mb-4" key={`title-${slide}`}>{s.title}</h2>
+          <p className="text-base text-muted leading-relaxed" key={`body-${slide}`}>{s.body}</p>
+        </div>
+        <div className="px-6 pb-10 space-y-3">
+          {isLast ? (
+            <button onClick={() => setStep(1)} className="btn-primary w-full text-base py-4">Iniziamo! 🚀</button>
+          ) : (
+            <>
+              <button onClick={() => setSlide(s => s + 1)} className="btn-primary w-full text-base py-4">Avanti →</button>
+              <p className="text-center text-xs text-disabled">{slide + 1} di {SLIDES.length}</p>
+            </>
+          )}
+        </div>
       </div>
-      <div className="flex-1 scrollable px-4 py-4">
-        {notifications.length === 0
-          ? <div className="text-center py-16 text-muted text-sm">🔕 Nessuna notifica ancora</div>
-          : notifications.map(n => (
-            <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
-              {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
-                <p className="text-xs text-muted mt-0.5">{n.body}</p>
-              </div>
-            </div>
-          ))
-        }
+    )
+  }
+
+  if (step === 1) return (
+    <StepWrapper title="Come ti chiami?" emoji="👋" step={1} total={7}
+      onNext={() => setStep(2)} canNext={nome.trim().length > 0} nextLabel="Avanti →">
+      <input className="input-field text-lg text-center font-semibold"
+        placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
+        autoFocus onKeyDown={e => e.key === 'Enter' && nome.trim() && setStep(2)} />
+      <p className="text-xs text-muted text-center mt-2">Ti chiameremo così nell'app 💜</p>
+
+    </StepWrapper>
+  )
+
+  if (step === 2) return (
+    <StepWrapper title="Sei:" emoji="🌈" step={2} total={7}
+      onNext={() => setStep(3)} canNext={genere !== ''}
+      onSkip={() => { setGenere('x'); setStep(3) }} nextLabel="Avanti →">
+      <div className="grid grid-cols-2 gap-3">
+        {GENERI.map(g => (
+          <button key={g.value} onClick={() => setGenere(g.value)}
+            className={`py-4 rounded-2xl text-sm font-semibold border transition-all active:scale-95 flex flex-col items-center gap-1
+              ${genere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface'}`}>
+            <span className="text-2xl">{g.emoji}</span>
+            <span>{g.label}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-[10px] text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
+    </StepWrapper>
+  )
+
+  if (step === 3) {
+    const etaNum = parseInt(eta)
+    const etaInvalid = eta !== '' && (isNaN(etaNum) || etaNum < 16 || etaNum > 100)
+    return (
+      <StepWrapper title="Quanti anni hai?" emoji="🎂" step={3} total={7}
+        onNext={() => setStep(4)} canNext={!etaInvalid}
+        onSkip={() => setStep(4)} nextLabel="Avanti →">
+        <input className="input-field text-lg text-center font-semibold"
+          placeholder="Es: 26" type="number" min="16" max="100"
+          value={eta} onChange={e => setEta(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !etaInvalid && setStep(4)} />
+        {etaInvalid && etaNum < 16 && (
+          <p className="text-red text-xs text-center mt-2">⚠️ Devi avere almeno 16 anni per usare l'app.</p>
+        )}
+        {!etaInvalid && <p className="text-xs text-muted text-center mt-2">Ci aiuta a capire chi usa l'app 📊</p>}
+      </StepWrapper>
+    )
+  }
+
+  if (step === 4) return (
+    <StepWrapper title="In che settore cerchi?" emoji="💼" step={4} total={7}
+      onNext={() => setStep(5)} canNext={settore !== ''}
+      onSkip={() => { setSettore('Altro'); setStep(5) }} nextLabel="Avanti →">
+      <div className="flex flex-wrap gap-2 justify-center">
+        {SETTORI.map(s => (
+          <button key={s} onClick={() => setSettore(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95
+              ${settore === s ? 'bg-purple border-purple text-white' : 'border-border text-muted bg-surface'}`}>
+            {s}
+          </button>
+        ))}
+      </div>
+      {settore === 'Altro' && (
+        <input className="input-field text-sm mt-3" placeholder="Scrivi il tuo settore..."
+          value={settoreCustom} onChange={e => setSettoreCustom(e.target.value)} autoFocus />
+      )}
+    </StepWrapper>
+  )
+
+  if (step === 5) return (
+    <StepWrapper title="Come ci hai trovato?" emoji="🔍" step={5} total={7}
+      onNext={() => setStep(6)} canNext={fonte !== ''}
+      onSkip={() => setStep(6)} nextLabel="Avanti →">
+      <div className="grid grid-cols-2 gap-3">
+        {FONTI.map(f => (
+          <button key={f} onClick={() => setFonte(f)}
+            className={`py-3 rounded-2xl text-sm font-semibold border transition-all active:scale-95
+              ${fonte === f ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface'}`}>
+            {f}
+          </button>
+        ))}
+      </div>
+      {fonte === 'Altro' && (
+        <input className="input-field text-sm mt-3" placeholder="Dove ci hai trovato?"
+          value={fonteCustom} onChange={e => setFonteCustom(e.target.value)} autoFocus />
+      )}
+    </StepWrapper>
+  )
+
+  if (step === 6) return (
+    <StepWrapper title="Dove vivi?" emoji="📍" step={6} total={7}
+      onNext={() => setStep(7)} canNext={true}
+      onSkip={() => setStep(7)} nextLabel="Avanti →">
+      <input className="input-field text-base text-center"
+        placeholder="Es: Milano, Roma, Torino..."
+        value={citta} onChange={e => setCitta(e.target.value)}
+        autoFocus onKeyDown={e => e.key === 'Enter' && setStep(7)} />
+      <p className="text-xs text-muted text-center mt-3 leading-relaxed">
+        📍 Lo usiamo per calcolare la distanza dai luoghi dei colloqui — così sai subito se conviene andare di persona o chiedere il remote. 🗺️
+      </p>
+    </StepWrapper>
+  )
+
+  if (step === 7) return (
+    <div className="screen purple-glow-bg">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+        <div className="text-7xl mb-6">🔔</div>
+        <h2 className="text-2xl font-bold text-txt mb-3">Vuoi ricevere notifiche?</h2>
+        <p className="text-base text-muted leading-relaxed mb-8">
+          Ti avvisiamo quando si avvicina un colloquio, quando hai promemoria impostati e quando un'azienda non risponde da troppo tempo. Niente spam, solo cose utili. 💜
+        </p>
+        <button onClick={async () => {
+          setLoading(true)
+          await requestNotificationPermission()
+          setNotifDone(true)
+          await finish()
+        }} disabled={loading} className="btn-primary w-full py-4 text-base mb-3">
+          {loading ? '⏳ Un attimo...' : '🔔 Sì, attiva le notifiche'}
+        </button>
+        <button onClick={async () => {
+          setLoading(true)
+          await finish()
+        }} disabled={loading} className="text-sm text-muted py-2 active:text-txt">
+          No grazie, le attiverò dopo
+        </button>
       </div>
     </div>
   )
 
-  const stats = useMemo(() => {
-    const total = candidature.length
-    const byStato = (s) => candidature.filter(c => c.stato === s).length
-    const colloqui = byStato('Prima call') + byStato('Colloquio') + byStato('In attesa risposta') + byStato('Secondo colloquio') + byStato('Non mi piace') + byStato('Rifiutata') + byStato('GHOSTED')
-    const ghosted = byStato('GHOSTED')
+  return null
+}
 
-    // Distribution by stato
-    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
-    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
-    const offerte = byStato('Offerta ricevuta')
-    const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
-    const inAttesa = candidature.filter(c => c.stato === 'In attesa risposta')
-    const avgAttesa = inAttesa.length
-      ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
-      : 0
-
-    // By fonte
-    const fonteMap = {}
-    candidature.forEach(c => {
-      if (c.fonte) {
-        if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
-        fonteMap[c.fonte].total++
-        if (['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta'].includes(c.stato))
-          fonteMap[c.fonte].colloqui++
-      }
-    })
-
-    // By week (last 8 weeks)
-    const weeks = []
-    for (let i = 7; i >= 0; i--) {
-      const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
-      const end = new Date(); end.setDate(end.getDate() - i * 7)
-      start.setHours(0,0,0,0); end.setHours(23,59,59,999)
-      const count = candidature.filter(c => {
-        const d = new Date(c.data_invio || c.created_at)
-        return d >= start && d <= end
-      }).length
-      const label = `W-${i}`
-      weeks.push({ label: i === 0 ? 'Questa' : `${i}w fa`, count })
-    }
-
-    // GHOSTED hall of shame
-    const ghostedList = candidature
-      .filter(c => c.stato === 'GHOSTED')
-      .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
-      .sort((a, b) => b.giorni - a.giorni)
-
-    // Sentiment over time (by month)
-    const sentimentMap = {}
-    const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
-    candidature.forEach(c => {
-      if (!c.feeling) return
-      const score = FEELING_SCORES[c.feeling]
-      if (!score) return
-      const d = new Date(c.data_invio || c.created_at)
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-      if (!sentimentMap[key]) sentimentMap[key] = { total: 0, sum: 0 }
-      sentimentMap[key].total++
-      sentimentMap[key].sum += score
-    })
-    const sentimentByMonth = Object.entries(sentimentMap)
-      .sort((a,b) => a[0].localeCompare(b[0]))
-      .slice(-6)
-      .map(([key, val]) => ({
-        label: key.slice(5) + '/' + key.slice(2,4),
-        avg: Math.round((val.sum / val.total) * 10) / 10
-      }))
-
-    // Best company (most interviews)
-    const aziendaMap = {}
-    candidature.forEach(c => {
-      if (!c.azienda) return
-      if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = 0
-      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
-        aziendaMap[c.azienda]++
-    })
-    const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1]-a[1]).slice(0,3)
-
-    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende, statoDistrib }
-  }, [candidature])
-
-  const kpis = [
-    { emoji: '📤', label: 'Totale inviate',   value: stats.total,    color: '#60A5FA' },
-    { emoji: '🎙️', label: 'Colloqui',          value: stats.colloqui, color: '#34D399' },
-    { emoji: '📈', label: 'Tasso risposta',   value: `${stats.tasso}%`, color: '#8B5CF6' },
-    { emoji: '⏱️', label: 'Media attesa',      value: `${stats.avgAttesa}gg`, color: '#FBBF24' },
-  ]
-
-  const maxWeek = Math.max(...stats.weeks.map(w => w.count), 1)
-  const maxFonte = Math.max(...Object.values(stats.fonteMap).map(v => v.colloqui), 1)
-
+function StepWrapper({ title, emoji, step, total, children, onNext, canNext, onSkip, nextLabel, loading }) {
   return (
-    <div className="screen">
-      <div className="px-5 pt-safe pt-4 pb-3 flex items-start justify-between flex-shrink-0">
-        <div>
-          <h2 className="text-xl font-bold text-txt">Le tue stats 📊</h2>
-          <p className="text-sm text-muted italic">Perché i numeri non mentono.</p>
+    <div className="screen purple-glow-bg">
+      <div className="flex items-center gap-2 px-5 pt-safe pt-4">
+        <div className="flex gap-1.5 flex-1">
+          {Array.from({ length: total }).map((_, i) => (
+            <div key={i} className={`h-1.5 rounded-full flex-1 transition-all duration-300 ${i < step ? 'bg-purple' : 'bg-border'}`} />
+          ))}
         </div>
-        <button onClick={() => setShowNotifs(true)} className="relative p-2 active:scale-90 transition-transform">
-          <span className="text-2xl">🔔</span>
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+        {onSkip && <button onClick={onSkip} className="text-xs text-muted ml-2 active:text-txt">Salta</button>}
       </div>
-
-      <div className="flex-1 scrollable px-4 pb-6 space-y-4">
-        {candidature.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="text-5xl mb-4">📊</div>
-            <p className="text-muted text-sm">Aggiungi candidature per vedere le statistiche!</p>
-          </div>
-        ) : (
-          <>
-            {/* KPI grid */}
-            <div className="grid grid-cols-2 gap-3">
-              {kpis.map(k => (
-                <div key={k.label} className="card flex flex-col gap-1">
-                  <span className="text-2xl">{k.emoji}</span>
-                  <span className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</span>
-                  <span className="text-xs text-muted">{k.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Donut / State breakdown */}
-            <div className="card">
-              <p className="section-label">DISTRIBUZIONE PER STATO</p>
-              <div className="space-y-2.5">
-                {Object.entries(STATUS_CONFIG).map(([stato, cfg]) => {
-                  const count = candidature.filter(c => c.stato === stato).length
-                  if (!count) return null
-                  const pct = Math.round((count / candidature.length) * 100)
-                  return (
-                    <div key={stato}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span style={{ color: cfg.color }}>{cfg.emoji} {stato}</span>
-                        <span className="text-muted">{count} ({pct}%)</span>
-                      </div>
-                      <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all"
-                          style={{ width: `${pct}%`, background: cfg.color }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Candidature per settimana */}
-            {/* Distribuzione per stato */}
-            {stats.statoDistrib.length > 0 && (
-              <div className="card">
-                <p className="section-label">DISTRIBUZIONE PER STATO</p>
-                {(() => {
-                  const maxCount = Math.max(...stats.statoDistrib.map(s => s.count), 1)
-                  return (
-                    <div className="flex items-end gap-1.5 mt-3" style={{ height: '100px' }}>
-                      {stats.statoDistrib.map(({ stato, count }) => {
-                        const cfg = STATUS_CONFIG[stato] || {}
-                        const pct = (count / maxCount) * 84
-                        return (
-                          <div key={stato} className="flex-1 flex flex-col items-center gap-1">
-                            <span className="text-[9px] font-bold" style={{ color: cfg.color || '#aaa' }}>{count}</span>
-                            <div className="w-full rounded-t-md transition-all"
-                              style={{ height: `${pct}px`, minHeight: count ? 4 : 0, background: cfg.color ? cfg.color + '55' : 'rgba(139,92,246,0.3)', borderTop: `2px solid ${cfg.color || '#8B5CF6'}` }} />
-                            <span className="text-[8px] text-muted text-center leading-tight" style={{ maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                              {cfg.emoji} {stato === 'In attesa risposta' ? 'Attesa' : stato === 'Secondo colloquio' ? '2° Coll.' : stato === 'Offerta ricevuta' ? 'Offerta' : stato}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
-              </div>
-            )}
-
-            <div className="card">
-              <p className="section-label">CANDIDATURE PER SETTIMANA</p>
-              <div className="flex items-end gap-1.5 h-24 mt-2">
-                {stats.weeks.map((w, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full rounded-t-md transition-all"
-                      style={{
-                        height: `${(w.count / maxWeek) * 80}px`,
-                        background: i === 7 ? '#8B5CF6' : 'rgba(139,92,246,0.35)',
-                        minHeight: w.count ? 4 : 0,
-                      }} />
-                    <span className="text-[9px] text-muted">{w.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Fonte più efficace */}
-            {Object.keys(stats.fonteMap).length > 0 && (
-              <div className="card">
-                <p className="section-label">FONTE PIÙ EFFICACE</p>
-                <div className="space-y-2.5 mt-2">
-                  {Object.entries(stats.fonteMap)
-                    .sort((a, b) => b[1].colloqui - a[1].colloqui)
-                    .map(([fonte, data]) => (
-                    <div key={fonte}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-txt">{fonte}</span>
-                        <span className="text-muted">{data.colloqui} colloqui / {data.total} inv.</span>
-                      </div>
-                      <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                        <div className="h-full bg-green rounded-full"
-                          style={{ width: `${(data.colloqui / maxFonte) * 100}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Insights */}
-            <div className="card border-l-[3px] border-l-purple">
-              <p className="section-label">💡 INSIGHTS</p>
-              <div className="space-y-2 text-sm text-purple-soft">
-                {stats.tasso >= 15 && <p>🔥 Tasso di risposta {stats.tasso}% — sopra la media. Stai facendo benissimo!</p>}
-                {stats.tasso < 10 && stats.total > 5 && <p>💪 Tasso {stats.tasso}%  — la media è ~10%. Prova a personalizzare di più il CV.</p>}
-                {stats.avgAttesa > 14 && <p>⏳ Attesa media di {stats.avgAttesa} giorni — considera dei follow-up!</p>}
-                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno {profile?.genere === 'f' ? 'ghostata' : profile?.genere === 'm' ? 'ghostato' : 'ghostat*'}. Il problema è loro, non tu. 💜</p>}
-                {stats.offerte >= 1 && <p>🏆 {stats.offerte} offerta ricevuta. Ce l'hai fatta!</p>}
-                {stats.total > 0 && stats.colloqui === 0 && <p>🎯 Ancora nessun colloquio — prova a personalizzare le candidature.</p>}
-              </div>
-            </div>
-
-            {/* Sentiment nel tempo */}
-            {stats.sentimentByMonth.length >= 2 && (
-              <div className="card">
-                <p className="section-label">😊 FEELING COLLOQUI NEL TEMPO</p>
-                <p className="text-xs text-muted mb-3">Media feeling mensile (1=😭 5=😍)</p>
-                <div className="flex items-end gap-2 h-20 mt-2">
-                  {stats.sentimentByMonth.map((m, i) => {
-                    const pct = (m.avg / 5) * 100
-                    const col = m.avg >= 4 ? '#22C55E' : m.avg >= 3 ? '#FBBF24' : '#F87171'
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[9px] font-bold" style={{ color: col }}>{m.avg}</span>
-                        <div className="w-full rounded-t-md transition-all"
-                          style={{ height: `${pct * 0.6}px`, background: col, minHeight: 4 }} />
-                        <span className="text-[9px] text-muted">{m.label}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-                <p className="text-xs text-muted mt-2 italic">
-                  {stats.sentimentByMonth.length >= 2 &&
-                    stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg > stats.sentimentByMonth[0].avg
-                    ? '📈 Il tuo feeling è migliorato nel tempo!'
-                    : stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg < stats.sentimentByMonth[0].avg
-                    ? '💪 Momento difficile — ma ogni colloquio è pratica!'
-                    : '→ Feeling stabile nel tempo.'}
-                </p>
-              </div>
-            )}
-
-            {/* Top aziende */}
-            {stats.topAziende.length > 0 && (
-              <div className="card">
-                <p className="section-label">🏢 AZIENDE PIÙ ATTIVE</p>
-                <p className="text-xs text-muted mb-3">Aziende con più colloqui/avanzamenti</p>
-                <div className="space-y-2">
-                  {stats.topAziende.map(([nome, cnt], i) => (
-                    <div key={nome} className="flex items-center gap-3 py-1">
-                      <span className="text-lg">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
-                      <span className="flex-1 text-sm font-medium text-txt truncate">{nome}</span>
-                      <span className="text-xs text-purple-soft font-semibold">{cnt} avanzamenti</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Hall of Shame */}
-            {stats.ghostedList.length > 0 && (
-              <div className="card">
-                <p className="section-label">👻 HALL OF SHAME</p>
-                <p className="text-xs text-muted mb-3 italic">Le aziende che sono sparite nel nulla.</p>
-                <div className="space-y-2">
-                  {stats.ghostedList.slice(0, 5).map(c => (
-                    <div key={c.id} className="flex items-center justify-between py-1.5
-                      border-b border-border last:border-0">
-                      <div>
-                        <p className="text-sm font-medium text-txt">{c.azienda}</p>
-                        <p className="text-xs text-muted">{c.ruolo}</p>
-                      </div>
-                      <span className="text-xs text-red font-medium">
-                        {c.giorni}gg di silenzio
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
+      <div className="flex-1 flex flex-col px-6 pt-8">
+        <div className="text-center mb-8">
+          <p className="text-5xl mb-4">{emoji}</p>
+          <h2 className="text-2xl font-bold text-txt">{title}</h2>
+        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </div>
+      <div className="px-6 pb-10 pt-4">
+        <button onClick={onNext} disabled={!canNext || loading}
+          className="btn-primary w-full py-4 text-base transition-opacity"
+          style={{ opacity: canNext && !loading ? 1 : 0.4 }}>
+          {loading ? '⏳ Un attimo...' : nextLabel}
+        </button>
       </div>
     </div>
   )

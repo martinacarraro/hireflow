@@ -41,6 +41,7 @@ export default function Onboarding() {
     { emoji: '📅', title: 'Ogni colloquio, ogni risposta', body: 'Calendario, notifiche e scadenze. Sai sempre chi ti deve ancora rispondere e da quanti giorni.' },
     { emoji: '👻', title: 'Ghosting rilevato.', body: "Se un'azienda sparisce per 60 giorni, lo sappiamo. Archiviamo in automatico e tu vai avanti." },
     { emoji: '🏆', title: 'La ricerca è una gara.', body: "Ogni candidatura vale XP. Ogni colloquio sblocca badge. L'offerta è il boss finale — e stavolta ce la fai. 🎉" },
+    { emoji: '📊', title: 'Hai già candidature?', body: 'Nessun problema — scarica il nostro template Excel dal Profilo, compilalo con le tue candidature e caricalo. L\'app si completa da sola in pochi secondi! 🚀' },
   ]
 
   const finish = async () => {
