@@ -1,6 +1,19 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
-export const STATI = ['Offerta ricevuta','Assunta','Spontanea','Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Non mi piace','Rifiutata','GHOSTED']
+export const STATI = [
+  'Inviata',
+  'Vista',
+  'Prima call',
+  'Colloquio',
+  'Secondo colloquio',
+  'Offerta ricevuta',
+  'Assunta',
+  'In attesa risposta',
+  'Rifiutata',
+  'Non mi piace',
+  'GHOSTED',
+  'Spontanea',
+]
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
 
