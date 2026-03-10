@@ -144,6 +144,12 @@ export default function Login() {
             <input className="input-field" type="password" placeholder="Password (min. 6 caratteri)"
               value={password} onChange={e => setPassword(e.target.value)} required autoComplete={isSignUp ? 'new-password' : 'current-password'} />
             {error && <p className="text-red text-xs bg-red/10 px-3 py-2 rounded-xl">{error}</p>}
+            {!isSignUp && (
+              <button type="button" onClick={() => { setForgotPw(true); setError('') }}
+                className="text-xs text-muted text-right w-full active:text-purple-soft">
+                Password dimenticata?
+              </button>
+            )}
 
 
             <button type="submit" disabled={loading}
