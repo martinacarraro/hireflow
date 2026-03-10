@@ -18,6 +18,8 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [suggestions, setSuggestions] = useState([])
   const [showSugg, setShowSugg] = useState(false)
   const [companyDomain, setCompanyDomain] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importNote, setImportNote] = useState('')
   const searchTimer = useRef(null)
 
   useEffect(() => {
@@ -36,10 +38,9 @@ export default function AddCandidatura({ onBack, onDone }) {
       } catch {
         setSuggestions([])
       }
-      setShowSugg(true)
+      setShowSugg(true) // sempre aperto mentre si digita
     }, 350)
   }, [form.azienda])
-
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -56,7 +57,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     setLoading(true)
     const payload = {
       ...form,
-      azienda_domain: companyDomain,
+      azienda_domain: companyDomain,  // '' = no logo, 'domain.com' = logo, undefined = not set
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
       data_colloquio: form.data_colloquio || null,
@@ -179,7 +180,7 @@ export default function AddCandidatura({ onBack, onDone }) {
             onChange={v => set('fonte', v)} />
         </Field>
 
-        <Field label="🔗 Link annuncio">
+        <Field label="🔗 Link annuncio — importa dati automaticamente">
           <div className="flex gap-2">
             <input className="input-field flex-1 text-sm" type="url"
               placeholder="Incolla link LinkedIn, Indeed, sito..."
@@ -191,6 +192,54 @@ export default function AddCandidatura({ onBack, onDone }) {
               </a>
             )}
           </div>
+          {form.link_annuncio && (
+            <button
+              onClick={async () => {
+                setImporting(true)
+                setImportNote('')
+                try {
+                  const jinaUrl = `https://r.jina.ai/${form.link_annuncio}`
+                  const res = await fetch(jinaUrl, { headers: { 'Accept': 'text/plain' } })
+                  const text = await res.text()
+                  const snippet = text.slice(0, 4000)
+                  const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      model: 'claude-sonnet-4-20250514',
+                      max_tokens: 500,
+                      messages: [{
+                        role: 'user',
+                        content: `Estrai da questo testo di un annuncio di lavoro i seguenti campi in JSON. Rispondi SOLO con JSON puro, nessun altro testo:
+{"azienda": "nome azienda", "ruolo": "titolo posizione", "sede": "città o Remote", "descrizione": "max 200 caratteri descrizione ruolo"}
+
+Testo annuncio:
+${snippet}`
+                      }]
+                    })
+                  })
+                  const data = await apiRes.json()
+                  const raw = data.content?.[0]?.text || '{}'
+                  const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
+                  if (parsed.azienda) set('azienda', parsed.azienda)
+                  if (parsed.ruolo) set('ruolo', parsed.ruolo)
+                  if (parsed.sede) set('sede', parsed.sede)
+                  if (parsed.descrizione) set('note', parsed.descrizione)
+                  setImportNote('✅ Dati importati! Controlla e correggi se necessario.')
+                } catch(e) {
+                  setImportNote('⚠️ Impossibile leggere questa pagina. Compila manualmente.')
+                }
+                setImporting(false)
+              }}
+              disabled={importing}
+              className="mt-2 w-full py-2.5 rounded-xl text-sm font-semibold border border-purple/40 text-purple-soft active:scale-95 transition-all flex items-center justify-center gap-2"
+              style={{ background: 'rgba(123,47,255,0.1)' }}>
+              {importing
+                ? <><span className="animate-spin">⏳</span> Importo dati...</>
+                : <> ✨ Importa dati automaticamente</>}
+            </button>
+          )}
+          {importNote && <p className="text-xs mt-1" style={{ color: importNote.startsWith('✅') ? '#34D399' : '#FBBF24' }}>{importNote}</p>}
         </Field>
 
         <Field label="⚡ Priorità">
