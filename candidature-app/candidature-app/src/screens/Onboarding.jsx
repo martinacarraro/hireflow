@@ -36,6 +36,11 @@ export default function Onboarding() {
   const [citta, setCitta] = useState('')
   const [notifDone, setNotifDone] = useState(false)
 
+  // CONTROLLO: Se l'utente ha già completato l'onboarding nel database, non mostrare nulla
+  if (profile?.has_seen_onboarding === true) {
+    return null
+  }
+
   const SLIDES = [
     { emoji: '📬', title: '"Le faremo sapere."', body: 'Lo dicono tutti. Ma tu tieni traccia di chi lo ha detto davvero — e di chi invece è sparito nel nulla.' },
     { emoji: '📅', title: 'Ogni colloquio, ogni risposta', body: 'Calendario, notifiche e scadenze. Sai sempre chi ti deve ancora rispondere e da quanti giorni.' },
@@ -48,6 +53,8 @@ export default function Onboarding() {
     setLoading(true)
     const finalSettore = settore === 'Altro' ? (settoreCustom || 'Altro') : settore
     const finalFonte = fonte === 'Altro' ? (fonteCustom || 'Altro') : fonte
+    
+    // Aggiorniamo il profilo su Supabase
     await updateProfile({
       nome: nome.trim() || profile?.nome,
       genere,
@@ -55,8 +62,9 @@ export default function Onboarding() {
       settore: finalSettore,
       come_conosciuto: finalFonte,
       indirizzo_home: citta.trim() || null,
-      seen_onboarding: true,
+      has_seen_onboarding: true, // Salviamo che l'onboarding è stato visto
     })
+    
     triggerConfetti()
     await markOnboarded()
     localStorage.setItem('lfs_onboarding_done', '1')
@@ -103,7 +111,6 @@ export default function Onboarding() {
         placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && nome.trim() && setStep(2)} />
       <p className="text-xs text-muted text-center mt-2">Ti chiameremo così nell'app 💜</p>
-
     </StepWrapper>
   )
 
@@ -121,7 +128,6 @@ export default function Onboarding() {
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
     </StepWrapper>
   )
 
@@ -136,10 +142,6 @@ export default function Onboarding() {
           placeholder="Es: 26" type="number" min="16" max="100"
           value={eta} onChange={e => setEta(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !etaInvalid && setStep(4)} />
-        {etaInvalid && etaNum < 16 && (
-          <p className="text-red text-xs text-center mt-2">⚠️ Devi avere almeno 16 anni per usare l'app.</p>
-        )}
-        {!etaInvalid && <p className="text-xs text-muted text-center mt-2">Ci aiuta a capire chi usa l'app 📊</p>}
       </StepWrapper>
     )
   }
@@ -177,10 +179,6 @@ export default function Onboarding() {
           </button>
         ))}
       </div>
-      {fonte === 'Altro' && (
-        <input className="input-field text-sm mt-3" placeholder="Dove ci hai trovato?"
-          value={fonteCustom} onChange={e => setFonteCustom(e.target.value)} autoFocus />
-      )}
     </StepWrapper>
   )
 
@@ -189,12 +187,9 @@ export default function Onboarding() {
       onNext={() => setStep(7)} canNext={true}
       onSkip={() => setStep(7)} nextLabel="Avanti →">
       <input className="input-field text-base text-center"
-        placeholder="Es: Milano, Roma, Torino..."
+        placeholder="Es: Milano, Roma..."
         value={citta} onChange={e => setCitta(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && setStep(7)} />
-      <p className="text-xs text-muted text-center mt-3 leading-relaxed">
-        📍 Lo usiamo per calcolare la distanza dai luoghi dei colloqui — così sai subito se conviene andare di persona o chiedere il remote. 🗺️
-      </p>
     </StepWrapper>
   )
 
@@ -204,12 +199,11 @@ export default function Onboarding() {
         <div className="text-7xl mb-6">🔔</div>
         <h2 className="text-2xl font-bold text-txt mb-3">Vuoi ricevere notifiche?</h2>
         <p className="text-base text-muted leading-relaxed mb-8">
-          Ti avvisiamo quando si avvicina un colloquio, quando hai promemoria impostati e quando un'azienda non risponde da troppo tempo. Niente spam, solo cose utili. 💜
+          Ti avvisiamo quando si avvicina un colloquio o quando un'azienda non risponde da troppo tempo. 💜
         </p>
         <button onClick={async () => {
           setLoading(true)
           await requestNotificationPermission()
-          setNotifDone(true)
           await finish()
         }} disabled={loading} className="btn-primary w-full py-4 text-base mb-3">
           {loading ? '⏳ Un attimo...' : '🔔 Sì, attiva le notifiche'}
