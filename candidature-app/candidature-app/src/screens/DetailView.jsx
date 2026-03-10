@@ -163,14 +163,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
 
         {/* Sede / come arrivare */}
         {form.sede && (
-          <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
+          <a href={profile?.indirizzo_home
+              ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`
+              : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
             target="_blank" rel="noopener noreferrer"
-            className="card flex items-center gap-3 active:scale-95 transition-all" style={{ borderColor: 'rgba(34,197,94,0.3)' }}>
+            className="card flex items-center gap-3 active:scale-95 transition-all">
             <span className="text-2xl">🗺️</span>
-            <div>
-              <p className="text-sm font-semibold text-txt">Come arrivo</p>
-              <p className="text-xs text-muted">{form.sede}</p>
-            </div>
+            <p className="text-sm font-semibold text-txt">Scopri il tragitto in Google Maps</p>
             <span className="ml-auto text-muted">→</span>
           </a>
         )}
@@ -428,23 +427,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <input className="input-field text-sm" placeholder="Indirizzo (es: Via Roma 1, Milano)"
               value={form.sede || ''} onChange={e => set('sede', e.target.value)} />
             {form.sede && (
-              <div className="flex gap-2">
-                <a href={`https://maps.google.com/?q=${encodeURIComponent(form.sede + (form.paese ? ', ' + form.paese : ''))}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl active:scale-95">
-                  📍 Google Maps
-                </a>
-                {profile?.indirizzo_home && (
-                  <a href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 text-xs text-green-400 border border-green-500/30 px-3 py-2 rounded-xl active:scale-95">
-                    🚇 Come arrivo
-                  </a>
-                )}
-              </div>
-            )}
-            {!profile?.indirizzo_home && form.sede && (
-              <p className="text-xs text-muted">💡 Aggiungi il tuo indirizzo nel Profilo per vedere come arrivare</p>
+              <a href={profile?.indirizzo_home
+                  ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`
+                  : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 text-xs text-txt border border-border px-3 py-2.5 rounded-xl active:scale-95 w-full">
+                🗺️ Scopri il tragitto in Google Maps
+              </a>
             )}
           </div>
         </Section>
