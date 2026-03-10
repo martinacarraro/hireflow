@@ -12,6 +12,7 @@ import DetailView from './screens/DetailView'
 import Stats from './screens/Stats'
 import Profile from './screens/Profile'
 import Calendar from './screens/Calendar'
+import Tutorial from './components/Tutorial'
 
 export default function App() {
   const { user, loading: authLoading, isGuest } = useAuth()
@@ -28,6 +29,7 @@ export default function App() {
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showResetPassword, setShowResetPassword] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('lfs_tutorial_done'))
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
   const [resetDone, setResetDone] = useState(false)
@@ -139,7 +141,7 @@ export default function App() {
 
   if (!user && !isGuest) return <Login />
 
-  if (user && profile && !profile.seen_onboarding) return <Onboarding />
+  if (user && !dataLoading && profile && profile.seen_onboarding === false) return <Onboarding />
 
   if (view?.type === 'detail') {
     return (
@@ -179,6 +181,12 @@ export default function App() {
         {tab === 'profile'  && <Profile />}
       </div>
       <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />
+      {showTutorial && (
+        <Tutorial onDone={() => {
+          localStorage.setItem('lfs_tutorial_done', '1')
+          setShowTutorial(false)
+        }} />
+      )}
       <Toast toast={toast} />
       <Confetti active={confetti} />
     </div>
