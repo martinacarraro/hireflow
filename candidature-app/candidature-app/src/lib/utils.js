@@ -372,20 +372,47 @@ export const BADGES = [
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
 
-export const MOTTOS = [
+export const MOTTOS_MATTINO = [
+  'Buona giornata. Ogni candidatura inviata oggi è un passo avanti. 🌅',
+  'Il mattino ha l\'oro in bocca — e tu hai il CV pronto. 💛',
+  'Una nuova giornata, nuove opportunità da non lasciarsi sfuggire. 🚀',
+  'Inizia la giornata con un obiettivo: una candidatura in più. 🎯',
+  'Il mercato del lavoro non dorme — e nemmeno tu. Dai! ☀️',
+  'Ogni mattina è un nuovo capitolo. Scrivilo bene. ✍️',
+]
+
+export const MOTTOS_POMERIGGIO = [
+  'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
   '"Le faremo sapere." — E tu tieni il conto. 📬',
   'Ogni no ti avvicina al sì giusto. ✨',
-  'Ghostat*? Vai avant*. 👻',
-  'Il silenzio dice tanto quanto una risposta. 🤐',
-  'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
-  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
   'Non aspettare che facciano sapere — anticipa. 📞',
-  'Ogni colloquio è pratica per il colloquio giusto. 🎙️',
-  'La ricerca è un lavoro. Ce la stai mettendo tutta. 🔥',
-  '"Valuteremo il tuo profilo." — Intanto tu vai avanti. 🚀',
+  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
   'Il tuo prossimo lavoro esiste già. Lo stai trovando. 💡',
-  'Resisti. Il mercato non sa ancora cosa si perde. 💪',
+  'Ogni colloquio è pratica per il colloquio giusto. 🎙️',
+  '"Valuteremo il tuo profilo." — Intanto tu vai avanti. 🚀',
 ]
+
+export const MOTTOS_SERA = [
+  'Brava giornata. Domani si ricomincia, più forti di oggi. 🌙',
+  'Il silenzio delle aziende non è mai la parola fine. 🤐',
+  'Resisti. Il mercato non sa ancora cosa si perde. 💪',
+  'Ogni giorno che passa sei più vicin* alla risposta giusta. 🌟',
+  'Riposati. Chi cerca lavoro con testa e cuore merita anche una pausa. 💜',
+  'La ricerca di lavoro è una maratona, non uno sprint. Ottimo passo oggi. 🏃',
+  'Ghostat*? Capita ai migliori. Vai avant*. 👻',
+]
+
+// Ritorna la frase giusta in base all'ora — cambia ogni giorno
+export function getMotto() {
+  const h = new Date().getHours()
+  const day = new Date().getDate()
+  if (h >= 5 && h < 12) return MOTTOS_MATTINO[day % MOTTOS_MATTINO.length]
+  if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO[day % MOTTOS_POMERIGGIO.length]
+  return MOTTOS_SERA[day % MOTTOS_SERA.length]
+}
+
+// Keep for backward compat
+export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
 
 // ─── LOADING TIPS ────────────────────────────────────────────────
 

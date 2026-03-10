@@ -9,7 +9,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura } = useApp()
   const [form, setForm] = useState({
     azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
-    sede: '', paese: 'Italia', link_annuncio: '', fonte: 'Altro',
+    sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
     stipendio_min: '', stipendio_max: '',
     note: '', notifiche_push: true, data_invio: TODAY, data_colloquio: '',
   })
@@ -48,6 +48,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     const e = {}
     if (!form.azienda.trim()) e.azienda = 'Campo obbligatorio'
     if (!form.ruolo.trim()) e.ruolo = 'Campo obbligatorio'
+    if (!form.fonte) e.fonte = 'Seleziona la fonte'
     setErrors(e)
     return !Object.keys(e).length
   }
@@ -175,9 +176,10 @@ export default function AddCandidatura({ onBack, onDone }) {
         {/* DETAILS */}
         <SectionLabel>I DETTAGLI</SectionLabel>
 
-        <Field label="📣 Fonte">
+        <Field label="📣 Fonte *">
           <ChoicePicker value={form.fonte} options={FONTI}
             onChange={v => set('fonte', v)} />
+          {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">📣 Seleziona la fonte — ci aiuta a capire dove funziona meglio 🙏</p>}
         </Field>
 
         <Field label="🔗 Link annuncio — importa dati automaticamente">

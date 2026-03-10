@@ -255,8 +255,10 @@ export function AppProvider({ children }) {
   // ── XP & PROFILE ─────────────────────────────────────────────
 
   const addXP = async (amount) => {
-    if (!profile) return
-    const newXP = (profile.xp_points || 0) + amount
+    if (!profile || !user) return
+    // Read fresh from DB to avoid stale state
+    const { data: fresh } = await supabase.from('user_profiles').select('xp_points').eq('id', user.id).single()
+    const newXP = ((fresh?.xp_points) || 0) + amount
     await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
     setProfile(p => ({ ...p, xp_points: newXP }))
   }
@@ -266,6 +268,18 @@ export function AppProvider({ children }) {
     const newXP = Math.max(0, (profile.xp_points || 0) - amount)
     await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
     setProfile(p => ({ ...p, xp_points: newXP }))
+  }
+
+  // Ricalcola XP totali da tutte le candidature (usato per fix account vecchi)
+  const recalcXP = async () => {
+    if (!user) return
+    const { data: cands } = await supabase.from('candidature').select('*').eq('user_id', user.id)
+    if (!cands) return
+    let total = 0
+    cands.forEach(cand => { total += xpForCandidatura(cand) })
+    await supabase.from('user_profiles').update({ xp_points: total }).eq('id', user.id)
+    setProfile(p => ({ ...p, xp_points: total }))
+    return total
   }
 
   // Calcola quanti XP ha generato una candidatura
@@ -507,7 +521,7 @@ export function AppProvider({ children }) {
       loading, unreadCount, computeStats,
       addCandidatura, addBulkCandidature, updateCandidatura, migrateGuestToAccount, deleteCandidatura,
       getChecklist, toggleChecklistItem,
-      addXP, updateProfile, markOnboarded, refreshMotto,
+      addXP, removeXP, recalcXP, updateProfile, markOnboarded, refreshMotto,
       pushNotification, requestNotificationPermission,
       markAllNotificationsRead,
       showToast, triggerConfetti,

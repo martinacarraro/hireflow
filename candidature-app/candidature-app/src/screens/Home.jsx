@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
-import { STATUS_CONFIG, STATUS_GROUP_ORDER, MOTTOS, STATI, daysSince, formatDateTime, getGreeting } from '../lib/utils'
+import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
 
 
 function GuestConvertModal({ onClose, onSuccess }) {
@@ -49,8 +49,8 @@ function GuestConvertModal({ onClose, onSuccess }) {
   )
 }
 
-export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange }) {
-  const { candidature, profile, refreshMotto, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
+export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
+  const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
@@ -62,11 +62,18 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
     }
   }, [])
 
+  // Scroll to top when home tab tapped again
+  useEffect(() => {
+    if (scrollToTop > 0 && scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [scrollToTop])
+
   // Save scroll position as user scrolls
   const handleScroll = useCallback((e) => {
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
-  const motto = MOTTOS[profile?.motto_index ?? 0]
+  const motto = getMotto()
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
@@ -277,7 +284,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange })
         {!selectMode && (
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
-            <button onClick={refreshMotto} className="text-muted text-base ml-3 active:scale-75 transition-transform">🔄</button>
           </div>
         )}
 
@@ -476,6 +482,8 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
   const lastUpdate = new Date(c.updated_at || c.created_at)
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
+  const STATI_ATTIVI = ['Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Offerta ricevuta']
+  const isActive = STATI_ATTIVI.includes(c.stato)
 
   // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
@@ -546,7 +554,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              {c.priorita && isRecent && <PriorityBadge priorita={c.priorita} />}
+              {c.priorita && isRecent && isActive && <PriorityBadge priorita={c.priorita} />}
               <span className="text-xs text-muted font-medium">{days}gg fa</span>
             </div>
           </div>

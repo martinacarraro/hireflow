@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { XpBar, LevelBadge, SectionLabel, ConfirmDialog, Spinner } from '../components/UI'
-import { BADGES, MOTTOS } from '../lib/utils'
+import { BADGES } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 
 const GENERI = [
@@ -47,8 +47,8 @@ const TEMPLATE_B64 = 'UEsDBBQAAAAIAKpoZlxGx01IlQAAAM0AAAAQAAAAZG9jUHJvcHMvYXBwLn
 
 export default function Profile() {
   const { profile, updateProfile, notifications, markAllNotificationsRead,
-    unreadCount, refreshMotto, requestNotificationPermission, addBulkCandidature,
-    candidature: tutteLeCandidature, updateCandidatura } = useApp()
+    unreadCount, requestNotificationPermission, addBulkCandidature,
+    candidature: tutteLeCandidature, updateCandidatura, recalcXP } = useApp()
   const { user, signOut } = useAuth()
 
   const [confirmSignOut, setConfirmSignOut]   = useState(false)
@@ -65,6 +65,7 @@ export default function Profile() {
   const [importError, setImportError]         = useState('')
   const [selectedBadge, setSelectedBadge]     = useState(null)
   const [editInfoBase, setEditInfoBase]       = useState(false)
+  const [recalcLoading, setRecalcLoading]     = useState(false)
   const [infoGenere, setInfoGenere]           = useState(profile?.genere || '')
   const [infoEta, setInfoEta]                 = useState(profile?.eta?.toString() || '')
   const [infoSettore, setInfoSettore]         = useState(profile?.settore || '')
@@ -77,7 +78,6 @@ export default function Profile() {
   const xp     = profile?.xp_points || 0
   const earned = (profile?.badge_lista || '').split(',').filter(Boolean)
   const streak = profile?.streak_giorni || 0
-  const motto  = MOTTOS[profile?.motto_index ?? 0]
 
   const downloadTemplate = () => {
     const bytes = atob(TEMPLATE_B64)
@@ -273,8 +273,64 @@ export default function Profile() {
 
         {/* XP */}
         <div className="card">
+          <SectionLabel>LE TUE INFO 📋</SectionLabel>
+          <div className="space-y-2 mb-2">
+            {/* Genere */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted">Genere</span>
+              <span className="text-xs text-txt font-medium">
+                {profile?.genere === 'f' ? '👩 Donna'
+                : profile?.genere === 'm' ? '👨 Uomo'
+                : profile?.genere === 'nb' ? '🌈 Non binario/a'
+                : profile?.genere === 'x' ? '🤐 Preferisco non dirlo'
+                : <span className="text-disabled italic">Non specificato</span>}
+              </span>
+            </div>
+            {/* Età */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted">Età</span>
+              <span className="text-xs text-txt font-medium">
+                {profile?.eta ? `${profile.eta} anni` : <span className="text-disabled italic">Non specificata</span>}
+              </span>
+            </div>
+            {/* Settore */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted">Settore</span>
+              <span className="text-xs text-txt font-medium">
+                {profile?.settore || <span className="text-disabled italic">Non specificato</span>}
+              </span>
+            </div>
+            {/* Fonte */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted">Come ci hai trovato</span>
+              <span className="text-xs text-txt font-medium">
+                {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
+              </span>
+            </div>
+          </div>
+          <button onClick={() => {
+            setInfoGenere(profile?.genere || '')
+            setInfoEta(profile?.eta?.toString() || '')
+            setInfoSettore(profile?.settore || '')
+            setInfoFonte(profile?.come_conosciuto || '')
+            setEditInfoBase(true)
+          }} className="text-xs text-purple-soft font-semibold active:opacity-70">
+            ✏️ Modifica info
+          </button>
+
           <SectionLabel>IL TUO LIVELLO ⭐</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
+          {xp === 0 && (
+            <button onClick={async () => {
+              setRecalcLoading(true)
+              const tot = await recalcXP()
+              setRecalcLoading(false)
+              if (tot !== undefined) alert(`✅ XP ricalcolati: ${tot} XP`)
+            }} disabled={recalcLoading}
+              className="text-xs text-muted border border-border rounded-full px-3 py-1 mt-1 active:scale-95">
+              {recalcLoading ? '⏳ Calcolo...' : '🔄 Ricalcola XP'}
+            </button>
+          )}
           <div className="flex items-center mt-3">
             {streak > 1 && (
               <div className="flex items-center gap-1.5">
@@ -315,13 +371,6 @@ export default function Profile() {
 
         {/* Motto */}
         <div className="card border-l-[3px] border-l-purple">
-          <SectionLabel>IL TUO MOTTO 💜</SectionLabel>
-          <p className="text-sm italic text-purple-soft mb-3 leading-relaxed">"{motto}"</p>
-          <button onClick={refreshMotto} className="text-xs text-muted border border-border rounded-full px-3 py-1.5 active:scale-95">🔄 Cambia frase</button>
-        </div>
-
-        {/* Condividi */}
-        <div className="card">
           <SectionLabel>CONDIVIDI CON CHI CERCA LAVORO 💌</SectionLabel>
           <p className="text-xs text-muted mb-3">Conosci qualcuno che sta mandando candidature? Mandagli Le faremo sapere!</p>
           <button onClick={handleShare} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
@@ -414,18 +463,7 @@ export default function Profile() {
 
         {/* Referral */}
         <div className="card">
-          {/* Banner completa profilo se mancano dati */}
-          {(!profile?.genere || !profile?.eta || !profile?.settore) && (
-            <div className="card border border-purple/30 bg-purple/5 mb-2">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-txt mb-1">✏️ Completa il tuo profilo</p>
-                  <p className="text-xs text-muted">Aggiungi genere, età e settore per un'esperienza personalizzata</p>
-                </div>
-                <button onClick={() => setEditInfoBase(true)} className="text-xs text-purple-soft font-semibold whitespace-nowrap">Modifica →</button>
-              </div>
-            </div>
-          )}
+
 
           <SectionLabel>🔒 PRIVACY & TERMINI</SectionLabel>
           <a href="/privacy.html" target="_blank" rel="noopener noreferrer"

@@ -26,6 +26,7 @@ export default function App() {
   const [tab, setTab] = useState('home')
   const [view, setView] = useState(null)
   const [homeScrollPos, setHomeScrollPos] = useState(0)
+  const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
@@ -147,9 +148,8 @@ export default function App() {
 
   const handleTabChange = (t) => {
     if (t === 'add') { setView({ type: 'add' }); return }
-    if (t === tab) {
-      // già sulla stessa tab → scroll to top
-      setHomeScrollPos(0)
+    if (t === tab && t === 'home') {
+      setScrollToTopTrigger(n => n + 1)
       return
     }
     setTab(t)
@@ -158,7 +158,7 @@ export default function App() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
-        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} />}
+        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
         {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
         {tab === 'stats'    && <Stats />}
         {tab === 'profile'  && <Profile />}

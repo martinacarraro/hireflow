@@ -3,7 +3,7 @@ import { useApp } from '../contexts/AppContext'
 import { STATUS_CONFIG, daysSince } from '../lib/utils'
 
 export default function Stats() {
-  const { candidature, unreadCount, notifications, markAllNotificationsRead } = useApp()
+  const { candidature, unreadCount, notifications, markAllNotificationsRead, profile } = useApp()
   const [showNotifs, setShowNotifs] = useState(false)
 
   if (showNotifs) return (
@@ -34,6 +34,10 @@ export default function Stats() {
     const byStato = (s) => candidature.filter(c => c.stato === s).length
     const colloqui = byStato('Prima call') + byStato('Colloquio') + byStato('In attesa risposta') + byStato('Secondo colloquio') + byStato('Non mi piace') + byStato('Rifiutata') + byStato('GHOSTED')
     const ghosted = byStato('GHOSTED')
+
+    // Distribution by stato
+    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta','Spontanea']
+    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
     const offerte = byStato('Offerta ricevuta')
     const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
     const inAttesa = candidature.filter(c => c.stato === 'In attesa')
@@ -103,7 +107,7 @@ export default function Stats() {
     })
     const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1]-a[1]).slice(0,3)
 
-    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende }
+    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende, statoDistrib }
   }, [candidature])
 
   const kpis = [
@@ -177,6 +181,34 @@ export default function Stats() {
             </div>
 
             {/* Candidature per settimana */}
+            {/* Distribuzione per stato */}
+            {stats.statoDistrib.length > 0 && (
+              <div className="card">
+                <p className="section-label">DISTRIBUZIONE PER STATO</p>
+                {(() => {
+                  const maxCount = Math.max(...stats.statoDistrib.map(s => s.count), 1)
+                  return (
+                    <div className="flex items-end gap-1.5 mt-3" style={{ height: '100px' }}>
+                      {stats.statoDistrib.map(({ stato, count }) => {
+                        const cfg = STATUS_CONFIG[stato] || {}
+                        const pct = (count / maxCount) * 84
+                        return (
+                          <div key={stato} className="flex-1 flex flex-col items-center gap-1">
+                            <span className="text-[9px] font-bold" style={{ color: cfg.color || '#aaa' }}>{count}</span>
+                            <div className="w-full rounded-t-md transition-all"
+                              style={{ height: `${pct}px`, minHeight: count ? 4 : 0, background: cfg.color ? cfg.color + '55' : 'rgba(139,92,246,0.3)', borderTop: `2px solid ${cfg.color || '#8B5CF6'}` }} />
+                            <span className="text-[8px] text-muted text-center leading-tight" style={{ maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                              {cfg.emoji} {stato === 'In attesa risposta' ? 'Attesa' : stato === 'Secondo colloquio' ? '2° Coll.' : stato === 'Offerta ricevuta' ? 'Offerta' : stato}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
+
             <div className="card">
               <p className="section-label">CANDIDATURE PER SETTIMANA</p>
               <div className="flex items-end gap-1.5 h-24 mt-2">
@@ -224,7 +256,7 @@ export default function Stats() {
                 {stats.tasso >= 15 && <p>🔥 Tasso di risposta {stats.tasso}% — sopra la media. Stai facendo benissimo!</p>}
                 {stats.tasso < 10 && stats.total > 5 && <p>💪 Tasso {stats.tasso}%  — la media è ~10%. Prova a personalizzare di più il CV.</p>}
                 {stats.avgAttesa > 14 && <p>⏳ Attesa media di {stats.avgAttesa} giorni — considera dei follow-up!</p>}
-                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno ghostat*. Il problema è loro, non tu. 💜</p>}
+                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno {profile?.genere === 'f' ? 'ghostata' : profile?.genere === 'm' ? 'ghostato' : 'ghostat*'}. Il problema è loro, non tu. 💜</p>}
                 {stats.offerte >= 1 && <p>🏆 {stats.offerte} offerta ricevuta. Ce l'hai fatta!</p>}
                 {stats.total > 0 && stats.colloqui === 0 && <p>🎯 Ancora nessun colloquio — prova a personalizzare le candidature.</p>}
               </div>
