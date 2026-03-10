@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
+import { supabase } from './lib/supabase'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
 import Splash from './screens/Splash'
@@ -25,12 +26,24 @@ export default function App() {
   const [tab, setTab] = useState('home')
   const [view, setView] = useState(null)
   const [homeScrollPos, setHomeScrollPos] = useState(0)
+  const [showResetPassword, setShowResetPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetDone, setResetDone] = useState(false)
 
   const loading = authLoading || (user && dataLoading)
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    // Detect password reset link from Supabase
+    const hash = window.location.hash
+    if (hash.includes('type=recovery') || hash.includes('type=signup')) {
+      setShowResetPassword(true)
     }
   }, [])
 
@@ -68,6 +81,42 @@ export default function App() {
       }} />
     )
   }
+
+  if (showResetPassword) return (
+    <div className="h-full flex flex-col items-center justify-center px-6" style={{ background: '#0E0E1A' }}>
+      <div className="w-full max-w-sm">
+        {resetDone ? (
+          <div className="text-center">
+            <p className="text-5xl mb-4">✅</p>
+            <h2 className="text-xl font-bold text-white mb-2">Password aggiornata!</h2>
+            <p className="text-sm text-gray-400 mb-6">Ora puoi accedere con la nuova password.</p>
+            <button onClick={() => { setShowResetPassword(false); setResetDone(false); window.location.hash = '' }}
+              className="btn-primary w-full py-3">Vai al login</button>
+          </div>
+        ) : (
+          <>
+            <p className="text-5xl mb-4 text-center">🔑</p>
+            <h2 className="text-xl font-bold text-white mb-2 text-center">Nuova password</h2>
+            <p className="text-sm text-gray-400 mb-6 text-center">Inserisci la tua nuova password.</p>
+            <input type="password" placeholder="Nuova password (min. 6 caratteri)"
+              className="input-field w-full mb-3"
+              value={newPassword} onChange={e => setNewPassword(e.target.value)} autoFocus />
+            <button onClick={async () => {
+              if (newPassword.length < 6) return
+              setResetLoading(true)
+              const { error } = await supabase.auth.updateUser({ password: newPassword })
+              if (!error) setResetDone(true)
+              setResetLoading(false)
+            }} disabled={resetLoading || newPassword.length < 6}
+              className="btn-primary w-full py-3"
+              style={{ opacity: newPassword.length >= 6 ? 1 : 0.4 }}>
+              {resetLoading ? '⏳...' : '✅ Salva nuova password'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
 
   if (!user && !isGuest) return <Login />
 
