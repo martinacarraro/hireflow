@@ -359,6 +359,14 @@ export const BADGES = [
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#84CC16"/><path d="M32 50V32" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M32 32C32 32 24 26 22 18c6 0 10 4 10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 38C32 38 40 32 42 24c-6 0-10 4-10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
     check: (s) => s.spontanee >= 1
   },
+  {
+    id: 'ambassador', emoji: '💌', name: 'Ambasciatrice',
+    desc: 'Hai invitato un\'amica ad usare Le faremo sapere. Grazie! 💜',
+    shareText: 'Ho appena guadagnato il badge Ambasciatrice 💌 su Le faremo sapere — il tracker gratuito per chi cerca lavoro. L\'ho consigliato a una mia amica perché questa app merita davvero.',
+    color: '#EC4899', bg: '#1a0010',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#EC4899"/><path d="M12 22h40v22H12z" rx="3" fill="white" opacity="0.2"/><path d="M12 22l20 14 20-14" stroke="white" stroke-width="2.5" stroke-linecap="round"/><rect x="12" y="22" width="40" height="22" rx="3" stroke="white" stroke-width="2.5"/></svg>',
+    check: (s) => s.referral >= 1
+  },
 ]
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
