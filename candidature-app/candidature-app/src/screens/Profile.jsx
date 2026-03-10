@@ -381,9 +381,9 @@ export default function Profile() {
 
         {/* Referral */}
         <div className="card">
-          <SectionLabel>💌 INVITA UN'AMICA</SectionLabel>
+          <SectionLabel>💌 INVITA QUALCUN*</SectionLabel>
           <p className="text-xs text-muted mb-3 leading-relaxed">
-            Conosci qualcuna che sta cercando lavoro? Condividi l'app — sblocchi il badge esclusivo <span className="text-pink-400 font-semibold">💌 Ambasciatrice</span>!
+            Conosci qualcun* che sta cercando lavoro? Condividi l'app — sblocchi il badge esclusivo <span className="text-pink-400 font-semibold">💌 Ambasciator*</span>!
           </p>
           <button onClick={async () => {
             const url = 'https://lefaremosapere.vercel.app'
@@ -392,7 +392,7 @@ export default function Profile() {
             else { navigator.clipboard.writeText(url + ' — ' + text); alert('Link copiato! 💜') }
             await updateProfile({ referral_count: (profile?.referral_count || 0) + 1 })
           }} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            💌 Invita un'amica
+            💌 Invita qualcun*
           </button>
         </div>
 
