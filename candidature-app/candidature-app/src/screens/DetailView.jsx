@@ -15,6 +15,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile } = useApp()
   const { user } = useApp()
   const [form, setForm] = useState({ ...c })
+  const [isDirty, setIsDirty] = useState(false)
   const [checklist, setChecklist] = useState([])
   const [loadingChecklist, setLoadingChecklist] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -56,7 +57,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     return d.getTime() === today.getTime()
   })()
 
-  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSaved(false) }
+  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSaved(false); setIsDirty(true) }
 
   useEffect(() => {
     if (STATI_CON_COLLOQUIO.includes(form.stato)) loadChecklist()
@@ -153,13 +154,10 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         {/* Contatto HR */}
-        {(form.contatto_hr || form.email_hr) && (
+        {form.contatto_hr && (
           <div className="card">
-            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">👤 Contatto</p>
-            {form.contatto_hr && <p className="text-sm text-txt font-semibold">{form.contatto_hr}</p>}
-            {form.email_hr && (
-              <a href={`mailto:${form.email_hr}`} className="text-xs text-purple-soft mt-1 block">{form.email_hr}</a>
-            )}
+            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">👤 Nome referente</p>
+            <p className="text-sm text-txt font-semibold">{form.contatto_hr}</p>
           </div>
         )}
 
@@ -178,7 +176,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         <div className="pb-8">
-          <p className="text-center text-xs text-muted">💜 Respira. Sei prontissim*. In bocca al lupo!</p>
+          <p className="text-center text-xs text-muted">💜 Respira. {profile?.genere === 'f' ? 'Sei prontissima' : profile?.genere === 'm' ? 'Sei prontissimo' : 'Sei prontissim*'}. In bocca al lupo!</p>
         </div>
       </div>
     </div>
@@ -189,7 +187,16 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       {/* Header */}
       <div className="flex-shrink-0" style={{ background: 'linear-gradient(180deg, #1F1F38 0%, #0E0E1A 100%)' }}>
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-2">
-          <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+          <button onClick={async () => {
+            if (isDirty) {
+              const choice = window.confirm('Hai modifiche non salvate.\n\nPremi OK per salvare, Annulla per uscire senza salvare.')
+              if (choice) {
+                await handleSave()
+              }
+            }
+            setIsDirty(false)
+            onBack()
+          }} className="text-muted text-lg active:scale-90 transition-transform">←</button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <CompanyAvatar name={form.azienda} size={44} domain={form.azienda_domain} />
@@ -336,49 +343,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 </div>
               </div>
               <div>
-                <p className="text-xs text-muted mb-1">👤 HR / Recruiter</p>
-                <input className="input-field text-sm" placeholder="Nome del contatto"
+                <p className="text-xs text-muted mb-1">👤 Nome referente</p>
+                <input className="input-field text-sm" placeholder="Es: Mario, Giulia..."
                   value={form.contatto_hr || ''} onChange={e => set('contatto_hr', e.target.value)} />
               </div>
-              <div>
-                <p className="text-xs text-muted mb-1">📧 Email HR</p>
-                <input className="input-field text-sm" type="email" placeholder="email@azienda.com"
-                  value={form.email_hr || ''} onChange={e => set('email_hr', e.target.value)} />
-              </div>
-              {/* Quick action buttons */}
-              {(form.email_hr || form.telefono_hr) && (
-                <div className="flex gap-2 mt-1">
-                  {form.email_hr && (
-                    <a href={`mailto:${form.email_hr}?subject=Candidatura ${form.ruolo || ''}&body=Gentile ${form.contatto_hr || 'recruiter'},`}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border border-border text-purple-soft active:scale-95">
-                      ✉️ Scrivi email
-                    </a>
-                  )}
-                  {form.telefono_hr && (
-                    <a href={`tel:${form.telefono_hr}`}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border border-border text-green-400 active:scale-95">
-                      📞 Chiama
-                    </a>
-                  )}
-                </div>
-              )}
-              <div>
-                <p className="text-xs text-muted mb-1">📞 Telefono HR</p>
-                <input className="input-field text-sm" type="tel" placeholder="+39 333 1234567"
-                  value={form.telefono_hr || ''} onChange={e => set('telefono_hr', e.target.value)} />
-              </div>
-              <div>
-                <p className="text-xs text-muted mb-1">🔗 Profilo LinkedIn HR</p>
-                <input className="input-field text-sm" placeholder="linkedin.com/in/..."
-                  value={form.linkedin_hr || ''} onChange={e => set('linkedin_hr', e.target.value)} />
-                {form.linkedin_hr && (
-                  <a href={form.linkedin_hr.startsWith('http') ? form.linkedin_hr : 'https://' + form.linkedin_hr}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 text-xs text-blue-400 border border-blue-400/30 px-3 py-2 rounded-xl mt-1 active:scale-95">
-                    🔗 Apri LinkedIn
-                  </a>
-                )}
-              </div>
+
             </div>
           </Section>
         )}
@@ -534,21 +503,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </Section>
         )}
 
-        {/* TELEFONO */}
-        <Section label="📞 NUMERO DI TELEFONO">
-          <div className="flex items-center gap-2">
-            <input className="input-field flex-1" type="tel"
-              placeholder="Es: +39 02 1234567 (utile per riconoscere le chiamate)"
-              value={form.telefono_azienda || ''} onChange={e => set('telefono_azienda', e.target.value)} />
-            {form.telefono_azienda && (
-              <a href={`tel:${form.telefono_azienda}`}
-                className="flex-shrink-0 w-10 h-10 bg-purple/20 rounded-xl flex items-center justify-center text-lg">
-                📲
-              </a>
-            )}
-          </div>
-          <p className="text-[10px] text-disabled mt-1">Salvalo per riconoscere le chiamate dell'azienda 📱</p>
-        </Section>
+
 
         {/* SCADENZA RESPONSO */}
         <Section label="📅 ENTRO QUANDO DANNO RISPOSTA">
