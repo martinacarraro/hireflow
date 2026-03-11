@@ -1,0 +1,15 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.vercel.lefaremosapere.twa",
+    "sha256_cert_fingerprints": ["D9:7C:EB:3F:78:EC:03:86:DE:48:90:0C:3D:B3:57:B7:E4:55:32:81:AC:00:BC:64:24:97:F9:E7:AC:E2:B4:F2"]
+  }
+}]
+```
+
+Poi fai **push su GitHub** → Vercel rideploya automaticamente.
+
+Dopo verifica che funzioni aprendo nel browser:
+```
+https://lefaremosapere.vercel.app/.well-known/assetlinks.json
