@@ -59,13 +59,60 @@ const STATO_ALIAS = {
 }
 const TEMPLATE_B64 = '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'
 
+
+function GuestConvertModal({ onClose, onSuccess, migrateGuestToAccount }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handle = async () => {
+    if (!email || !password) return setError('Compila tutti i campi')
+    if (password.length < 6) return setError('Password minimo 6 caratteri')
+    setLoading(true); setError('')
+    const result = await migrateGuestToAccount(email, password)
+    setLoading(false)
+    if (result?.error) setError(result.error.message || 'Errore — riprova.')
+    else onSuccess?.()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-lg rounded-t-3xl p-6 space-y-4" style={{ background: '#1A1A2E' }}
+        onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
+        <div className="text-center">
+          <p className="text-3xl mb-2">👻✨</p>
+          <h3 className="font-bold text-txt text-lg">Salva i tuoi progressi</h3>
+          <p className="text-muted text-sm mt-1">Crea un account gratuito e non perdi nulla — candidature, XP e badge.</p>
+        </div>
+        <input className="input-field" type="email" placeholder="La tua email"
+          value={email} onChange={e => setEmail(e.target.value)} autoFocus />
+        <input className="input-field" type="password" placeholder="Scegli una password (min. 6 caratteri)"
+          value={password} onChange={e => setPassword(e.target.value)} />
+        {error && <p className="text-red text-xs text-center">{error}</p>}
+        <button onClick={handle} disabled={loading}
+          className="w-full py-3.5 rounded-2xl font-bold text-white transition-opacity"
+          style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: loading ? 0.6 : 1 }}>
+          {loading ? '⏳ Salvataggio...' : '🚀 Crea account e salva tutto'}
+        </button>
+        <button onClick={onClose} className="w-full text-center text-muted text-sm py-2 active:text-txt">
+          Continua come ospite
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Profile() {
   const { profile, updateProfile, notifications, markAllNotificationsRead,
     unreadCount, requestNotificationPermission, addBulkCandidature,
-    candidature: tutteLeCandidature, updateCandidatura, recalcXP } = useApp()
-  const { user, signOut } = useAuth()
+    candidature: tutteLeCandidature, updateCandidatura, recalcXP, migrateGuestToAccount } = useApp()
+  const { user, signOut, isGuest, enterAsGuest } = useAuth()
 
   const [confirmSignOut, setConfirmSignOut]   = useState(false)
+  const [showGuestModal, setShowGuestModal]   = useState(false)
   const [confirmDelete, setConfirmDelete]     = useState(false)
   const [showNotifs, setShowNotifs]           = useState(false)
   const [editBio, setEditBio]                 = useState(false)
@@ -179,9 +226,26 @@ export default function Profile() {
 
   const handleDeleteAccount = async () => {
     try {
-      await supabase.from('candidature').delete().eq('user_id', user.id)
-      await supabase.from('user_profiles').delete().eq('id', user.id)
-    } catch {}
+      // Ottieni il token della sessione corrente
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { await signOut(); return }
+
+      // Chiama la API route che usa service role per eliminare da auth.users
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) {
+        // Fallback: elimina solo i dati (meglio di niente)
+        await supabase.from('candidature').delete().eq('user_id', user.id)
+        await supabase.from('user_profiles').delete().eq('id', user.id)
+      }
+    } catch {
+      // Fallback silenzioso
+    }
     await signOut()
   }
 
@@ -499,7 +563,20 @@ export default function Profile() {
         </div>
 
         {/* Account */}
-        {user && (
+        {isGuest ? (
+          <div className="space-y-3 pb-4">
+            <button onClick={() => setShowGuestModal(true)}
+              className="w-full py-3.5 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
+              style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' }}>
+              🚀 Crea account e salva tutto
+            </button>
+            <button onClick={async () => { await signOut() }}
+              className="w-full py-3 rounded-2xl border font-semibold text-sm active:scale-95 transition-all"
+              style={{ borderColor: '#F59E0B', color: '#F59E0B' }}>
+              🚪 Esci dalla modalità ospite
+            </button>
+          </div>
+        ) : user ? (
           <div className="space-y-3 pb-4">
             <button onClick={() => setConfirmSignOut(true)}
               className="w-full py-3 rounded-2xl border font-semibold text-sm active:scale-95 transition-all"
@@ -510,7 +587,7 @@ export default function Profile() {
               🗑️ Elimina account
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Badge modal */}
@@ -624,6 +701,14 @@ export default function Profile() {
             <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">Chiudi</button>
           </div>
         </div>
+      )}
+
+      {showGuestModal && (
+        <GuestConvertModal
+          onClose={() => setShowGuestModal(false)}
+          onSuccess={() => setShowGuestModal(false)}
+          migrateGuestToAccount={migrateGuestToAccount}
+        />
       )}
 
       <ConfirmDialog isOpen={confirmSignOut} title="Esci dall'account"
