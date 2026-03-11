@@ -10,8 +10,20 @@ const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
   const { user, isGuest, convertGuestToAccount } = useAuth()
-  const [candidature, setCandidature] = useState([])
-  const [profile, setProfile] = useState(null)
+
+  // Guest data persisted in localStorage
+  const [candidature, setCandidature] = useState(() => {
+    if (localStorage.getItem('lfs_guest_mode')) {
+      try { return JSON.parse(localStorage.getItem('lfs_guest_candidature') || '[]') } catch { return [] }
+    }
+    return []
+  })
+  const [profile, setProfile] = useState(() => {
+    if (localStorage.getItem('lfs_guest_mode')) {
+      try { return JSON.parse(localStorage.getItem('lfs_guest_profile') || 'null') } catch { return null }
+    }
+    return null
+  })
   const [notifications, setNotifications] = useState([])
   const [toast, setToast] = useState(null)
   const [confetti, setConfetti] = useState(false)
@@ -43,6 +55,19 @@ export function AppProvider({ children }) {
     setCandidature(data || [])
   }, [user])
 
+  // Persist guest data to localStorage whenever it changes
+  useEffect(() => {
+    if (isGuest) {
+      localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature))
+    }
+  }, [candidature, isGuest])
+
+  useEffect(() => {
+    if (isGuest && profile) {
+      localStorage.setItem('lfs_guest_profile', JSON.stringify(profile))
+    }
+  }, [profile, isGuest])
+
   useEffect(() => {
     if (user) {
       Promise.all([loadProfile(), loadCandidature()]).then(() => {
@@ -54,10 +79,18 @@ export function AppProvider({ children }) {
           requestNotificationPermission()
         }
       })
+    } else if (isGuest) {
+      // Guest mode: init profile if first time
+      if (!localStorage.getItem('lfs_guest_profile')) {
+        const guestProfile = { id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false, genere: null, motto_index: 0 }
+        setProfile(guestProfile)
+        localStorage.setItem('lfs_guest_profile', JSON.stringify(guestProfile))
+      }
+      setLoading(false)
     } else {
       setLoading(false)
     }
-  }, [user])
+  }, [user, isGuest])
 
   // ── CANDIDATURE CRUD ──────────────────────────────────────────
 
@@ -128,6 +161,10 @@ export function AppProvider({ children }) {
               showToast('⚠️ Account creato ma errore nel salvataggio dati.', 'error')
             } else {
               showToast(`✅ Account creato! ${guestData.length} candidature salvate 🎉`, 'success')
+              // Clean up guest localStorage
+              localStorage.removeItem('lfs_guest_mode')
+              localStorage.removeItem('lfs_guest_candidature')
+              localStorage.removeItem('lfs_guest_profile')
               triggerConfetti()
             }
           } else {
@@ -152,7 +189,7 @@ export function AppProvider({ children }) {
       updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
     }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase

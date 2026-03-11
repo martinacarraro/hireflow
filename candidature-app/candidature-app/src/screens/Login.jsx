@@ -9,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [emailSent, setEmailSent] = useState(false)
   const [forgotPw, setForgotPw] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
@@ -28,9 +27,7 @@ export default function Login() {
         else if (msg.includes('already registered')) setError('Email già registrata — prova ad accedere.')
         else if (msg.includes('Password should')) setError('La password deve essere di almeno 6 caratteri.')
         else setError(msg)
-      } else if (isSignUp) {
-        setEmailSent(true)
-      }
+      // isSignUp: onAuthStateChange will handle redirect automatically
     } catch { setError('Errore di connessione — riprova.') }
     setLoading(false)
   }
@@ -76,29 +73,7 @@ export default function Login() {
     </div>
   )
 
-  if (emailSent) return (
-    <div className="screen purple-glow-bg relative overflow-y-auto">
-      <div className="min-h-full flex items-center justify-center px-6 py-8">
-        <div className="w-full max-w-sm flex flex-col items-center text-center">
-          <div className="text-7xl mb-6">📬</div>
-          <h2 className="text-2xl font-bold text-txt mb-3">Controlla la tua email!</h2>
-          <p className="text-sm text-muted leading-relaxed mb-2">Ti abbiamo inviato un link di conferma a</p>
-          <p className="text-purple-soft font-semibold text-sm mb-4">{email}</p>
-          <div className="card w-full text-left space-y-2 mb-6">
-            <p className="text-xs text-muted">1️⃣ Apri la tua casella email</p>
-            <p className="text-xs text-muted">2️⃣ Clicca il link <span className="text-purple-soft font-medium">"Confirm your email"</span></p>
-            <p className="text-xs text-muted">3️⃣ Torna qui e accedi con le tue credenziali</p>
-          </div>
-          <p className="text-xs text-disabled mb-6">Non trovi l'email? Controlla nello spam 🗂️</p>
-          <button onClick={() => { setEmailSent(false); setIsSignUp(false) }}
-            className="btn-primary w-full py-3">✅ Ho confermato — Accedi</button>
-          <button onClick={() => setEmailSent(false)} className="text-xs text-muted mt-3 active:text-txt">
-            ← Torna indietro
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+
 
   return (
     <div className="screen purple-glow-bg relative overflow-y-auto">
