@@ -63,16 +63,11 @@
     .btn-cta:hover { transform: scale(1.04); box-shadow: 0 0 40px rgba(255,45,139,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
 
     /* HERO */
-  .hero {
-  min-height: calc(100vh - 70px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 80px 24px 60px;
-  position: relative;
-}
+    .hero {
+      padding: 110px 24px 40px;
+      text-align: center;
+      position: relative;
+    }
     .hero-glow {
       position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%);
       width: 600px; height: 600px;
@@ -149,11 +144,11 @@
       align-items: flex-start; gap: 24px;
     }
     .static-phone {
-      display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0;
-    }
-    .static-phone:nth-child(2) .phone {
-      transform: scale(1.05) translateY(-10px);
-      box-shadow: 0 0 0 8px rgba(255,255,255,0.06), 0 40px 100px rgba(0,0,0,0.7), 0 0 120px rgba(123,47,255,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
     }
     .slide-label {
       font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em;
@@ -165,11 +160,17 @@
       box-shadow: 0 0 0 8px rgba(255,255,255,0.04), 0 40px 100px rgba(0,0,0,0.6), 0 0 80px rgba(123,47,255,0.15);
       animation: float 4s ease-in-out infinite;
     }
-    .static-phone:nth-child(2) .phone { animation-delay: -1.5s; }
+    .static-phone:nth-child(2) .phone {
+      transform: scale(1.05) translateY(-10px);
+      box-shadow: 0 0 0 8px rgba(255,255,255,0.06), 0 40px 100px rgba(0,0,0,0.7), 0 0 120px rgba(123,47,255,0.25);
+      animation-delay: -1.5s;
+      animation: float2 4s ease-in-out infinite;
+    }
     .static-phone:nth-child(3) .phone { animation-delay: -3s; }
+    
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-    .static-phone:nth-child(2) .phone { animation: float2 4s ease-in-out infinite; }
     @keyframes float2 { 0%,100%{transform:scale(1.05) translateY(-10px)} 50%{transform:scale(1.05) translateY(-20px)} }
+
     .phone-screen { padding: 14px 11px; height: 100%; display: flex; flex-direction: column; gap: 7px; }
     .phone-header { display: flex; align-items: center; justify-content: space-between; }
     .phone-title { font-family: "Bricolage Grotesque",sans-serif; font-size: 15px; font-weight: 800; color: var(--txt); }
@@ -185,87 +186,29 @@
     .phone-xp-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 3px; width: 68%; animation: growBar 2s ease both 0.8s; }
     @keyframes growBar { from{width:0} to{width:68%} }
 
-  @media (max-width: 800px) {
+    /* MOBILE FIX */
+    @media (max-width: 768px){
+      nav { padding:14px 18px; }
+      .hero { padding:100px 18px 30px; }
+      .hero h1 { font-size:36px; line-height:1.1; }
+      .hero p { font-size:16px; }
+      .hero-actions { width:100%; }
+      .btn-hero { width:100%; justify-content:center; }
+      .chips { gap:6px; }
+      .phones-row { flex-direction:column; align-items:center; gap:34px; }
+      .static-phone:nth-child(2) .phone { transform:none; }
+      .phone { width:210px; height:450px; }
+      .slide-label { font-size:11px; }
+    }
 
-  .hero {
-    padding: 100px 20px 40px;
-  }
-
-  .hero h1 {
-    font-size: 42px;
-    line-height: 1.1;
-  }
-
-  .hero p {
-    font-size: 16px;
-  }
-
-  .hero-actions {
-    width: 100%;
-  }
-
-  .btn-hero {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .chips {
-    gap: 8px;
-  }
-
-  .phones-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 40px;
-  }
-
-  .phone {
-    width: 200px;
-    height: 430px;
-  }
-
-  .static-phone:nth-child(2) .phone {
-    transform: none;
-    animation: float 4s ease-in-out infinite;
-  }
-
-}
-@media (max-width: 480px) {
-
-  nav {
-    padding: 12px 16px;
-  }
-
-  .hero {
-    padding: 90px 16px 40px;
-  }
-
-  .hero h1 {
-    font-size: 34px;
-  }
-
-  .hero p {
-    font-size: 15px;
-  }
-
-  .chips {
-    justify-content: center;
-  }
-
-  .phone {
-    width: 180px;
-    height: 390px;
-  }
-
-  .cta-card {
-    padding: 32px 20px;
-  }
-
-  .quote-card {
-    padding: 32px 20px;
-  }
-
-}
+    @media (max-width:480px){
+      .hero { padding:90px 16px 24px; }
+      .hero h1 { font-size:30px; }
+      .hero p { font-size:15px; }
+      .phone { width:190px; height:410px; }
+      .cta-card { padding:34px 22px; }
+      .quote-card { padding:34px 22px; }
+    }
 
     /* FEATURES */
     .features { padding: 80px 24px; max-width: 1000px; margin: 0 auto; }
@@ -393,7 +336,6 @@
     <button class="btn-cta" onclick="openModal()">Richiedi accesso →</button>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
     <div class="hero-glow"></div>
     <div class="hero-glow-2"></div>
@@ -413,10 +355,8 @@
     </div>
   </section>
 
-  <!-- PHONES -->
   <section class="phones-section">
     <div class="phones-row">
-
       <div class="static-phone">
         <div class="slide-label">🏠 Home</div>
         <div class="phone"><div class="phone-screen">
@@ -479,11 +419,9 @@
           </div>
         </div></div>
       </div>
-
     </div>
   </section>
 
-  <!-- FEATURES -->
   <section class="features">
     <div class="section-label reveal">Perché esiste questa app</div>
     <h2 class="section-title reveal">Tutto quello che ti serve.<br/>Niente di più.</h2>
@@ -497,7 +435,6 @@
     </div>
   </section>
 
-  <!-- STATI -->
   <section class="states-section reveal">
     <p class="section-label" style="text-align:center;margin-bottom:24px">Tutti gli stati disponibili</p>
     <div class="states-grid">
@@ -516,7 +453,6 @@
     </div>
   </section>
 
-  <!-- QUOTE -->
   <section class="quote-section">
     <div class="quote-card reveal">
       <div class="quote-text">La ricerca di lavoro è <em>già abbastanza stressante.</em><br/>Almeno tieni il conto.</div>
@@ -524,7 +460,6 @@
     </div>
   </section>
 
-  <!-- CTA -->
   <section class="cta-section">
     <div class="cta-card reveal">
       <h2>Inizia oggi. È gratis.<br/>Per sempre.</h2>
@@ -538,7 +473,6 @@
     <p>© 2025 Le faremo sapere</p>
   </footer>
 
-  <!-- MODAL -->
   <div id="requestModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
       <div style="text-align:center;margin-bottom:24px">
@@ -574,6 +508,7 @@
       m.classList.add('open')
       setTimeout(() => document.getElementById('reqEmail')?.focus(), 150)
     }
+
     function closeModal() {
       const m = document.getElementById('requestModal')
       m.classList.remove('open')
@@ -583,32 +518,15 @@
         document.getElementById('reqEmail').value = ''
         const btn = document.getElementById('reqBtn')
         btn.textContent = 'Invia richiesta 💜'
-        btn.disabled = false
       }, 300)
     }
-    document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal() })
 
-    async function submitRequest() {
-      const email = document.getElementById('reqEmail').value.trim()
-      if (!email || !email.includes('@')) {
-        document.getElementById('reqEmail').style.borderColor = '#ef4444'
-        document.getElementById('reqEmail').focus()
-        return
-      }
-      const btn = document.getElementById('reqBtn')
-      btn.textContent = '⏳ Invio...'
-      btn.disabled = true
-      try {
-        await fetch('https://formspree.io/f/xpqydppa', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json','Accept':'application/json'},
-          body: JSON.stringify({email, _subject:'Nuova richiesta accesso — Le faremo sapere'})
-        })
-      } catch(e) {}
+    function submitRequest() {
+      const email = document.getElementById('reqEmail').value
+      if (!email) return
       document.getElementById('modalForm').style.display = 'none'
       document.getElementById('modalSuccess').style.display = 'block'
     }
   </script>
-
 </body>
 </html>
