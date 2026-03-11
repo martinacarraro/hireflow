@@ -353,6 +353,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
               {(!isCollapsed || selectMode) && items.map(c => (
                 <CandidaturaCard
                   key={c.id} c={c}
+                  genere={profile?.genere}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
                   onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
                   selectMode={selectMode}
@@ -476,7 +477,7 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
+function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, genere }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
@@ -537,7 +538,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <div className="flex-shrink-0">
-                <StatusBadge stato={c.stato} genere={profile?.genere} />
+                <StatusBadge stato={c.stato} genere={genere} />
               </div>
           </div>
           {/* Date colloquio — sempre visibili se presenti */}
