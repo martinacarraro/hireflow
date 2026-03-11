@@ -27,7 +27,7 @@ export default function Login() {
         else if (msg.includes('already registered')) setError('Email già registrata — prova ad accedere.')
         else if (msg.includes('Password should')) setError('La password deve essere di almeno 6 caratteri.')
         else setError(msg)
-      // isSignUp: onAuthStateChange will handle redirect automatically
+      }
     } catch { setError('Errore di connessione — riprova.') }
     setLoading(false)
   }
