@@ -120,7 +120,7 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     // Only send fields that exist in the DB schema
-    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note']
+    const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta']
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
@@ -189,7 +189,7 @@ export function AppProvider({ children }) {
       updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
     }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
     const { data: row, error } = await supabase
@@ -200,19 +200,19 @@ export function AppProvider({ children }) {
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
-        showToast(profile?.genere === 'f' ? '🎙️ Colloquio ottenuta! +15 XP' : profile?.genere === 'm' ? '🎙️ Colloquio ottenuto! +15 XP' : '🎙️ Colloquio ottenut*! +15 XP', 'success'); triggerConfetti()
+        showToast('🎙️ Colloquio ottenuto! +15 XP 🎉', 'success'); triggerConfetti()
         pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`, id)
         await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
         await addXP(XP_EVENTS.OFFERTA)
         showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
         triggerConfetti()
-        pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', profile?.genere === 'm' ? 'CE L\'HAI FATTA! 💜🚀' : 'CE L\'HAI FATTA! 💜🚀', id)
-      } else if (updates.stato === 'Assunto') {
+        pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
+      } else if (updates.stato === 'Assunta') {
         await addXP(XP_EVENTS.OFFERTA)
         showToast(profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉', 'success')
         triggerConfetti()
-        pushNotification('🏆 ASSUNTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
+        pushNotification((profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
       } else if (updates.stato === 'GHOSTED') {
         showToast(`👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
         pushNotification('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`, id)

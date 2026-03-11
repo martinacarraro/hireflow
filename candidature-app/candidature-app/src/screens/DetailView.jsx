@@ -198,11 +198,17 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <p className="text-xs text-muted text-center mb-3">Hai deciso?</p>
                 <div className="flex gap-3">
                   <button onClick={async () => {
-                    const genere = profile?.genere
-                    const nomeAssunta = genere === 'm' ? 'Assunto' : genere === 'f' ? 'Assunta' : 'Assunt*'
-                    set('stato', 'Assunta')
-                    set('offerta_risposta', 'si')
-                    await handleSave()
+                    const newForm = { ...form, stato: 'Assunta', offerta_risposta: 'si' }
+                    setForm(newForm)
+                    setSaving(true)
+                    await updateCandidatura(c.id, {
+                      stato: 'Assunta',
+                      offerta_risposta: 'si',
+                      offerta_ral: newForm.offerta_ral || null,
+                      offerta_scadenza: newForm.offerta_scadenza || null,
+                      offerta_note: newForm.offerta_note || null,
+                    })
+                    setSaving(false)
                     await addXP(50)
                     triggerConfetti()
                     setShowAssuntaCelebration(true)
@@ -211,23 +217,20 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                     ✅ Sì, accetto!
                   </button>
                   <button onClick={async () => {
-                    set('offerta_risposta', 'no')
-                    set('stato', 'Rifiutata')
-                    await handleSave()
+                    const newForm = { ...form, offerta_risposta: 'no', stato: 'Rifiutata' }
+                    setForm(newForm)
+                    setSaving(true)
+                    await updateCandidatura(c.id, {
+                      stato: 'Rifiutata',
+                      offerta_risposta: 'no',
+                    })
+                    setSaving(false)
+                    setIsDirty(false)
+                    onBack()
                   }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
                     ❌ No, declino
                   </button>
                 </div>
-              </div>
-            )}
-            {form.offerta_risposta === 'si' && (
-              <div className="mt-3 text-center">
-                <p className="text-green-400 font-bold text-sm">🌟 Offerta accettata! Congratulazioni!</p>
-              </div>
-            )}
-            {form.offerta_risposta === 'no' && (
-              <div className="mt-3 text-center">
-                <p className="text-muted text-sm">Offerta declinata. Prossima opportunità in arrivo! 💪</p>
               </div>
             )}
           </div>
@@ -239,6 +242,78 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       </div>
     </div>
   )
+
+  // ── VISTA ASSUNTA (read-only, solo info rilevanti) ─────────────
+  if (form.stato === 'Assunta') {
+    const colloquiCount = [form.data_colloquio, form.data_secondo_colloquio].filter(Boolean).length
+    return (
+      <div className="screen" style={{ background: '#0E0E1A' }}>
+        <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
+          <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+        </div>
+        <div className="flex-1 scrollable px-4 pb-8 space-y-4">
+
+          {/* Trophy card */}
+          <div className="rounded-3xl p-6 text-center" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(123,47,255,0.15))', border: '1px solid rgba(16,185,129,0.3)' }}>
+            <div className="text-6xl mb-3">🏆</div>
+            <h2 className="text-2xl font-bold mb-1" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+              {profile?.genere === 'f' ? 'Ce l\'hai fatta!' : profile?.genere === 'm' ? 'Ce l\'hai fatta!' : 'Ce l\'hai fatta!'}
+            </h2>
+            <p className="text-muted text-sm">{profile?.genere === 'f' ? 'Sei stata assunta.' : profile?.genere === 'm' ? 'Sei stato assunto.' : 'Sei stat* assunt*.'} Meritata. 🎉</p>
+          </div>
+
+          {/* Azienda card */}
+          <div className="card flex items-center gap-4">
+            <CompanyAvatar name={form.azienda} size={52} domain={form.azienda_domain} />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-txt text-lg truncate">{form.azienda}</h3>
+              <p className="text-muted text-sm truncate">{form.ruolo}</p>
+              <StatusBadge stato="Assunta" size="sm" genere={profile?.genere} />
+            </div>
+          </div>
+
+          {/* Dettagli */}
+          <div className="card space-y-0">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">DETTAGLI</p>
+            {form.data_colloquio && (
+              <div className="flex justify-between items-center py-3 border-b border-border">
+                <span className="text-sm text-muted">📅 Data inizio</span>
+                <span className="text-sm font-semibold text-purple-soft">{new Date(form.data_colloquio).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</span>
+              </div>
+            )}
+            {form.sede && (
+              <div className="flex justify-between items-center py-3 border-b border-border">
+                <span className="text-sm text-muted">📍 Sede</span>
+                <span className="text-sm font-semibold text-txt">{form.sede}</span>
+              </div>
+            )}
+            {(form.offerta_ral || form.stipendio_min) && (
+              <div className="flex justify-between items-center py-3 border-b border-border">
+                <span className="text-sm text-muted">💰 Stipendio</span>
+                <span className="text-sm font-bold" style={{ color: '#10B981' }}>
+                  €{parseInt(form.offerta_ral || form.stipendio_min).toLocaleString('it-IT')}
+                </span>
+              </div>
+            )}
+            {colloquiCount > 0 && (
+              <div className="flex justify-between items-center py-3">
+                <span className="text-sm text-muted">🎙️ Colloqui superati</span>
+                <span className="text-sm font-semibold text-txt">{colloquiCount} su {colloquiCount}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Note */}
+          {form.note && (
+            <div className="card">
+              <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">📝 Le mie note</p>
+              <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="screen">
@@ -305,7 +380,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </div>
         </div>
         <div className="flex items-center gap-2 px-5 pb-4">
-          <StatusBadge stato={form.stato} size="lg" />
+          <StatusBadge stato={form.stato} size="lg" genere={profile?.genere} />
           {isColloquioOggi && (
             <button onClick={() => setInterviewMode(true)}
               className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"

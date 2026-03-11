@@ -2,10 +2,14 @@ import React from 'react'
 import { STATUS_CONFIG, PRIORITA_CONFIG, getLevel, getXpProgress } from '../lib/utils'
 
 // ─── STATUS BADGE ─────────────────────────────────────────────────
-export function StatusBadge({ stato, size = 'sm' }) {
+export function StatusBadge({ stato, size = 'sm', genere }) {
   const cfg = STATUS_CONFIG[stato] || STATUS_CONFIG['Inviata']
   const p = size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-2.5 py-0.5 text-xs'
   const active = ['Colloquio','Prima call','Secondo colloquio','Vista','In attesa risposta','Offerta ricevuta','Assunta'].includes(stato)
+  // Gendered label: solo per Assunta, dove labelM e labelNB sono definiti in STATUS_CONFIG
+  const label = stato === 'Assunta' && genere
+    ? (genere === 'm' ? (cfg.labelM || cfg.label) : genere === 'nb' ? (cfg.labelNB || cfg.label) : cfg.label)
+    : cfg.label
   return (
     <span className={`status-badge ${p} font-semibold`}
       style={{
@@ -17,7 +21,7 @@ export function StatusBadge({ stato, size = 'sm' }) {
         alignItems: 'center',
         gap: 3,
       }}>
-      <span>{cfg.emoji}</span><span>{cfg.label}</span>
+      <span>{cfg.emoji}</span><span>{label}</span>
     </span>
   )
 }

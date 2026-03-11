@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useApp } from '../contexts/AppContext'
 
-const STEPS = [
+const getSteps = (genere) => [
   {
     id: 'welcome',
     emoji: '👋',
-    title: 'Benvenuta!',
+    title: genere === 'f' ? 'Benvenuta!' : genere === 'm' ? 'Benvenuto!' : 'Benvenut*!',
     body: 'Questo breve tour ti mostra le funzioni principali.\nPuoi saltarlo in qualsiasi momento.',
     target: null,
     tooltipPos: 'center',
@@ -53,6 +54,8 @@ const STEPS = [
 ]
 
 export default function Tutorial({ onDone }) {
+  const { profile } = useApp()
+  const STEPS = getSteps(profile?.genere)
   const [step, setStep] = useState(0)
   const [visible, setVisible] = useState(false)
   const [spotRect, setSpotRect] = useState(null)

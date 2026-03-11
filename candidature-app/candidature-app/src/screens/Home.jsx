@@ -537,7 +537,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected }) {
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <div className="flex-shrink-0">
-                <StatusBadge stato={c.stato} />
+                <StatusBadge stato={c.stato} genere={profile?.genere} />
               </div>
           </div>
           {/* Date colloquio — sempre visibili se presenti */}
