@@ -29,7 +29,7 @@ export default function App() {
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showResetPassword, setShowResetPassword] = useState(false)
-  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('lfs_tutorial_done'))
+  const [showTutorial, setShowTutorial] = useState(false) // initialized after profile loads
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
   const [resetDone, setResetDone] = useState(false)
@@ -83,6 +83,20 @@ export default function App() {
       window.removeEventListener('popstate', handlePopState)
     }
   }, [])
+
+  // Trigger tutorial for new users — per-user key so each new account sees it
+  useEffect(() => {
+    if (!user && !isGuest) return
+    if (loading || dataLoading) return
+    if (user) {
+      // Logged-in: use per-user key only
+      const key = `lfs_tutorial_done_${user.id}`
+      if (!localStorage.getItem(key)) setShowTutorial(true)
+    } else {
+      // Guest: use global key
+      if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
+    }
+  }, [user, isGuest, loading, dataLoading])
 
   if (showSplash || loading) {
     return <Splash onDone={() => setShowSplash(false)} />
@@ -141,9 +155,12 @@ export default function App() {
 
   if (!user && !isGuest) return <Login />
 
-  // Show onboarding only if: profile loaded, AND seen_onboarding is explicitly false or null, AND not already done via localStorage
-  const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
-  if (user && !dataLoading && profile && !hasSeenOnboarding) return <Onboarding />
+  // Onboarding: per-user key so each new account sees it
+  const onboardingKey = user ? `lfs_onboarding_done_${user.id}` : null
+  const hasSeenOnboarding = (onboardingKey && !!localStorage.getItem(onboardingKey)) || profile?.seen_onboarding === true
+  if (user && !dataLoading && profile && !hasSeenOnboarding) return <Onboarding onDone={() => {
+    if (onboardingKey) localStorage.setItem(onboardingKey, '1')
+  }} />
 
   if (view?.type === 'detail') {
     return (
@@ -185,7 +202,8 @@ export default function App() {
       <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />
       {showTutorial && (
         <Tutorial onDone={() => {
-          localStorage.setItem('lfs_tutorial_done', '1')
+          const key = user ? `lfs_tutorial_done_${user.id}` : 'lfs_tutorial_done'
+          localStorage.setItem(key, '1')
           setShowTutorial(false)
         }} />
       )}

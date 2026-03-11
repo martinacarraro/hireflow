@@ -19,7 +19,7 @@ const GENERI = [
   { value: 'x', label: 'Preferisco non dirlo', emoji: '🤍' },
 ]
 
-export default function Onboarding() {
+export default function Onboarding({ onDone }) {
   const { markOnboarded, updateProfile, requestNotificationPermission, triggerConfetti, profile } = useApp()
 
   const [step, setStep] = useState(0)
@@ -61,6 +61,7 @@ export default function Onboarding() {
     await markOnboarded()
     localStorage.setItem('lfs_onboarding_done', '1')
     setLoading(false)
+    onDone?.()
   }
 
   if (step === 0) {
