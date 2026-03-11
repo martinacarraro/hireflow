@@ -158,9 +158,11 @@ export default function App() {
   // Onboarding: per-user key so each new account sees it
   const onboardingKey = user ? `lfs_onboarding_done_${user.id}` : null
   const hasSeenOnboarding = (onboardingKey && !!localStorage.getItem(onboardingKey)) || profile?.seen_onboarding === true
-  if (user && !dataLoading && profile && !hasSeenOnboarding) return <Onboarding onDone={() => {
-    if (onboardingKey) localStorage.setItem(onboardingKey, '1')
-  }} />
+  if (user && !dataLoading && profile && !hasSeenOnboarding) return (
+    <Onboarding onDone={() => {
+      if (onboardingKey) localStorage.setItem(onboardingKey, '1')
+    }} />
+  )
 
   if (view?.type === 'detail') {
     return (

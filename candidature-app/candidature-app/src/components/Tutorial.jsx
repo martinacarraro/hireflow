@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../contexts/AppContext'
 
 const getSteps = (genere) => [
@@ -55,7 +55,7 @@ const getSteps = (genere) => [
 
 export default function Tutorial({ onDone }) {
   const { profile } = useApp()
-  const STEPS = getSteps(profile?.genere)
+  const STEPS = useMemo(() => getSteps(profile?.genere), [profile?.genere])
   const [step, setStep] = useState(0)
   const [visible, setVisible] = useState(false)
   const [spotRect, setSpotRect] = useState(null)
