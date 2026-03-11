@@ -278,7 +278,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
         </div>
       )}
 
-      <div className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
+      <div data-tutorial="card-list" className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
 
         {/* Motto */}
         {!selectMode && (
