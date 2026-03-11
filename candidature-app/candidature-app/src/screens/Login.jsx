@@ -81,8 +81,8 @@ export default function Login() {
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
 
           {/* Logo corretto */}
-          <div className="mb-3 mt-2">
-            <img src="/logo.svg" alt="Le faremo sapere" className="w-16 h-16 rounded-2xl" 
+          <div className="mb-3 mt-8">
+            <img src="/icon-512.png" alt="Le faremo sapere" className="w-16 h-16 rounded-2xl"
               onError={e => {
                 e.target.style.display = 'none'
                 e.target.nextSibling.style.display = 'flex'
