@@ -250,7 +250,7 @@ function FirstTimeIntro({ onDone, onSkip }) {
         </svg>
       ),
       title: 'Tutto sotto controllo',
-      subtitle: 'Calendario, stati, scadenze.',
+      subtitle: 'Gratis per sempre. Scadenze chiare.',
       body: 'Ogni candidatura ha il suo stato — Inviata, Colloquio, In attesa, Ghostata. Il calendario ti mostra tutti i tuoi colloqui. Niente si perde.',
     },
     {

@@ -95,11 +95,11 @@ export default function Login() {
 
           <h1 className="text-3xl font-bold text-txt tracking-tight mb-1 text-center">Le faremo sapere</h1>
           <p className="text-sm text-muted italic text-center mb-6 leading-relaxed">
-            "Le faremo sapere." — E tu tieni il conto.
+            Il tracker per chi cerca lavoro, creato da chi cerca lavoro.
           </p>
 
           <div className="flex gap-2 flex-wrap justify-center mb-6">
-            {['📬 Zero ghosting', '🔔 Scadenze chiare', '🏆 Gamificato'].map(f => (
+            {['🎁 Gratis per sempre', '🔔 Scadenze chiare', '👻 Traccia i ghost'].map(f => (
               <span key={f} className="text-xs px-3 py-1.5 rounded-full bg-surface border border-border text-purple-soft">
                 {f}
               </span>

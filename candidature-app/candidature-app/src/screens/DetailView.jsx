@@ -246,6 +246,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   // ── VISTA ASSUNTA (read-only, solo info rilevanti) ─────────────
   if (form.stato === 'Assunta') {
     const colloquiCount = [form.data_colloquio, form.data_secondo_colloquio].filter(Boolean).length
+    const [editingDataInizio, setEditingDataInizio] = useState(false)
+    const [savingDataInizio, setSavingDataInizio] = useState(false)
     return (
       <div className="screen" style={{ background: '#0E0E1A' }}>
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
@@ -257,9 +259,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           <div className="rounded-3xl p-6 text-center" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(123,47,255,0.15))', border: '1px solid rgba(16,185,129,0.3)' }}>
             <div className="text-6xl mb-3">🏆</div>
             <h2 className="text-2xl font-bold mb-1" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              {profile?.genere === 'f' ? 'Ce l\'hai fatta!' : profile?.genere === 'm' ? 'Ce l\'hai fatta!' : 'Ce l\'hai fatta!'}
+              Ce l'hai fatta!
             </h2>
-            <p className="text-muted text-sm">{profile?.genere === 'f' ? 'Sei stata assunta.' : profile?.genere === 'm' ? 'Sei stato assunto.' : 'Sei stat* assunt*.'} Meritata. 🎉</p>
+            <p className="text-muted text-sm">
+              {profile?.genere === 'f' ? 'Hai ricevuto un\'offerta.' : profile?.genere === 'm' ? 'Hai ricevuto un\'offerta.' : 'Hai ricevuto un\'offerta.'} Meritata. 🎉
+            </p>
           </div>
 
           {/* Azienda card */}
@@ -268,19 +272,43 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-txt text-lg truncate">{form.azienda}</h3>
               <p className="text-muted text-sm truncate">{form.ruolo}</p>
-              <StatusBadge stato="Assunta" size="sm" genere={profile?.genere} />
+              <div className="mt-1"><StatusBadge stato="Assunta" size="sm" genere={profile?.genere} /></div>
             </div>
           </div>
 
           {/* Dettagli */}
           <div className="card space-y-0">
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">DETTAGLI</p>
-            {form.data_colloquio && (
-              <div className="flex justify-between items-center py-3 border-b border-border">
-                <span className="text-sm text-muted">📅 Data inizio</span>
-                <span className="text-sm font-semibold text-purple-soft">{new Date(form.data_colloquio).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</span>
-              </div>
-            )}
+
+            {/* Data inizio — editabile inline */}
+            <div className="flex justify-between items-center py-3 border-b border-border">
+              <span className="text-sm text-muted">📅 Data inizio</span>
+              {editingDataInizio ? (
+                <div className="flex items-center gap-2">
+                  <input type="date" className="input-field text-sm py-1 px-2 w-36"
+                    value={form.data_inizio || ''}
+                    onChange={e => set('data_inizio', e.target.value)}
+                    autoFocus
+                  />
+                  <button onClick={async () => {
+                    setSavingDataInizio(true)
+                    await updateCandidatura(c.id, { data_inizio: form.data_inizio || null })
+                    setSavingDataInizio(false)
+                    setEditingDataInizio(false)
+                  }} className="text-green-400 font-bold text-sm active:scale-90">
+                    {savingDataInizio ? '...' : '✓'}
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingDataInizio(true)} className="text-right active:scale-95">
+                  {form.data_inizio
+                    ? <span className="text-sm font-semibold text-purple-soft">{new Date(form.data_inizio + 'T00:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</span>
+                    : <span className="text-sm text-purple underline">+ Aggiungi data</span>
+                  }
+                </button>
+              )}
+            </div>
+
             {form.sede && (
               <div className="flex justify-between items-center py-3 border-b border-border">
                 <span className="text-sm text-muted">📍 Sede</span>
@@ -310,6 +338,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
             </div>
           )}
+
+          {/* Salva pulsante */}
+          <button onClick={handleSave} disabled={saving}
+            className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: saving ? 0.6 : 1 }}>
+            {saving ? '⏳ Salvataggio...' : '💾 Salva'}
+          </button>
         </div>
       </div>
     )
@@ -430,7 +465,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </Section>
 
         {/* COLLOQUIO */}
-        {(
+        {form.stato !== 'Offerta ricevuta' && (
           <Section label="🎙️ DETTAGLI COLLOQUIO">
             <div className="space-y-3">
               <p className="text-xs text-disabled font-semibold uppercase tracking-wide">1° Colloquio</p>
@@ -486,7 +521,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         {/* PROMEMORIA PERSONALIZZATO */}
-        <Section label="⏰ PROMEMORIA">
+        {form.stato !== 'Offerta ricevuta' && <Section label="⏰ PROMEMORIA">
           <div className="space-y-2">
             <div className="flex gap-2">
               <input className="input-field text-sm flex-1" type="date"
@@ -512,7 +547,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               </div>
             )}
           </div>
-        </Section>
+        </Section>}
 
         {/* CHECKLIST */}
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
@@ -559,6 +594,44 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {form.stato === 'Offerta ricevuta' && (
           <Section label="🏆 DETTAGLI OFFERTA">
             <div className="space-y-3">
+
+              {/* HAI ACCETTATO? */}
+              {!form.offerta_risposta && (
+                <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                  <p className="text-sm font-bold text-txt text-center">🤝 Hai accettato l'offerta?</p>
+                  <div className="flex gap-3">
+                    <button onClick={async () => {
+                      setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
+                      setSaving(true)
+                      await updateCandidatura(c.id, {
+                        stato: 'Assunta',
+                        offerta_risposta: 'si',
+                        offerta_ral: form.offerta_ral || null,
+                        offerta_scadenza: form.offerta_scadenza || null,
+                        offerta_note: form.offerta_note || null,
+                      })
+                      setSaving(false)
+                      await addXP(50)
+                      triggerConfetti()
+                      setShowAssuntaCelebration(true)
+                    }} className="flex-1 py-3 rounded-xl font-bold text-sm text-white active:scale-95 transition-all"
+                      style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                      ✅ Sì, ho accettato!
+                    </button>
+                    <button onClick={async () => {
+                      setForm(f => ({ ...f, offerta_risposta: 'no', stato: 'Rifiutata' }))
+                      setSaving(true)
+                      await updateCandidatura(c.id, { stato: 'Rifiutata', offerta_risposta: 'no' })
+                      setSaving(false)
+                      setIsDirty(false)
+                      onBack()
+                    }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
+                      ❌ No, declino
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <p className="text-xs text-muted mb-1">💰 RAL offerta (€)</p>
                 <input className="input-field text-sm" type="number" placeholder="Es: 35000"
@@ -574,6 +647,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <textarea className="input-field text-sm" rows={3}
                   placeholder="Es: 2 giorni da casa, ticket restaurant, 25 gg ferie..."
                   value={form.offerta_note || ''} onChange={e => set('offerta_note', e.target.value)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">📅 Data inizio lavoro</p>
+                <input className="input-field text-sm" type="date"
+                  value={form.data_inizio || ''} onChange={e => set('data_inizio', e.target.value)} />
               </div>
             </div>
           </Section>
@@ -597,7 +675,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </Section>
 
         {/* STIPENDIO */}
-        <Section label="💰 STIPENDIO INDICATIVO">
+        {form.stato !== 'Offerta ricevuta' && <Section label="💰 STIPENDIO INDICATIVO">
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
@@ -611,7 +689,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 value={form.stipendio_max || ''} onChange={e => set('stipendio_max', e.target.value ? parseInt(e.target.value) : null)} />
             </div>
           </div>
-        </Section>
+        </Section>}
 
         {/* WELFARE / BENEFIT */}
         <Section label="🎁 BENEFIT E WELFARE">
@@ -653,11 +731,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
 
 
         {/* SCADENZA RESPONSO */}
-        <Section label="📅 ENTRO QUANDO DANNO RISPOSTA">
+        {form.stato !== 'Offerta ricevuta' && <Section label="📅 ENTRO QUANDO DANNO RISPOSTA">
           <input className="input-field" type="date"
             value={form.data_scadenza_responso || ''} onChange={e => set('data_scadenza_responso', e.target.value)} />
           <p className="text-[10px] text-disabled mt-1">Se ti hanno detto entro quando faranno sapere, salvalo qui</p>
-        </Section>
+        </Section>}
 
         {/* NOTES */}
         <Section label="📝 LE TUE NOTE">
@@ -666,17 +744,17 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             value={form.note || ''} onChange={e => set('note', e.target.value)} />
         </Section>
 
-        <Section label="❓ DOMANDE CHE MI HANNO FATTO">
+        {form.stato !== 'Offerta ricevuta' && <Section label="❓ DOMANDE CHE MI HANNO FATTO">
           <textarea className="input-field resize-none" rows={3}
             placeholder="Utile per prepararsi ai prossimi colloqui..."
             value={form.domande_fatte || ''} onChange={e => set('domande_fatte', e.target.value)} />
-        </Section>
+        </Section>}
 
-        <Section label="🙋 DOMANDE CHE VOGLIO FARE A LORO">
+        {form.stato !== 'Offerta ricevuta' && <Section label="🙋 DOMANDE CHE VOGLIO FARE A LORO">
           <textarea className="input-field resize-none" rows={3}
             placeholder="Es: smart working? crescita? cultura aziendale?"
             value={form.domande_mie || ''} onChange={e => set('domande_mie', e.target.value)} />
-        </Section>
+        </Section>}
 
         {/* FONTE + LINK ANNUNCIO */}
         <Section label="📌 FONTE E LINK">
