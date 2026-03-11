@@ -7,6 +7,7 @@
   <meta name="description" content="Traccia ogni candidatura, ogni colloquio, ogni silenzio. Gratis per sempre." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237B2FFF'/><stop offset='100%25' stop-color='%23FF2D8B'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23g)'/><text y='.9em' font-size='65' x='50%25' text-anchor='middle'>👻</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -254,6 +255,15 @@
       color: var(--muted);
       font-size: 13px;
       font-weight: 500;
+      cursor: default;
+      transition: background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s, transform 0.2s;
+    }
+    .chip:hover {
+      background: rgba(123,47,255,0.18);
+      border-color: rgba(123,47,255,0.6);
+      color: #c4b5fd;
+      box-shadow: 0 0 18px rgba(123,47,255,0.35);
+      transform: translateY(-2px);
     }
 
     /* ── PHONE MOCKUP ── */
@@ -370,6 +380,102 @@
     @keyframes growBar {
       from { width: 0; }
       to { width: 68%; }
+    }
+
+
+    /* ── SLIDER ── */
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .slider-viewport {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .slider-arrows {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .slider-arrow {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(240,240,255,0.6);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .slider-arrow:hover {
+      background: rgba(123,47,255,0.2);
+      border-color: rgba(123,47,255,0.5);
+      color: #c4b5fd;
+      transform: scale(1.08);
+    }
+
+    .slider-track {
+      display: flex;
+      gap: 32px;
+      padding: 20px 0;
+      width: 100%;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+      will-change: transform;
+    }
+
+    .slider-slide {
+      flex-shrink: 0;
+      scroll-snap-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slide-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .slider-dots {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 100px;
+      background: var(--border);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 0;
+    }
+
+    .dot.active {
+      width: 24px;
+      background: var(--purple);
     }
 
     /* ── FEATURES ── */
@@ -599,9 +705,7 @@
       <div class="nav-logo-icon">👻</div>
       <span>Le faremo sapere</span>
     </a>
-    <a href="https://lefaremosapere.vercel.app" class="nav-cta" target="_blank">
-      Apri l'app →
-    </a>
+    <button class="nav-cta" onclick="openModal()">Richiedi accesso →</button>
   </nav>
 
   <!-- HERO -->
@@ -611,21 +715,18 @@
 
     <div class="eyebrow">
       <span>👻</span>
-      <span>Gratis per sempre · Funziona su iPhone e Android</span>
+      <span>Il tracker per chi cerca lavoro — creato da chi cerca lavoro.</span>
     </div>
 
     <h1>
       Quante volte ti<br/>hanno detto<br/><em>"le faremo sapere"?</em>
     </h1>
 
-    <p>Tieni traccia di ogni candidatura, ogni colloquio, ogni silenzio.<br/>
-    Il tracker per chi cerca lavoro — creato da chi cerca lavoro.</p>
+    <p>Tieni traccia di ogni candidatura,<br/>ogni colloquio, ogni silenzio.</p>
 
     <div class="hero-actions">
-      <a href="https://lefaremosapere.vercel.app" class="btn-hero" target="_blank">
-        🚀 Inizia gratis ora
-      </a>
-      <span class="hero-note">Funziona come app su iPhone e Android · Nessuna installazione</span>
+      <button class="btn-hero" onclick="openModal()">🚀 Richiedi l'app</button>
+      <span class="hero-note">Ti mando il link direttamente via email 💜</span>
     </div>
 
     <div class="chips">
@@ -637,58 +738,218 @@
     </div>
   </section>
 
-  <!-- PHONE MOCKUP -->
-  <section class="mockup-section">
-    <div class="phone">
-      <div class="phone-screen">
-        <div class="phone-header">
-          <div class="phone-title">Le faremo sapere 👋</div>
-          <span style="font-size:18px">🔔</span>
-        </div>
+  <!-- PHONE SLIDER -->
+  <section class="mockup-section" style="flex-direction:column;gap:32px;padding-bottom:80px;">
+    <div class="slider-container">
+      <div class="slider-viewport">
+        <div class="slider-track" id="sliderTrack">
 
-        <!-- XP bar -->
-        <div class="phone-xp">
-          <div class="phone-xp-label">🔥 Lv. 3 · Esploratrice · 340 / 500 XP</div>
-          <div class="phone-xp-bar"><div class="phone-xp-fill"></div></div>
-        </div>
-
-        <!-- Candidature cards -->
-        <div class="phone-card">
-          <div class="phone-card-row">
-            <div class="phone-avatar" style="background:rgba(59,130,246,0.2);color:#60a5fa;">S</div>
-            <div>
-              <div class="phone-company">Spotify</div>
-              <div class="phone-role">Marketing Manager</div>
-              <span class="phone-badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;">🏆 Offerta ricevuta</span>
+        <!-- SLIDE 1: Home / candidature -->
+        <div class="slider-slide">
+          <div class="slide-label">🏠 Home</div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-title">Ciao, Sara 👋</div>
+                <span style="font-size:18px">🔔</span>
+              </div>
+              <div class="phone-xp">
+                <div class="phone-xp-label">🔥 Lv. 3 · Esploratrice · 340 / 500 XP</div>
+                <div class="phone-xp-bar"><div class="phone-xp-fill"></div></div>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card-row">
+                  <div class="phone-avatar" style="background:rgba(59,130,246,0.2);color:#60a5fa;">S</div>
+                  <div>
+                    <div class="phone-company">Spotify</div>
+                    <div class="phone-role">Marketing Manager</div>
+                    <span class="phone-badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;">🏆 Offerta ricevuta</span>
+                  </div>
+                </div>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card-row">
+                  <div class="phone-avatar" style="background:rgba(139,92,246,0.2);color:#a78bfa;">N</div>
+                  <div>
+                    <div class="phone-company">Netflix</div>
+                    <div class="phone-role">Content Strategist</div>
+                    <span class="phone-badge" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🎙️ Colloquio</span>
+                  </div>
+                </div>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card-row">
+                  <div class="phone-avatar" style="background:rgba(107,114,128,0.2);color:#9ca3af;">A</div>
+                  <div>
+                    <div class="phone-company">Airbnb</div>
+                    <div class="phone-role">UX Writer</div>
+                    <span class="phone-badge" style="background:rgba(107,114,128,0.2);color:#9ca3af;">👻 GHOSTED</span>
+                  </div>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:auto;padding-top:8px;">
+                <span style="font-size:10px;color:rgba(240,240,255,0.3)">12 candidature · streak 🔥 5</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="phone-card">
-          <div class="phone-card-row">
-            <div class="phone-avatar" style="background:rgba(239,68,68,0.2);color:#f87171;">N</div>
-            <div>
-              <div class="phone-company">Netflix</div>
-              <div class="phone-role">Content Strategist</div>
-              <span class="phone-badge" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🎙️ Colloquio</span>
+        <!-- SLIDE 2: Dettaglio candidatura -->
+        <div class="slider-slide">
+          <div class="slide-label">📋 Dettaglio</div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="color:var(--muted);font-size:16px;">←</span>
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,0.2);color:#60a5fa;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;">S</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px;color:var(--txt);">Spotify</div>
+                  <div style="font-size:11px;color:var(--muted);">Marketing Manager</div>
+                </div>
+                <span class="phone-badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;margin-left:auto;">🏆 Offerta</span>
+              </div>
+
+              <div class="phone-card" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.25);margin-bottom:8px;">
+                <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:10px;">🏆 DETTAGLI OFFERTA</div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                  <span style="font-size:11px;color:var(--muted);">💰 RAL offerta</span>
+                  <span style="font-size:11px;font-weight:700;color:#10b981;">€38.000</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;">
+                  <span style="font-size:11px;color:var(--muted);">⏰ Rispondere entro</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--txt);">15 apr 2025</span>
+                </div>
+              </div>
+
+              <div class="phone-card" style="padding:12px;">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">HAI ACCETTATO?</div>
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;padding:8px;border-radius:10px;background:linear-gradient(135deg,#10B981,#059669);color:white;text-align:center;font-size:11px;font-weight:700;">✅ Sì!</div>
+                  <div style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);color:var(--muted);text-align:center;font-size:11px;">❌ No</div>
+                </div>
+              </div>
+
+              <div class="phone-card" style="padding:10px 12px;">
+                <div style="font-size:10px;color:var(--muted);">📝 Note</div>
+                <div style="font-size:11px;color:var(--txt);margin-top:4px;">Ottima cultura aziendale, team giovane! 🎉</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="phone-card">
-          <div class="phone-card-row">
-            <div class="phone-avatar" style="background:rgba(34,197,94,0.2);color:#4ade80;">A</div>
-            <div>
-              <div class="phone-company">Airbnb</div>
-              <div class="phone-role">UX Writer</div>
-              <span class="phone-badge" style="background:rgba(107,114,128,0.2);color:#9ca3af;">👻 GHOSTED</span>
+        <!-- SLIDE 3: Statistiche -->
+        <div class="slider-slide">
+          <div class="slide-label">📊 Statistiche</div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-title">Le tue stats 📊</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div class="phone-card" style="text-align:center;padding:12px 8px;">
+                  <div style="font-size:22px;font-weight:800;color:var(--txt);">24</div>
+                  <div style="font-size:10px;color:var(--muted);">candidature</div>
+                </div>
+                <div class="phone-card" style="text-align:center;padding:12px 8px;">
+                  <div style="font-size:22px;font-weight:800;color:#10b981;">42%</div>
+                  <div style="font-size:10px;color:var(--muted);">risposta</div>
+                </div>
+                <div class="phone-card" style="text-align:center;padding:12px 8px;">
+                  <div style="font-size:22px;font-weight:800;color:#a78bfa;">8</div>
+                  <div style="font-size:10px;color:var(--muted);">colloqui</div>
+                </div>
+                <div class="phone-card" style="text-align:center;padding:12px 8px;">
+                  <div style="font-size:22px;font-weight:800;color:#9ca3af;">5</div>
+                  <div style="font-size:10px;color:var(--muted);">👻 ghost</div>
+                </div>
+              </div>
+
+              <div class="phone-card">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">DISTRIBUZIONE STATI</div>
+                <div style="space-y:4px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                    <span style="font-size:10px;color:var(--muted);width:60px;">Inviata</span>
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                      <div style="width:60%;height:100%;background:#818cf8;border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--muted);">10</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                    <span style="font-size:10px;color:var(--muted);width:60px;">Colloquio</span>
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                      <div style="width:33%;height:100%;background:#a78bfa;border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--muted);">8</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:10px;color:var(--muted);width:60px;">GHOSTED</span>
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                      <div style="width:20%;height:100%;background:#6b7280;border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--muted);">5</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="text-align:center;margin-top:auto;padding-top:8px;">
-          <span style="font-size:11px;color:rgba(240,240,255,0.3)">3 candidature · 5 settimana</span>
+        <!-- SLIDE 4: Badge / Profilo -->
+        <div class="slider-slide">
+          <div class="slide-label">🏅 Badge & Profilo</div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-title">Il tuo profilo 👤</div>
+              </div>
+
+              <div class="phone-card" style="text-align:center;padding:16px 12px;">
+                <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7B2FFF,#FF2D8B);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 8px;">👩</div>
+                <div style="font-weight:700;font-size:14px;color:var(--txt);">Sara</div>
+                <div style="margin-top:6px;display:inline-block;padding:3px 12px;border-radius:100px;background:rgba(139,92,246,0.2);color:#a78bfa;font-size:10px;font-weight:600;">⭐ Lv. 3 · Esploratrice</div>
+                <div class="phone-xp" style="margin-top:10px;">
+                  <div class="phone-xp-label">340 / 500 XP per il prossimo livello</div>
+                  <div class="phone-xp-bar"><div class="phone-xp-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="phone-card">
+                <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;">🏅 BADGE SBLOCCATI</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  <span style="padding:4px 10px;border-radius:100px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;font-size:10px;font-weight:600;">🚀 Primo passo</span>
+                  <span style="padding:4px 10px;border-radius:100px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:10px;font-weight:600;">🔥 On Fire</span>
+                  <span style="padding:4px 10px;border-radius:100px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#10b981;font-size:10px;font-weight:600;">📞 Call queen</span>
+                  <span style="padding:4px 10px;border-radius:100px;background:rgba(107,114,128,0.15);border:1px solid var(--border);color:var(--disabled);font-size:10px;">??? Bloccato</span>
+                  <span style="padding:4px 10px;border-radius:100px;background:rgba(107,114,128,0.15);border:1px solid var(--border);color:var(--disabled);font-size:10px;">??? Bloccato</span>
+                </div>
+              </div>
+
+              <div class="phone-card" style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:var(--txt);">🔥 Streak settimanale</div>
+                  <div style="font-size:10px;color:var(--muted);">5 settimane consecutive</div>
+                </div>
+                <div style="font-size:24px;font-weight:800;color:#fbbf24;">5</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+      </div><!-- end track -->
+
+        </div><!-- end viewport -->
+
+      <!-- Arrows + Dots -->
+      <div class="slider-arrows">
+        <button class="slider-arrow" onclick="goSlide(current-1)" aria-label="Precedente">←</button>
+        <div class="slider-dots" id="sliderDots">
+          <button class="dot active" onclick="goSlide(0)"></button>
+          <button class="dot" onclick="goSlide(1)"></button>
+          <button class="dot" onclick="goSlide(2)"></button>
+          <button class="dot" onclick="goSlide(3)"></button>
+        </div>
+        <button class="slider-arrow" onclick="goSlide(current+1)" aria-label="Successivo">→</button>
       </div>
     </div>
   </section>
@@ -767,9 +1028,7 @@
     <div class="cta-card reveal">
       <h2>Inizia oggi. È gratis.<br/>Per sempre.</h2>
       <p>Nessuna carta di credito. Nessun limite.<br/>Funziona come app su telefono — iPhone e Android.</p>
-      <a href="https://lefaremosapere.vercel.app" class="btn-hero" target="_blank" style="display:inline-flex;">
-        🚀 Apri l'app gratis
-      </a>
+      <button class="btn-hero" onclick="openModal()" style="display:inline-flex;">🚀 Richiedi l'app</button>
       <div style="margin-top:16px;font-size:13px;color:var(--disabled)">
         Oppure scansiona il QR con il telefono per installare come app
       </div>
@@ -788,6 +1047,137 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) } })
     }, { threshold: 0.1 })
     els.forEach(el => obs.observe(el))
+
+
+    // Slider — transform-based, no scroll hijack
+    const track = document.getElementById('sliderTrack')
+    const dots = document.querySelectorAll('.dot')
+    let current = 0
+    const TOTAL = 4
+
+    function goSlide(i) {
+      i = ((i % TOTAL) + TOTAL) % TOTAL  // wrap around
+      current = i
+      const slideWidth = track.querySelector('.slider-slide').offsetWidth + 32 // gap
+      track.style.transform = `translateX(-${i * slideWidth}px)`
+      dots.forEach((d,j) => d.classList.toggle('active', j===i))
+    }
+
+    // Auto advance
+    let autoTimer = setInterval(() => goSlide(current + 1), 3500)
+
+    // Reset timer on manual click
+    document.querySelectorAll('.dot, .slider-arrow').forEach(el => {
+      el.addEventListener('click', () => {
+        clearInterval(autoTimer)
+        autoTimer = setInterval(() => goSlide(current + 1), 3500)
+      })
+    })
+
+    // Recalculate on resize
+    window.addEventListener('resize', () => goSlide(current))
+
+  </script>
+
+
+  <!-- REQUEST MODAL -->
+  <div id="requestModal" style="
+    display:none;position:fixed;inset:0;z-index:999;
+    background:rgba(0,0,0,0.75);backdrop-filter:blur(12px);
+    align-items:center;justify-content:center;padding:24px;
+  " onclick="if(event.target===this)closeModal()">
+    <div style="
+      background:#13131f;border:1px solid rgba(123,47,255,0.4);
+      border-radius:28px;padding:40px 32px;max-width:420px;width:100%;
+      box-shadow:0 0 80px rgba(123,47,255,0.25);
+      animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    ">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:48px;margin-bottom:12px;">👻</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:#f0f0ff;margin-bottom:8px;">Richiedi accesso anticipato</h3>
+        <p style="font-size:14px;color:rgba(240,240,255,0.5);line-height:1.5;">L'app è in fase di test.<br/>Ti mando il link per installarla subito.</p>
+      </div>
+      <div id="modalForm">
+        <input id="reqEmail" type="email" placeholder="La tua email" autocomplete="email"
+          style="
+            width:100%;padding:14px 18px;border-radius:14px;
+            background:#0a0a12;border:1px solid rgba(255,255,255,0.12);
+            color:#f0f0ff;font-size:15px;font-family:'DM Sans',sans-serif;
+            outline:none;margin-bottom:12px;
+            transition:border-color 0.2s;
+          "
+          onfocus="this.style.borderColor='rgba(123,47,255,0.6)'"
+          onblur="this.style.borderColor='rgba(255,255,255,0.12)'"
+          onkeydown="if(event.key==='Enter')submitRequest()"
+        />
+        <button onclick="submitRequest()" id="reqBtn" style="
+          width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;
+          background:linear-gradient(135deg,#7B2FFF,#FF2D8B);
+          color:white;font-family:'Bricolage Grotesque',sans-serif;
+          font-size:16px;font-weight:700;
+          transition:opacity 0.2s,transform 0.2s;
+          box-shadow:0 8px 30px rgba(255,45,139,0.3);
+        "
+          onmouseover="this.style.transform='scale(1.02)'"
+          onmouseout="this.style.transform='scale(1)'"
+        >Invia richiesta 💜</button>
+        <button onclick="closeModal()" style="
+          width:100%;margin-top:10px;padding:10px;border:none;cursor:pointer;
+          background:transparent;color:rgba(240,240,255,0.3);font-size:13px;
+        ">Annulla</button>
+      </div>
+      <div id="modalSuccess" style="display:none;text-align:center;padding:16px 0;">
+        <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:#10b981;margin-bottom:8px;">Ricevuto!</h3>
+        <p style="font-size:14px;color:rgba(240,240,255,0.5);line-height:1.6;">Ti mando il link per accedere all'app entro poco.<br/>Ci vediamo dentro 👻</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes modalIn {
+      from { opacity:0; transform:scale(0.9) translateY(20px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    #requestModal.open { display:flex !important; }
+  </style>
+
+  <script>
+    function openModal() {
+      document.getElementById('requestModal').classList.add('open')
+      document.getElementById('requestModal').style.display = 'flex'
+      setTimeout(() => document.getElementById('reqEmail')?.focus(), 100)
+    }
+    function closeModal() {
+      document.getElementById('requestModal').style.display = 'none'
+      // reset
+      document.getElementById('modalForm').style.display = 'block'
+      document.getElementById('modalSuccess').style.display = 'none'
+      document.getElementById('reqEmail').value = ''
+    }
+    async function submitRequest() {
+      const email = document.getElementById('reqEmail').value.trim()
+      if (!email || !email.includes('@')) {
+        document.getElementById('reqEmail').style.borderColor = '#ef4444'
+        document.getElementById('reqEmail').focus()
+        return
+      }
+      const btn = document.getElementById('reqBtn')
+      btn.textContent = '⏳ Invio...'
+      btn.disabled = true
+
+      // Formspree — replace xpqydppa with your actual Formspree form ID
+      try {
+        await fetch('https://formspree.io/f/xpqydppa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ email, _subject: 'Nuova richiesta accesso — Le faremo sapere' })
+        })
+      } catch(e) {}
+
+      document.getElementById('modalForm').style.display = 'none'
+      document.getElementById('modalSuccess').style.display = 'block'
+    }
   </script>
 
 </body>
