@@ -12,7 +12,7 @@ const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
-  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP } = useApp()
+  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP, checkBadges } = useApp()
   const { user } = useApp()
   const [form, setForm] = useState({ ...c })
   const [isDirty, setIsDirty] = useState(false)
@@ -51,9 +51,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [interviewMode, setInterviewMode] = useState(false)
   const [showAssuntaCelebration, setShowAssuntaCelebration] = useState(false)
   const [showReviewPrompt, setShowReviewPrompt] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
-  const [feedbackStep, setFeedbackStep] = useState(0)
-  const [feedbackAnswers, setFeedbackAnswers] = useState({})
+  const [fbStep, setFbStep] = useState(0)
+  const [fbUtilita, setFbUtilita] = useState(null)
+  const [fbCosa, setFbCosa] = useState('')
+  const [fbMigliorare, setFbMigliorare] = useState('')
+  const [fbSending, setFbSending] = useState(false)
+  const [editingDataInizio, setEditingDataInizio] = useState(false)
+  const [savingDataInizio, setSavingDataInizio] = useState(false)
 
   const days = daysSince(c.data_invio)
   const isColloquioOggi = form.data_colloquio && (() => {
@@ -67,6 +71,15 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   useEffect(() => {
     if (STATI_CON_COLLOQUIO.includes(form.stato)) loadChecklist()
   }, [form.stato])
+
+  useEffect(() => {
+    if (!showAssuntaCelebration) return
+    const t = setTimeout(() => {
+      setShowAssuntaCelebration(false)
+      setShowReviewPrompt(true)
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [showAssuntaCelebration])
 
   const loadChecklist = async () => {
     setLoadingChecklist(true)
@@ -97,6 +110,28 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     setSaved(true)
     setIsDirty(false)
     onUpdate?.()
+  }
+
+  const sendFeedback = async () => {
+    setFbSending(true)
+    try {
+      await fetch('https://formspree.io/f/xpqydppa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: '🏆 Feedback da utente assunto/a — Le faremo sapere',
+          azienda: form.azienda,
+          ruolo: form.ruolo,
+          utilita: fbUtilita,
+          cosa_e_piaciuto: fbCosa,
+          cosa_migliorare: fbMigliorare,
+          nome: profile?.nome || 'Anonimo',
+          genere: profile?.genere || '-',
+        })
+      })
+    } catch(e) {}
+    setFbSending(false)
+    setFbStep(1)
   }
 
   const handleToggleChecklist = async (item) => {
@@ -319,13 +354,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </div>
 
           {/* HAI ACCETTATO? */}
-          {!form.offerta_risposta && (
+          {!form.offerta_risposta ? (
             <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' }}>
               <p className="text-sm font-bold text-txt text-center">🤝 Hai già deciso?</p>
               <div className="flex gap-3">
                 <button onClick={async () => {
-                  const updated = { ...form, offerta_risposta: 'si', stato: 'Assunta', welfare: welfareList }
-                  setForm(updated)
+                  setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
                   setSaving(true)
                   await updateCandidatura(c.id, {
                     stato: 'Assunta',
@@ -341,21 +375,34 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   setSaving(false)
                   setIsDirty(false)
                   await addXP(50)
+                  await checkBadges()
                   triggerConfetti()
                   setShowAssuntaCelebration(true)
-                }} className="flex-1 py-3 rounded-xl font-bold text-sm text-white active:scale-95 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                }} className="flex-1 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
+                  style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 20px rgba(16,185,129,0.35)' }}>
                   ✅ Sì, ho accettato!
                 </button>
                 <button onClick={async () => {
                   setForm(f => ({ ...f, offerta_risposta: 'no' }))
-                  await updateCandidatura(c.id, {
-                    offerta_risposta: 'no',
-                    welfare: welfareList,
-                  })
+                  await updateCandidatura(c.id, { offerta_risposta: 'no', welfare: welfareList })
                   setIsDirty(false)
-                }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
+                }} className="flex-1 py-3 rounded-2xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
                   ❌ No, per ora
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="card space-y-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted">
+                  {form.offerta_risposta === 'si' ? "✅ Hai accettato l'offerta" : "❌ Hai declinato l'offerta"}
+                </span>
+                <button onClick={async () => {
+                  setForm(f => ({ ...f, offerta_risposta: null, stato: 'Offerta ricevuta' }))
+                  await updateCandidatura(c.id, { offerta_risposta: null, stato: 'Offerta ricevuta' })
+                  setIsDirty(false)
+                }} className="text-xs text-purple-soft underline active:opacity-60">
+                  Ho cliccato per sbaglio
                 </button>
               </div>
             </div>
@@ -432,60 +479,25 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </div>
 
         {/* Celebration overlay — auto-dismiss dopo 2s poi review */}
-        {showAssuntaCelebration && (() => {
-          setTimeout(() => {
-            setShowAssuntaCelebration(false)
-            setShowReviewPrompt(true)
-          }, 2000)
-          return (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
-              style={{ background: 'rgba(0,0,0,0.75)' }}>
-              <div className="text-center space-y-4">
-                <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
-                <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
-                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading, sans-serif)', textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
-                  {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
-                </h2>
-                <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-                  {form.azienda} 🌟
-                </p>
-                <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
-              </div>
+        {showAssuntaCelebration && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.75)' }}>
+            <div className="text-center space-y-4">
+              <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
+              <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
+              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading, sans-serif)', textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
+                {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
+              </h2>
+              <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+                {form.azienda} 🌟
+              </p>
+              <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
             </div>
-          )
-        })()}
+          </div>
+        )}
 
         {/* Review prompt — dopo la celebrazione */}
-        {showReviewPrompt && (() => {
-          const [fbStep, setFbStep] = React.useState(0) // 0=domande, 1=inviato
-          const [fbUtilita, setFbUtilita] = React.useState(null)
-          const [fbCosa, setFbCosa] = React.useState('')
-          const [fbMigliorare, setFbMigliorare] = React.useState('')
-          const [fbSending, setFbSending] = React.useState(false)
-
-          const sendFeedback = async () => {
-            setFbSending(true)
-            try {
-              await fetch('https://formspree.io/f/xpqydppa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                  _subject: '🏆 Feedback da utente assunto/a — Le faremo sapere',
-                  azienda: form.azienda,
-                  ruolo: form.ruolo,
-                  utilita: fbUtilita,
-                  cosa_e_piaciuto: fbCosa,
-                  cosa_migliorare: fbMigliorare,
-                  nome: profile?.nome || 'Anonimo',
-                  genere: profile?.genere || '-',
-                })
-              })
-            } catch(e) {}
-            setFbSending(false)
-            setFbStep(1)
-          }
-
-          return (
+        {showReviewPrompt && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
               style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}>
               <div className="card w-full max-w-sm space-y-4" style={{ borderColor: 'rgba(123,47,255,0.4)', background: 'linear-gradient(135deg, rgba(123,47,255,0.07), rgba(255,45,139,0.05))' }}>
@@ -550,8 +562,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 )}
               </div>
             </div>
-          )
-        })()}
+        )}
       </div>
     )
   }
@@ -559,8 +570,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   // ── VISTA ASSUNTA (read-only, solo info rilevanti) ─────────────
   if (form.stato === 'Assunta') {
     const colloquiCount = [form.data_colloquio, form.data_secondo_colloquio].filter(Boolean).length
-    const [editingDataInizio, setEditingDataInizio] = useState(false)
-    const [savingDataInizio, setSavingDataInizio] = useState(false)
     return (
       <div className="screen" style={{ background: '#0E0E1A' }}>
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
@@ -575,7 +584,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               Ce l'hai fatta!
             </h2>
             <p className="text-muted text-sm">
-              {profile?.genere === 'f' ? 'Hai ricevuto un\'offerta.' : profile?.genere === 'm' ? 'Hai ricevuto un\'offerta.' : 'Hai ricevuto un\'offerta.'} Meritata. 🎉
+              Hai ricevuto un'offerta. Meritata. 🎉
             </p>
           </div>
 
@@ -1147,91 +1156,25 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         danger
       />
 
-      {/* 🌟 ASSUNTA CELEBRATION MODAL */}
+      {/* 🌟 ASSUNTA CELEBRATION — auto-dismiss via useEffect */}
       {showAssuntaCelebration && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
-          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
-          <div className="card w-full max-w-sm text-center" style={{ borderColor: 'rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,47,255,0.08))' }}>
-            <div className="text-6xl mb-3">🎉</div>
-            <h2 className="text-xl font-bold text-txt mb-1" style={{ fontFamily: 'var(--font-heading, sans-serif)' }}>
-              {profile?.genere === 'f' ? 'Sei stata assunta!' : profile?.genere === 'm' ? 'Sei stato assunto!' : 'Sei stat* assunt*!'}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="text-center space-y-4">
+            <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
+            <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
+            <h2 className="text-3xl font-bold text-white" style={{ textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
+              {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
             </h2>
-            <p className="text-2xl font-bold mb-2" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+            <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
               {form.azienda} 🌟
             </p>
-            <p className="text-sm text-muted leading-relaxed mb-4">
-              {profile?.nome ? `${profile.nome}, ce` : 'Ce'} l'hai fatta davvero. Ogni candidatura, ogni ghosting, ogni attesa — ne valeva la pena. Ora vai e fai cose grandi. 💜
-            </p>
-            <div className="text-xs text-muted mb-4 bg-surface rounded-xl p-3">
-              🔥 +50 XP guadagnati · Badge "Ce l'hai fatta!" sbloccato
-            </div>
-            <button onClick={() => { setShowAssuntaCelebration(false); setShowFeedback(true) }}
-              className="btn-primary w-full py-3 text-sm font-bold mb-2">
-              🚀 Grazie! Un ultimo passo →
-            </button>
-            <button onClick={() => setShowAssuntaCelebration(false)}
-              className="text-xs text-muted py-1">
-              Chiudi
-            </button>
+            <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
           </div>
         </div>
       )}
 
-      {/* 📋 FEEDBACK SURVEY */}
-      {showFeedback && (() => {
-        const QUESTIONS = [
-          { id: 'utilità', q: "Quanto ti ha aiutato l'app nella ricerca lavoro?", opts: ['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco', '😕 Per niente'] },
-          { id: 'prima', q: 'Tenevi già traccia delle candidature prima?', opts: ['📊 Sì, su Excel', '📝 Sì, su note/agenda', '🧠 Solo a memoria', '🆕 Prima volta'] },
-          { id: 'funzione', q: 'La funzione che hai usato di più?', opts: ['📋 Tracciare candidature', '📅 Calendario', '🔔 Notifiche', '📊 Statistiche'] },
-          { id: 'consiglieresti', q: 'La consiglieresti a chi cerca lavoro?', opts: ['💯 Assolutamente sì', '👍 Probabilmente sì', '🤔 Non sono sicur*', '👎 No'] },
-        ]
-        const isLastQ = feedbackStep >= QUESTIONS.length
-        const q = QUESTIONS[feedbackStep]
-        return (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
-            style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
-            <div className="card w-full max-w-sm" style={{ borderColor: 'rgba(123,47,255,0.3)' }}>
-              {!isLastQ ? (
-                <>
-                  {/* progress */}
-                  <div className="flex gap-1.5 mb-4">
-                    {QUESTIONS.map((_, i) => (
-                      <div key={i} className="h-1 flex-1 rounded-full"
-                        style={{ background: i <= feedbackStep ? '#7B2FFF' : '#1e1e38', transition: 'background 0.3s' }} />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted text-center mb-1">{feedbackStep + 1} / {QUESTIONS.length}</p>
-                  <h3 className="text-base font-bold text-txt text-center mb-4 leading-snug">{q.q}</h3>
-                  <div className="space-y-2">
-                    {q.opts.map(opt => (
-                      <button key={opt} onClick={() => {
-                        setFeedbackAnswers(prev => ({ ...prev, [q.id]: opt }))
-                        setFeedbackStep(s => s + 1)
-                      }} className="w-full text-left px-4 py-3 rounded-xl text-sm border border-border text-txt active:bg-purple/10 active:border-purple/40 transition-all">
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={() => setShowFeedback(false)} className="text-xs text-muted text-center w-full mt-3 py-1">
-                    Salta feedback
-                  </button>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="text-5xl mb-3">💜</div>
-                  <h3 className="text-lg font-bold text-txt mb-2">Grazie mille!</h3>
-                  <p className="text-sm text-muted leading-relaxed mb-5">
-                    Il tuo feedback ci aiuta a migliorare l'app per chi verrà dopo. Ora vai — hai un lavoro da iniziare! 🚀
-                  </p>
-                  <button onClick={() => setShowFeedback(false)} className="btn-primary w-full py-3 text-sm font-bold">
-                    Chiudi e festeggia! 🎉
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      })()}
+
 
     </div>
   )

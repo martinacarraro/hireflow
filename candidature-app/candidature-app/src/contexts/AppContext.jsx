@@ -196,7 +196,7 @@ export function AppProvider({ children }) {
     if ('welfare' in clean && !Array.isArray(clean.welfare)) clean.welfare = []
     const { data: row, error } = await supabase
       .from('candidature').update(clean).eq('id', id).select().single()
-    if (error) { console.error('Supabase update error:', error.message, error.details, error.hint, JSON.stringify(clean)); showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return }
+    if (error) { console.error('Supabase update error:', error.message, error.details, error.hint, JSON.stringify(clean)); showToast('❌ ' + (error.message || 'Errore sconosciuto'), 'error'); return }
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
@@ -388,7 +388,8 @@ export function AppProvider({ children }) {
     const total = list.length
     const colloqui = list.filter(c => ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) || c.data_colloquio).length
     const ghosted = list.filter(c => c.stato === 'GHOSTED').length
-    const offerte = list.filter(c => c.stato === 'Offerta ricevuta').length
+    const offerte = list.filter(c => c.stato === 'Offerta ricevuta' || c.offerta_risposta === 'si').length
+    const assunta = list.filter(c => c.stato === 'Assunta').length
     const withNotes = list.filter(c => c.note?.length > 5).length
     const withDates = list.filter(c => c.data_colloquio).length
     const countries = new Set(list.map(c => c.paese).filter(Boolean)).size
@@ -416,7 +417,7 @@ export function AppProvider({ children }) {
       if (weeks[i] === nowWeek - i) weekStreak++
       else break
     }
-    const referral = (profile?.referral_count || 0); return { total, colloqui, ghosted, offerte, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak, referral }
+    const referral = (profile?.referral_count || 0); return { total, colloqui, ghosted, offerte, assunta, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak, referral }
   }
 
   const computeStats = () => computeStatsFrom(candidature)
@@ -564,7 +565,7 @@ export function AppProvider({ children }) {
       addXP, removeXP, recalcXP, updateProfile, markOnboarded, refreshMotto,
       pushNotification, requestNotificationPermission,
       markAllNotificationsRead,
-      showToast, triggerConfetti,
+      showToast, triggerConfetti, checkBadges,
     }}>
       {children}
     </AppContext.Provider>

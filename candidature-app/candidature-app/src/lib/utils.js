@@ -287,6 +287,19 @@ export const BADGES = [
     check: (s) => s.offerte >= 1
   },
   {
+    id: 'assunta', emoji: '🌟',
+    name: 'Ce l\'hai fatta davvero!',
+    nameF: 'Ce l\'hai fatta davvero!',
+    nameM: 'Ce l\'hai fatto davvero!',
+    desc: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
+    descF: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
+    descM: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
+    shareText: 'Ho trovato lavoro! 🌟 Ho tracciato ogni candidatura, ogni colloquio, ogni ghosting su Le faremo sapere. Ne è valsa la pena.',
+    color: '#10B981', bg: '#0a1a0a',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><path d="M20 34l8 8 16-18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="32" cy="32" r="18" stroke="white" stroke-width="2" fill="none" opacity="0.4"/><path d="M32 10 L34 18 L32 16 L30 18 Z" fill="white" opacity="0.6"/><path d="M32 54 L34 46 L32 48 L30 46 Z" fill="white" opacity="0.6"/><path d="M10 32 L18 30 L16 32 L18 34 Z" fill="white" opacity="0.6"/><path d="M54 32 L46 30 L48 32 L46 34 Z" fill="white" opacity="0.6"/></svg>',
+    check: (s) => s.assunta >= 1
+  },
+  {
     id: 'ghosthunter', emoji: '👻', name: 'Ghost Hunter',
     desc: '5 aziende marchiate GHOSTED. Classici.',
     shareText: '5 ghost. Cinque. 👻 Le ho segnate tutte su Le faremo sapere. Il silenzio dice tanto quanto una risposta.',
