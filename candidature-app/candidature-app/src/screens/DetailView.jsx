@@ -78,6 +78,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     setSaving(true)
     await updateCandidatura(c.id, {
       ...form,
+      stato: form.stato,
       data_colloquio: form.data_colloquio || null,
       ora_colloquio: form.ora_colloquio || null,
       data_secondo_colloquio: form.data_secondo_colloquio || null,
@@ -87,6 +88,9 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       offerta_note: form.offerta_note || null,
       offerta_risposta: form.offerta_risposta || null,
       data_inizio: form.data_inizio || null,
+      welfare: Array.isArray(form.welfare) ? form.welfare : [],
+      welfare_note: form.welfare_note || null,
+      offerta_feeling: form.offerta_feeling || null,
     })
     setSaving(false)
     setSaved(true)
@@ -247,6 +251,20 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
 
   // ── VISTA OFFERTA RICEVUTA ────────────────────────────────────────
   if (form.stato === 'Offerta ricevuta') {
+    const welfareList = Array.isArray(form.welfare) ? form.welfare : []
+    const toggleWelfare = (opt) => {
+      const updated = welfareList.includes(opt)
+        ? welfareList.filter(w => w !== opt)
+        : [...welfareList, opt]
+      set('welfare', updated)
+    }
+    const FEELING_OFFERTA = [
+      { v: '🤩', label: "Non vedo l'ora!" },
+      { v: '😊', label: 'Contenta/o' },
+      { v: '🤔', label: 'Ci devo pensare' },
+      { v: '😬', label: 'Qualche dubbio' },
+      { v: '😕', label: 'Non mi convince' },
+    ]
     return (
       <div className="screen" style={{ background: '#0E0E1A' }}>
         {/* Header */}
@@ -281,13 +299,32 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <p className="text-muted text-sm">Meritata. Ora decidi con calma. 💜</p>
           </div>
 
+          {/* COME TI SENTI? */}
+          <div className="card space-y-3">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider">🫀 Come ti senti riguardo a questa offerta?</p>
+            <div className="flex gap-2 flex-wrap">
+              {FEELING_OFFERTA.map(f => (
+                <button key={f.v} onClick={() => set('offerta_feeling', form.offerta_feeling === f.v ? null : f.v)}
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all active:scale-95"
+                  style={{
+                    background: form.offerta_feeling === f.v ? 'rgba(123,47,255,0.2)' : 'transparent',
+                    borderColor: form.offerta_feeling === f.v ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
+                  }}>
+                  <span className="text-2xl">{f.v}</span>
+                  <span className="text-xs text-muted" style={{ fontSize: '10px', whiteSpace: 'nowrap' }}>{f.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* HAI ACCETTATO? */}
           {!form.offerta_risposta && (
             <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' }}>
-              <p className="text-sm font-bold text-txt text-center">🤝 Hai accettato l'offerta?</p>
+              <p className="text-sm font-bold text-txt text-center">🤝 Hai già deciso?</p>
               <div className="flex gap-3">
                 <button onClick={async () => {
-                  setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
+                  const updated = { ...form, offerta_risposta: 'si', stato: 'Assunta', welfare: welfareList }
+                  setForm(updated)
                   setSaving(true)
                   await updateCandidatura(c.id, {
                     stato: 'Assunta',
@@ -295,7 +332,10 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                     offerta_ral: form.offerta_ral ? parseInt(form.offerta_ral) : null,
                     offerta_scadenza: form.offerta_scadenza || null,
                     offerta_note: form.offerta_note || null,
+                    offerta_feeling: form.offerta_feeling || null,
                     data_inizio: form.data_inizio || null,
+                    welfare: welfareList,
+                    welfare_note: form.welfare_note || null,
                   })
                   setSaving(false)
                   setIsDirty(false)
@@ -308,7 +348,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 </button>
                 <button onClick={async () => {
                   setForm(f => ({ ...f, offerta_risposta: 'no', stato: 'Rifiutata' }))
-                  await updateCandidatura(c.id, { stato: 'Rifiutata', offerta_risposta: 'no' })
+                  await updateCandidatura(c.id, {
+                    stato: 'Rifiutata',
+                    offerta_risposta: 'no',
+                    welfare: welfareList,
+                  })
                   setIsDirty(false)
                   onBack()
                 }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
@@ -318,9 +362,9 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           )}
 
-          {/* Dettagli offerta — editabili */}
+          {/* Dettagli offerta */}
           <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>
-            <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-1">💰 Dettagli offerta</p>
+            <p className="text-xs font-bold text-green-400 uppercase tracking-wider">💰 Dettagli offerta</p>
             <div>
               <p className="text-xs text-muted mb-1">RAL offerta (€)</p>
               <input className="input-field text-sm" type="number" placeholder="Es: 35000"
@@ -337,10 +381,37 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 value={form.data_inizio || ''} onChange={e => set('data_inizio', e.target.value)} />
             </div>
             <div>
-              <p className="text-xs text-muted mb-1">📋 Note offerta (smart working, benefit...)</p>
+              <p className="text-xs text-muted mb-1">📋 Note offerta (condizioni, impressioni...)</p>
               <textarea className="input-field text-sm" rows={3}
-                placeholder="Es: 2 giorni da casa, ticket restaurant, 25 gg ferie..."
+                placeholder="Es: ottimo team, possibilità crescita..."
                 value={form.offerta_note || ''} onChange={e => set('offerta_note', e.target.value)} />
+            </div>
+          </div>
+
+          {/* BENEFIT / WELFARE */}
+          <div className="card space-y-3">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider">🎁 Benefit inclusi</p>
+            <div className="flex flex-wrap gap-2">
+              {WELFARE_OPTIONS.map(opt => {
+                const active = welfareList.includes(opt)
+                return (
+                  <button key={opt} onClick={() => toggleWelfare(opt)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95"
+                    style={{
+                      background: active ? 'rgba(123,47,255,0.2)' : 'transparent',
+                      borderColor: active ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
+                      color: active ? '#c4b5fd' : 'rgba(240,240,255,0.4)',
+                    }}>
+                    {active ? '✓ ' : ''}{opt}
+                  </button>
+                )
+              })}
+            </div>
+            <div>
+              <p className="text-xs text-muted mb-1">Aggiungi benefit personalizzati</p>
+              <input className="input-field text-sm" type="text"
+                placeholder="Es: auto aziendale, asilo nido..."
+                value={form.welfare_note || ''} onChange={e => set('welfare_note', e.target.value)} />
             </div>
           </div>
 
@@ -367,7 +438,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
             <div className="card w-full max-w-sm text-center" style={{ borderColor: 'rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,47,255,0.08))' }}>
               <div className="text-6xl mb-3">🎉</div>
-              <h2 className="text-xl font-bold text-txt mb-1" style={{ fontFamily: 'var(--font-heading, sans-serif)' }}>
+              <h2 className="text-xl font-bold text-txt mb-1">
                 {profile?.genere === 'f' ? 'Sei stata assunta!' : profile?.genere === 'm' ? 'Sei stato assunto!' : 'Sei stat* assunt*!'}
               </h2>
               <p className="text-2xl font-bold mb-2" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -376,10 +447,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               <p className="text-sm text-muted leading-relaxed mb-4">
                 {profile?.nome ? `${profile.nome}, ce` : 'Ce'} l'hai fatta davvero. Ogni candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
               </p>
-              <div className="text-xs text-muted mb-4 bg-surface rounded-xl p-3">
-                🔥 +50 XP guadagnati!
-              </div>
-              <button onClick={() => { setShowAssuntaCelebration(false); onUpdate?.(); }}
+              <div className="text-xs text-muted mb-4 bg-surface rounded-xl p-3">🔥 +50 XP guadagnati!</div>
+              <button onClick={() => { setShowAssuntaCelebration(false); onUpdate?.() }}
                 className="btn-primary w-full py-3 text-sm font-bold">
                 🚀 Perfetto!
               </button>
@@ -587,11 +656,14 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             onChange={async e => {
               const nuovoStato = e.target.value
               set('stato', nuovoStato)
-              // Auto-salva subito quando si imposta Offerta ricevuta
-              if (nuovoStato === 'Offerta ricevuta') {
-                await updateCandidatura(c.id, { stato: nuovoStato })
+              // Auto-salva stato subito (silenzioso)
+              try {
+                await updateCandidatura(c.id, {
+                  stato: nuovoStato,
+                  welfare: Array.isArray(form.welfare) ? form.welfare : [],
+                })
                 setIsDirty(false)
-              }
+              } catch(e) {}
             }}
             className="input-field"
             style={{ color: cfg.color }}>
