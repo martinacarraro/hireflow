@@ -1,9 +1,5 @@
 // Service Worker — Le faremo sapere
 
-const CACHE = 'lfs-v1'
-
-const GHOST_ICON = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">👻</text></svg>')}`
-
 self.addEventListener('install', e => { self.skipWaiting() })
 self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()) })
 
@@ -18,7 +14,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title || '👻 Le faremo sapere', {
       body: data.body || '',
-      icon: GHOST_ICON,
+      icon: '/icon-192.png',      // logo app — immagine grande della notifica
+      badge: '/ghost-badge.svg',  // 👻 fantasmino — icona piccola in alto a sx accanto al titolo
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' }
     })

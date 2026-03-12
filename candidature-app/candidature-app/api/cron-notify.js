@@ -124,6 +124,18 @@ export default async function handler(req, res) {
     // Inattività 7 giorni esatti
     if (profile.ultimo_accesso) {
       const inactiveDays = Math.floor((today - new Date(profile.ultimo_accesso)) / (1000 * 60 * 60 * 24))
+      if (inactiveDays === 3) {
+        const attive = cands?.filter(c =>
+          ['Colloquio','Prima call','In attesa risposta','Secondo colloquio','Offerta ricevuta'].includes(c.stato)
+        ).length || 0
+        const nome = profile.nome ? `, ${profile.nome}` : ''
+        await sendPush(profile,
+          `💜 Tutto ok${nome}?`,
+          attive > 0
+            ? `Come procede la ricerca? Hai ${attive} candidature in corso — ti sono vicin*! 🤗`
+            : `Come procede la ricerca? Sono qui se hai bisogno. Tienimi aggiornato! 🤗`
+        )
+      }
       if (inactiveDays === 7) {
         const attive = cands?.filter(c =>
           ['Colloquio','Prima call','In attesa risposta','Secondo colloquio','Offerta ricevuta'].includes(c.stato)
