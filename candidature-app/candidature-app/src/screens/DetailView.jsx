@@ -353,9 +353,10 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </div>
 
-          {/* HAI ACCETTATO? — sempre visibile finché stato = Offerta ricevuta */}
-          <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' }}>
-            <p className="text-sm font-bold text-txt text-center">🤝 Hai già deciso?</p>
+          {/* HAI ACCETTATO? — local state, nessun default */}
+          <div className="card space-y-3" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
+            <p className="text-sm font-bold text-txt text-center">🤝 Accetti l'offerta?</p>
+            <p className="text-xs text-muted text-center">Scegli — non ci sono risposte giuste o sbagliate</p>
             <div className="flex gap-3">
               <button onClick={async () => {
                 setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
@@ -377,16 +378,18 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 await checkBadges()
                 triggerConfetti()
                 setShowAssuntaCelebration(true)
-              }} className="flex-1 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
-                style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 20px rgba(16,185,129,0.35)' }}>
-                ✅ Sì, ho accettato!
+              }} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
+                style={{ background: 'transparent', borderColor: 'rgba(16,185,129,0.5)', color: '#10B981' }}>
+                ✅ Sì
               </button>
               <button onClick={async () => {
                 setForm(f => ({ ...f, offerta_risposta: 'no' }))
                 await updateCandidatura(c.id, { offerta_risposta: 'no', welfare: welfareList })
                 setIsDirty(false)
-              }} className="flex-1 py-3 rounded-2xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
-                ❌ No, per ora
+                showToast('Risposta salvata', 'success')
+              }} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
+                style={{ background: 'transparent', borderColor: 'rgba(255,71,87,0.5)', color: '#FF4757' }}>
+                ❌ No
               </button>
             </div>
           </div>

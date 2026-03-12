@@ -295,7 +295,7 @@ export const BADGES = [
     descF: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
     descM: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
     shareText: 'Ho trovato lavoro! 🌟 Ho tracciato ogni candidatura, ogni colloquio, ogni ghosting su Le faremo sapere. Ne è valsa la pena.',
-    color: '#10B981', bg: '#0a1a0a',
+    color: '#FFD700', bg: '#1a1500',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><path d="M20 34l8 8 16-18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="32" cy="32" r="18" stroke="white" stroke-width="2" fill="none" opacity="0.4"/><path d="M32 10 L34 18 L32 16 L30 18 Z" fill="white" opacity="0.6"/><path d="M32 54 L34 46 L32 48 L30 46 Z" fill="white" opacity="0.6"/><path d="M10 32 L18 30 L16 32 L18 34 Z" fill="white" opacity="0.6"/><path d="M54 32 L46 30 L48 32 L46 34 Z" fill="white" opacity="0.6"/></svg>',
     check: (s) => s.assunta >= 1
   },
