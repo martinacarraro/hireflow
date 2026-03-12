@@ -2,31 +2,23 @@
 
 const CACHE = 'lfs-v1'
 
-self.addEventListener('install', e => {
-  self.skipWaiting()
-})
+const GHOST_ICON = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">👻</text></svg>')}`
 
-self.addEventListener('activate', e => {
-  e.waitUntil(self.clients.claim())
-})
+self.addEventListener('install', e => { self.skipWaiting() })
+self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()) })
 
-// Minimal fetch handler — prevents Chrome from showing persistent SW notification
 self.addEventListener('fetch', e => {
-  // Only handle navigation requests with network-first
   if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match('/index.html'))
-    )
+    e.respondWith(fetch(e.request).catch(() => caches.match('/index.html')))
   }
 })
 
 self.addEventListener('push', event => {
   const data = event.data?.json() || {}
   event.waitUntil(
-    self.registration.showNotification(data.title || '🔔 Le faremo sapere', {
+    self.registration.showNotification(data.title || '👻 Le faremo sapere', {
       body: data.body || '',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: GHOST_ICON,
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' }
     })
