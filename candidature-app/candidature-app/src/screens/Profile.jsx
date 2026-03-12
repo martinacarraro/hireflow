@@ -702,7 +702,7 @@ export default function Profile() {
               {linkedinPending}
             </div>
             <p className="text-xs text-center" style={{ color: '#c4b5fd' }}>
-              ✨ Apriamo LinkedIn — il testo si incollerà automaticamente nel tuo post
+              ✨ Il testo è già copiato — incollalo nel post LinkedIn
             </p>
             <button onClick={() => {
               window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank')
