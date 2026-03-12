@@ -431,8 +431,25 @@ export function AppProvider({ children }) {
     sentNotifs.current.add(key)
     const notif = { id: Date.now(), title, body, read: false, time: new Date().toISOString(), candidaturaId }
     setNotifications(prev => [notif, ...prev.slice(0, 49)])
+    // Notifica browser se app aperta
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/icon-192.png', badge: '/icon-192.png' })
+      navigator.serviceWorker?.ready.then(reg => {
+        reg.showNotification(title, { body, icon: '/icon-192.png', badge: '/icon-192.png', vibrate: [200,100,200] })
+      }).catch(() => {
+        new Notification(title, { body, icon: '/icon-192.png', badge: '/icon-192.png' })
+      })
+    }
+    // Invia anche via Web Push server-side (arriva anche con app chiusa)
+    if (user) {
+      supabase.from('user_profiles').select('push_subscription').eq('id', user.id).single()
+        .then(({ data }) => {
+          if (!data?.push_subscription) return
+          fetch('/api/send-push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription: data.push_subscription, title, body, url: '/' })
+          }).catch(() => {})
+        })
     }
   }
 
