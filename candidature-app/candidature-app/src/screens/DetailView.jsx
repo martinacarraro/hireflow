@@ -113,6 +113,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     setSaved(true)
     setIsDirty(false)
     onUpdate?.()
+    // Reset "Salvato!" dopo 2s
+    setTimeout(() => setSaved(false), 2000)
   }
 
   const sendFeedback = async () => {
@@ -159,6 +161,126 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const checklistPct = checklist.length ? (doneCount / checklist.length) * 100 : 0
   const cfg = STATUS_CONFIG[form.stato] || STATUS_CONFIG['Inviata']
 
+  // ── CELEBRATION OVERLAY — globale, visibile su qualsiasi vista ──
+  const CelebrationOverlay = showAssuntaCelebration ? (() => {
+    const pieces = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 1.5,
+      dur: 1.8 + Math.random() * 1.2,
+      color: ['#7B2FFF','#FF2D8B','#10B981','#FBBF24','#60A5FA','#F87171','#C4B5FD','#34D399'][i % 8],
+      size: 7 + Math.random() * 8,
+      rot: Math.random() * 360,
+      shape: i % 3 === 0 ? 'circle' : 'rect',
+    }))
+    return (
+      <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'auto', background: 'rgba(10,10,26,0.96)' }}>
+        <style>{`
+          @keyframes confettiFall {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+          }
+          @keyframes celebPop {
+            0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
+            60%  { transform: scale(1.08) translateY(0); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+          }
+        `}</style>
+        {pieces.map(p => (
+          <div key={p.id} style={{
+            position: 'absolute', left: p.left + 'vw', top: -20,
+            width: p.size, height: p.shape === 'circle' ? p.size : p.size * 0.4,
+            borderRadius: p.shape === 'circle' ? '50%' : '2px',
+            background: p.color, transform: `rotate(${p.rot}deg)`,
+            animation: `confettiFall ${p.dur}s ${p.delay}s ease-in both`,
+          }} />
+        ))}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+          style={{ animation: 'celebPop 0.6s 0.2s ease-out both' }}>
+          <div style={{ fontSize: 72, lineHeight: 1, marginBottom: 16 }}>🏆</div>
+          <h1 style={{
+            fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1.1,
+            textShadow: '0 0 40px rgba(123,47,255,0.9), 0 2px 8px rgba(0,0,0,0.8)',
+            marginBottom: 8,
+          }}>
+            {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
+          </h1>
+          <p style={{
+            fontSize: 22, fontWeight: 800, marginBottom: 8,
+            background: 'linear-gradient(135deg,#10B981,#7B2FFF)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
+            {form.azienda} 🌟
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 280, lineHeight: 1.5 }}>
+            {profile?.nome ? profile.nome + ', ogni' : 'Ogni'} candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
+          </p>
+          <div style={{ marginTop: 16, fontSize: 36 }}>🎉🥂✨</div>
+        </div>
+      </div>
+    )
+  })() : null
+
+  // ── REVIEW PROMPT — globale, visibile su qualsiasi vista ──
+  const ReviewPrompt = showReviewPrompt ? (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
+      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}>
+      <div className="card w-full max-w-sm space-y-4" style={{ borderColor: 'rgba(123,47,255,0.4)', background: 'linear-gradient(135deg, rgba(123,47,255,0.07), rgba(255,45,139,0.05))' }}>
+        {fbStep === 0 ? (<>
+          <div className="text-center">
+            <div className="text-4xl mb-2">💜</div>
+            <h3 className="text-lg font-bold text-txt">Un ultimo favore?</h3>
+            <p className="text-xs text-muted mt-1">
+              Hai trovato lavoro con l'app — il tuo feedback vale oro per migliorarla per chi verrà dopo di te 🙏
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">L'app ti ha aiutato?</p>
+            <div className="flex gap-2">
+              {['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco'].map(opt => (
+                <button key={opt} onClick={() => setFbUtilita(opt)}
+                  className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95"
+                  style={{
+                    background: fbUtilita === opt ? 'rgba(123,47,255,0.25)' : 'transparent',
+                    borderColor: fbUtilita === opt ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
+                    color: fbUtilita === opt ? '#c4b5fd' : 'rgba(240,240,255,0.5)',
+                  }}>{opt}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa ti è piaciuto di più?</p>
+            <input className="input-field text-sm" placeholder="Es: tracciare tutto in un posto..."
+              value={fbCosa} onChange={e => setFbCosa(e.target.value)} />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa miglioreresti?</p>
+            <input className="input-field text-sm" placeholder="Es: vorrei poter esportare..."
+              value={fbMigliorare} onChange={e => setFbMigliorare(e.target.value)} />
+          </div>
+          <button onClick={sendFeedback} disabled={fbSending || !fbUtilita}
+            className="w-full py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: (!fbUtilita || fbSending) ? 0.5 : 1 }}>
+            {fbSending ? '⏳ Invio...' : '💜 Invia feedback'}
+          </button>
+          <button onClick={chiudiReview} className="text-xs text-disabled py-1 w-full text-center">
+            Salta
+          </button>
+        </>) : (
+          <div className="text-center space-y-3 py-4">
+            <div className="text-5xl">🙏</div>
+            <h3 className="text-lg font-bold text-txt">Grazie mille!</h3>
+            <p className="text-sm text-muted">Il tuo feedback aiuterà tanti altri a trovare lavoro. In bocca al lupo per il nuovo percorso! 💜</p>
+            <button onClick={chiudiReview} className="btn-primary w-full py-3 text-sm font-bold mt-2">
+              🚀 Vai!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null
+
   // ── MODALITÀ INTERVISTA ────────────────────────────────────────
   if (interviewMode) return (
     <div className="screen" style={{ background: '#0a0a1a' }}>
@@ -176,7 +298,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <p className="text-purple-soft font-bold text-lg mt-2">⏰ {form.ora_colloquio.slice(0,5)}</p>
           )}
         </div>
-
         {checklist.length > 0 && (
           <div className="card" style={{ borderColor: 'rgba(139,92,246,0.3)' }}>
             <p className="text-xs font-bold text-purple-soft mb-3 uppercase tracking-wider">✅ Checklist pre-colloquio</p>
@@ -194,28 +315,24 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </div>
         )}
-
         {form.domande_mie && (
           <div className="card" style={{ borderColor: 'rgba(34,197,94,0.3)' }}>
             <p className="text-xs font-bold text-green-400 mb-2 uppercase tracking-wider">🙋 Le mie domande</p>
             <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.domande_mie}</p>
           </div>
         )}
-
         {form.note && (
           <div className="card">
             <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">📝 Le mie note</p>
             <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
           </div>
         )}
-
         {form.contatto_hr && (
           <div className="card">
             <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">👤 Nome referente</p>
             <p className="text-sm text-txt font-semibold">{form.contatto_hr}</p>
           </div>
         )}
-
         {form.sede && (
           <a href={profile?.indirizzo_home
               ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`
@@ -227,11 +344,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <span className="ml-auto text-muted">→</span>
           </a>
         )}
-
         <div className="pb-8">
           <p className="text-center text-xs text-muted">💜 Respira. {profile?.genere === 'f' ? 'Sei prontissima' : profile?.genere === 'm' ? 'Sei prontissimo' : 'Sei prontissim*'}. In bocca al lupo!</p>
         </div>
       </div>
+      {CelebrationOverlay}
+      {ReviewPrompt}
     </div>
   )
 
@@ -253,7 +371,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     ]
     return (
       <div className="screen" style={{ background: '#0E0E1A' }}>
-        {/* Header */}
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
           <button onClick={async () => {
             if (isDirty) {
@@ -273,10 +390,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </div>
         </div>
-
         <div className="flex-1 scrollable px-4 pb-10 space-y-4">
-
-          {/* Trophy hero */}
           <div className="rounded-3xl p-6 text-center" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(16,185,129,0.1))', border: '1px solid rgba(245,158,11,0.3)' }}>
             <div className="text-6xl mb-3">🏆</div>
             <h2 className="text-2xl font-bold mb-1" style={{ fontFamily: 'var(--font-heading, sans-serif)', background: 'linear-gradient(135deg,#F59E0B,#10B981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -284,8 +398,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </h2>
             <p className="text-muted text-sm">Meritata. Ora decidi con calma. 💜</p>
           </div>
-
-          {/* COME TI SENTI? */}
           <div className="card space-y-3">
             <p className="text-xs font-bold text-muted uppercase tracking-wider">🫀 Come ti senti riguardo a questa offerta?</p>
             <div className="flex gap-2 flex-wrap">
@@ -302,17 +414,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               ))}
             </div>
           </div>
-
-          {/* HAI ACCETTATO? */}
           <div className="card space-y-3" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
             <p className="text-sm font-bold text-txt text-center">🤝 Accetti l'offerta?</p>
             <p className="text-xs text-muted text-center">Scegli — non ci sono risposte giuste o sbagliate</p>
             <div className="flex gap-3">
               <button onClick={async () => {
-                // Mostra subito la celebration — il form viene aggiornato dopo 2.5s dall'useEffect
                 triggerConfetti()
                 setShowAssuntaCelebration(true)
-                // Salva in background
                 try {
                   await updateCandidatura(c.id, {
                     stato: 'Assunta',
@@ -344,8 +452,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               </button>
             </div>
           </div>
-
-          {/* Dettagli offerta */}
           <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>
             <p className="text-xs font-bold text-green-400 uppercase tracking-wider">💰 Dettagli offerta</p>
             <div>
@@ -370,8 +476,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 value={form.offerta_note || ''} onChange={e => set('offerta_note', e.target.value)} />
             </div>
           </div>
-
-          {/* BENEFIT / WELFARE */}
           <div className="card space-y-3">
             <p className="text-xs font-bold text-muted uppercase tracking-wider">🎁 Benefit inclusi</p>
             <div className="flex flex-wrap gap-2">
@@ -397,154 +501,20 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 value={form.welfare_note || ''} onChange={e => set('welfare_note', e.target.value)} />
             </div>
           </div>
-
           {form.note && (
             <div className="card">
               <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">📝 Le mie note</p>
               <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
             </div>
           )}
-
           <button onClick={handleSave} disabled={saving}
             className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
             style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: saving ? 0.6 : 1 }}>
             {saving ? '⏳ Salvataggio...' : saved ? '✅ Salvato!' : '💾 Salva dettagli offerta'}
           </button>
-
         </div>
-
-        {/* ── CELEBRATION OVERLAY ── */}
-        {showAssuntaCelebration && (() => {
-          const pieces = Array.from({ length: 60 }, (_, i) => ({
-            id: i,
-            left: Math.random() * 100,
-            delay: Math.random() * 1.5,
-            dur: 1.8 + Math.random() * 1.2,
-            color: ['#7B2FFF','#FF2D8B','#10B981','#FBBF24','#60A5FA','#F87171','#C4B5FD','#34D399'][i % 8],
-            size: 7 + Math.random() * 8,
-            rot: Math.random() * 360,
-            shape: i % 3 === 0 ? 'circle' : 'rect',
-          }))
-          return (
-            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'auto', background: 'rgba(10,10,26,0.96)' }}>
-              <style>{`
-                @keyframes confettiFall {
-                  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-                  80%  { opacity: 1; }
-                  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-                }
-                @keyframes celebPop {
-                  0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
-                  60%  { transform: scale(1.08) translateY(0); opacity: 1; }
-                  100% { transform: scale(1) translateY(0); opacity: 1; }
-                }
-              `}</style>
-              {pieces.map(p => (
-                <div key={p.id} style={{
-                  position: 'absolute',
-                  left: p.left + 'vw',
-                  top: -20,
-                  width: p.size,
-                  height: p.shape === 'circle' ? p.size : p.size * 0.4,
-                  borderRadius: p.shape === 'circle' ? '50%' : '2px',
-                  background: p.color,
-                  transform: `rotate(${p.rot}deg)`,
-                  animation: `confettiFall ${p.dur}s ${p.delay}s ease-in both`,
-                }} />
-              ))}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
-                style={{ animation: 'celebPop 0.6s 0.2s ease-out both' }}>
-                <div style={{ fontSize: 72, lineHeight: 1, marginBottom: 16 }}>🏆</div>
-                <h1 style={{
-                  fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1.1,
-                  textShadow: '0 0 40px rgba(123,47,255,0.9), 0 2px 8px rgba(0,0,0,0.8)',
-                  marginBottom: 8,
-                }}>
-                  {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
-                </h1>
-                <p style={{
-                  fontSize: 22, fontWeight: 800, marginBottom: 8,
-                  background: 'linear-gradient(135deg,#10B981,#7B2FFF)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                }}>
-                  {form.azienda} 🌟
-                </p>
-                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 280, lineHeight: 1.5 }}>
-                  {profile?.nome ? profile.nome + ', ogni' : 'Ogni'} candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
-                </p>
-                <div style={{ marginTop: 16, fontSize: 36 }}>🎉🥂✨</div>
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* ── REVIEW PROMPT — appare dopo la celebration ── */}
-        {showReviewPrompt && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
-            style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}>
-            <div className="card w-full max-w-sm space-y-4" style={{ borderColor: 'rgba(123,47,255,0.4)', background: 'linear-gradient(135deg, rgba(123,47,255,0.07), rgba(255,45,139,0.05))' }}>
-
-              {fbStep === 0 ? (<>
-                <div className="text-center">
-                  <div className="text-4xl mb-2">💜</div>
-                  <h3 className="text-lg font-bold text-txt" style={{ fontFamily: 'var(--font-heading, sans-serif)' }}>
-                    Un ultimo favore?
-                  </h3>
-                  <p className="text-xs text-muted mt-1">
-                    Hai trovato lavoro con l'app — il tuo feedback vale oro per migliorarla per chi verrà dopo di te 🙏
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">L'app ti ha aiutato?</p>
-                  <div className="flex gap-2">
-                    {['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco'].map(opt => (
-                      <button key={opt} onClick={() => setFbUtilita(opt)}
-                        className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95"
-                        style={{
-                          background: fbUtilita === opt ? 'rgba(123,47,255,0.25)' : 'transparent',
-                          borderColor: fbUtilita === opt ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
-                          color: fbUtilita === opt ? '#c4b5fd' : 'rgba(240,240,255,0.5)',
-                        }}>{opt}</button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa ti è piaciuto di più?</p>
-                  <input className="input-field text-sm" placeholder="Es: tracciare tutto in un posto..."
-                    value={fbCosa} onChange={e => setFbCosa(e.target.value)} />
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa miglioreresti?</p>
-                  <input className="input-field text-sm" placeholder="Es: vorrei poter esportare..."
-                    value={fbMigliorare} onChange={e => setFbMigliorare(e.target.value)} />
-                </div>
-
-                <button onClick={sendFeedback} disabled={fbSending || !fbUtilita}
-                  className="w-full py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: (!fbUtilita || fbSending) ? 0.5 : 1 }}>
-                  {fbSending ? '⏳ Invio...' : '💜 Invia feedback'}
-                </button>
-                {/* Salta — aggiorna form e va alla vista Assunta */}
-                <button onClick={chiudiReview} className="text-xs text-disabled py-1 w-full text-center">
-                  Salta
-                </button>
-              </>) : (
-                <div className="text-center space-y-3 py-4">
-                  <div className="text-5xl">🙏</div>
-                  <h3 className="text-lg font-bold text-txt">Grazie mille!</h3>
-                  <p className="text-sm text-muted">Il tuo feedback aiuterà tanti altri a trovare lavoro. In bocca al lupo per il nuovo percorso! 💜</p>
-                  {/* Vai! — aggiorna form e va alla vista Assunta */}
-                  <button onClick={chiudiReview} className="btn-primary w-full py-3 text-sm font-bold mt-2">
-                    🚀 Vai!
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {CelebrationOverlay}
+        {ReviewPrompt}
       </div>
     )
   }
@@ -559,7 +529,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </div>
         <div className="flex-1 scrollable px-4 pb-8 space-y-4">
 
-          {/* Trophy card — colore semplice, niente gradiente clip che scompare */}
           <div className="rounded-3xl p-6 text-center" style={{
             background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(123,47,255,0.15))',
             border: '1px solid rgba(16,185,129,0.3)',
@@ -571,7 +540,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             <p className="text-muted text-sm">Hai accettato l'offerta. Meritata. 🎉</p>
           </div>
 
-          {/* Azienda card */}
           <div className="card flex items-center gap-4">
             <CompanyAvatar name={form.azienda} size={52} domain={form.azienda_domain} />
             <div className="flex-1 min-w-0">
@@ -581,10 +549,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </div>
 
-          {/* Dettagli */}
           <div className="card space-y-0">
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">DETTAGLI</p>
-
             <div className="flex justify-between items-center py-3 border-b border-border">
               <span className="text-sm text-muted">📅 Data inizio</span>
               {editingDataInizio ? (
@@ -612,7 +578,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 </button>
               )}
             </div>
-
             {form.sede && (
               <div className="flex justify-between items-center py-3 border-b border-border">
                 <span className="text-sm text-muted">📍 Sede</span>
@@ -642,12 +607,15 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           )}
 
+          {/* FIX: bottone Salva con feedback visivo */}
           <button onClick={handleSave} disabled={saving}
             className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
-            style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: saving ? 0.6 : 1 }}>
-            {saving ? '⏳ Salvataggio...' : '💾 Salva'}
+            style={{ background: saved ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: saving ? 0.6 : 1 }}>
+            {saving ? '⏳ Salvataggio...' : saved ? '✅ Salvato!' : '💾 Salva'}
           </button>
         </div>
+        {/* Review prompt visibile anche dalla vista Assunta */}
+        {ReviewPrompt}
       </div>
     )
   }
@@ -655,7 +623,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   // ── VISTA NORMALE ─────────────────────────────────────────────
   return (
     <div className="screen">
-      {/* Header */}
       <div className="flex-shrink-0" style={{ background: 'linear-gradient(180deg, #1F1F38 0%, #0E0E1A 100%)' }}>
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-2">
           <button onClick={async () => {
@@ -941,9 +908,9 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   value={form.offerta_scadenza || ''} onChange={e => set('offerta_scadenza', e.target.value)} />
               </div>
               <div>
-                <p className="text-xs text-muted mb-1">📋 Note offerta (smart working, benefit, ecc.)</p>
+                <p className="text-xs text-muted mb-1">📋 Note offerta</p>
                 <textarea className="input-field text-sm" rows={3}
-                  placeholder="Es: 2 giorni da casa, ticket restaurant, 25 gg ferie..."
+                  placeholder="Es: 2 giorni da casa, ticket restaurant..."
                   value={form.offerta_note || ''} onChange={e => set('offerta_note', e.target.value)} />
               </div>
               <div>
@@ -1109,54 +1076,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         danger
       />
 
-      {/* ── CELEBRATION dalla vista normale ── */}
-      {showAssuntaCelebration && (() => {
-        const pieces = Array.from({ length: 60 }, (_, i) => ({
-          id: i,
-          left: Math.random() * 100,
-          delay: Math.random() * 1.5,
-          dur: 1.8 + Math.random() * 1.2,
-          color: ['#7B2FFF','#FF2D8B','#10B981','#FBBF24','#60A5FA','#F87171','#C4B5FD','#34D399'][i % 8],
-          size: 7 + Math.random() * 8,
-          rot: Math.random() * 360,
-          shape: i % 3 === 0 ? 'circle' : 'rect',
-        }))
-        return (
-          <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'auto', background: 'rgba(10,10,26,0.96)' }}>
-            <style>{`
-              @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 80%{opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
-              @keyframes celebPop { 0%{transform:scale(0.5) translateY(30px);opacity:0} 60%{transform:scale(1.08) translateY(0);opacity:1} 100%{transform:scale(1) translateY(0);opacity:1} }
-            `}</style>
-            {pieces.map(p => (
-              <div key={p.id} style={{
-                position: 'absolute', left: p.left + 'vw', top: -20,
-                width: p.size, height: p.shape === 'circle' ? p.size : p.size * 0.4,
-                borderRadius: p.shape === 'circle' ? '50%' : '2px',
-                background: p.color, transform: `rotate(${p.rot}deg)`,
-                animation: `confettiFall ${p.dur}s ${p.delay}s ease-in both`,
-              }} />
-            ))}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
-              style={{ animation: 'celebPop 0.6s 0.2s ease-out both' }}>
-              <div style={{ fontSize: 72, lineHeight: 1, marginBottom: 16 }}>🏆</div>
-              <h1 style={{ fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1.1,
-                textShadow: '0 0 40px rgba(123,47,255,0.9), 0 2px 8px rgba(0,0,0,0.8)', marginBottom: 8 }}>
-                {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
-              </h1>
-              <p style={{ fontSize: 22, fontWeight: 800, marginBottom: 8,
-                background: 'linear-gradient(135deg,#10B981,#7B2FFF)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {form.azienda} 🌟
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 280, lineHeight: 1.5 }}>
-                {profile?.nome ? profile.nome + ', ogni' : 'Ogni'} candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
-              </p>
-              <div style={{ marginTop: 16, fontSize: 36 }}>🎉🥂✨</div>
-            </div>
-          </div>
-        )
-      })()}
-
+      {CelebrationOverlay}
+      {ReviewPrompt}
     </div>
   )
 }
