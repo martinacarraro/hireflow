@@ -29,6 +29,7 @@ export default function App() {
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showResetPassword, setShowResetPassword] = useState(false)
+  const [showReviewPopup, setShowReviewPopup] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false) // initialized after profile loads
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
@@ -97,6 +98,20 @@ export default function App() {
       if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
     }
   }, [user, isGuest, loading, dataLoading])
+
+  // Mostra popup recensione dopo 5 giorni di utilizzo (una volta sola)
+  useEffect(() => {
+    if (!user) return
+    const reviewKey = `lfs_review_shown_${user.id}`
+    if (localStorage.getItem(reviewKey)) return
+    const registered = new Date(user.created_at)
+    const daysSince = Math.floor((new Date() - registered) / (1000 * 60 * 60 * 24))
+    if (daysSince >= 5) {
+      // Piccolo delay per non sparare subito all'apertura
+      const t = setTimeout(() => setShowReviewPopup(true), 3000)
+      return () => clearTimeout(t)
+    }
+  }, [user])
 
   if (showSplash || loading) {
     return <Splash onDone={() => setShowSplash(false)} />
@@ -211,6 +226,10 @@ export default function App() {
       )}
       <Toast toast={toast} />
       <Confetti active={confetti} />
+      {showReviewPopup && <ReviewPopup user={user} profile={profile} onClose={() => {
+        localStorage.setItem(`lfs_review_shown_${user.id}`, '1')
+        setShowReviewPopup(false)
+      }} />}
     </div>
   )
 }
@@ -302,6 +321,113 @@ function FirstTimeIntro({ onDone, onSkip }) {
           style={{ background: 'white', color: '#7B2FFF' }}>
           {isLast ? '🚀 Inizia a tracciare' : 'Avanti →'}
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── REVIEW POPUP — appare dopo 5 giorni, una volta sola ─────────────────────
+function ReviewPopup({ user, profile, onClose }) {
+  const [step, setStep] = useState(0)        // 0 = domanda principale, 1 = grazie
+  const [rating, setRating] = useState(null) // 1-5 stelle
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+
+  const nome = profile?.nome ? `, ${profile.nome}` : ''
+  const stars = [1, 2, 3, 4, 5]
+
+  const handleSubmit = async () => {
+    if (!rating) return
+    setSending(true)
+    try {
+      await fetch('https://formspree.io/f/xpqydppa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: 'recensione_5gg',
+          stelle: rating,
+          testo: text,
+          utente: user?.id,
+          nome: profile?.nome || '—',
+          genere: profile?.genere || '—',
+        })
+      })
+    } catch(e) {}
+    setSending(false)
+    setStep(1)
+    setTimeout(onClose, 2500)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6"
+      style={{ background: 'rgba(10,10,26,0.85)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-sm rounded-3xl overflow-hidden"
+        style={{ background: '#13131F', border: '1px solid rgba(123,47,255,0.3)' }}
+        onClick={e => e.stopPropagation()}>
+
+        {step === 0 ? (
+          <div className="p-6 space-y-5">
+            {/* Header */}
+            <div className="text-center space-y-1">
+              <div className="text-4xl mb-2">👻</div>
+              <h2 className="text-lg font-bold text-txt">Come ti trovi{nome}?</h2>
+              <p className="text-xs text-muted leading-relaxed">
+                Usi l'app da qualche giorno — la tua opinione conta davvero per migliorarla 💜
+              </p>
+            </div>
+
+            {/* Stelle */}
+            <div className="flex justify-center gap-3">
+              {stars.map(s => (
+                <button key={s} onClick={() => setRating(s)}
+                  className="text-4xl transition-all active:scale-110"
+                  style={{ opacity: rating && s > rating ? 0.35 : 1,
+                           filter: rating && s <= rating ? 'drop-shadow(0 0 6px #FBBF24)' : 'none' }}>
+                  {s <= (rating || 0) ? '⭐' : '☆'}
+                </button>
+              ))}
+            </div>
+
+            {/* Testo opzionale */}
+            {rating && (
+              <textarea
+                className="input-field text-sm w-full"
+                rows={3}
+                placeholder={rating >= 4
+                  ? 'Cosa ti piace di più? (opzionale)'
+                  : 'Cosa possiamo migliorare? (opzionale)'}
+                value={text}
+                onChange={e => setText(e.target.value)}
+                autoFocus
+              />
+            )}
+
+            {/* Bottoni */}
+            <div className="flex gap-3">
+              <button onClick={onClose}
+                className="flex-1 py-3 rounded-2xl text-sm text-muted border border-border active:scale-95 transition-all">
+                Dopo
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!rating || sending}
+                className="flex-1 py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
+                style={{
+                  background: rating ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.1)',
+                  opacity: rating ? 1 : 0.5
+                }}>
+                {sending ? '...' : '✉️ Invia'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 text-center space-y-3">
+            <div className="text-5xl">💜</div>
+            <h3 className="text-lg font-bold text-txt">Grazie mille!</h3>
+            <p className="text-sm text-muted">Il tuo feedback ci aiuta a migliorare ogni giorno.</p>
+          </div>
+        )}
       </div>
     </div>
   )
