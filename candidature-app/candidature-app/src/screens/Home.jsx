@@ -339,7 +339,9 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
                 className="w-full flex items-center justify-between mb-2 active:opacity-70">
                 <div className="flex items-center gap-2">
                   <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: cfg.color }}>
-                    {cfg.emoji} {stato}
+                    {cfg.emoji} {stato === 'Assunta'
+  ? (profile?.genere === 'm' ? 'Assunto' : profile?.genere === 'nb' ? 'Assunt*' : 'Assunta')
+  : stato}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                     style={{ color: cfg.color, background: cfg.bg }}>
