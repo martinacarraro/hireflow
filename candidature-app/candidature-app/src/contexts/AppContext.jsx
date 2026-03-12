@@ -189,12 +189,14 @@ export function AppProvider({ children }) {
       updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
     }
     // Filter to only DB fields
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta','domande_fatte','domande_mie','feeling_aggiornato','contatto_hr','data_inizio']
+    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta','offerta_feeling','domande_fatte','domande_mie','feeling_aggiornato','contatto_hr','data_inizio']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
+    // welfare deve essere sempre un array (JSONB)
+    if ('welfare' in clean && !Array.isArray(clean.welfare)) clean.welfare = []
     const { data: row, error } = await supabase
       .from('candidature').update(clean).eq('id', id).select().single()
-    if (error) { showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return }
+    if (error) { console.error('Supabase update error:', error.message, error.details, error.hint, JSON.stringify(clean)); showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return }
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
