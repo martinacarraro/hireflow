@@ -35,10 +35,16 @@ export function AuthProvider({ children }) {
     supabase.auth.signInWithPassword({ email, password })
 
   const signUpWithEmail = (email, password) =>
-    supabase.auth.signUp({ email, password })
+    supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'https://lefaremosapere.vercel.app'
+      }
+    })
 
   const resetPassword = (email) =>
-    supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin })
+    supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://lefaremosapere.vercel.app' })
 
   const convertGuestToAccount = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({ email, password })

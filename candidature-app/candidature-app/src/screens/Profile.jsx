@@ -125,6 +125,7 @@ export default function Profile() {
   const [importing, setImporting]             = useState(false)
   const [importError, setImportError]         = useState('')
   const [selectedBadge, setSelectedBadge]     = useState(null)
+  const [linkedinPending, setLinkedinPending] = useState(null)
   const [editInfoBase, setEditInfoBase]       = useState(false)
   const [recalcLoading, setRecalcLoading]     = useState(false)
   const [infoGenere, setInfoGenere]           = useState(profile?.genere || '')
@@ -486,25 +487,46 @@ export default function Profile() {
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${(profile?.notifiche_push_globali ?? true) ? 'left-[26px]' : 'left-0.5'}`} />
             </button>
           </div>
-          {/* Bottone esplicito se il permesso non è ancora stato concesso */}
-          {typeof Notification !== 'undefined' && Notification.permission !== 'granted' && (
-            <button
-              onClick={async () => {
+          {/* Stato permesso notifiche */}
+          {typeof Notification !== 'undefined' && (() => {
+            const perm = Notification.permission
+            if (perm === 'granted') return (
+              <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="text-xs font-semibold text-green-400">Notifiche attive</p>
+                  <p className="text-[10px] text-muted">Riceverai aggiornamenti sulle candidature</p>
+                </div>
+              </div>
+            )
+            if (perm === 'denied') return (
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                  <span className="text-lg">🔕</span>
+                  <div>
+                    <p className="text-xs font-semibold text-red-400">Notifiche bloccate</p>
+                    <p className="text-[10px] text-muted">Devi abilitarle dalle impostazioni</p>
+                  </div>
+                </div>
+                <button onClick={() => {
+                  if (/android/i.test(navigator.userAgent)) window.open('intent://settings#Intent;scheme=android-app;end', '_blank')
+                  else alert('Vai in Impostazioni → App → Le faremo sapere → Notifiche → Abilita')
+                }} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95 transition-all">
+                  ⚙️ Apri impostazioni notifiche
+                </button>
+              </div>
+            )
+            return (
+              <button onClick={async () => {
                 const ok = await requestNotificationPermission()
                 if (ok) updateProfile({ notifiche_push_globali: true })
-              }}
-              className="w-full mt-1 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color: 'white' }}>
-              🔔 Attiva notifiche push
-            </button>
-          )}
-          {typeof Notification !== 'undefined' && Notification.permission === 'granted' && (
-            <p className="text-xs text-green-400 mt-1">✅ Notifiche push attive</p>
-          )}
-          {typeof Notification !== 'undefined' && Notification.permission === 'denied' && (
-            <p className="text-[10px] text-red mt-1">❌ Notifiche bloccate — abilitale dalle impostazioni del browser.</p>
-          )}
-          <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Le notifiche su mobile richiedono che l'app sia installata come PWA.</p>
+              }} className="w-full mt-2 py-3 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color: 'white' }}>
+                🔔 Abilita notifiche push
+              </button>
+            )
+          })()}
+          <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Richiede l'app installata come PWA per funzionare su mobile.</p>
         </div>
 
         {/* Archivio */}
@@ -661,6 +683,40 @@ export default function Profile() {
         </div>
       )}
 
+      {/* LinkedIn share modal — mostra testo, aspetta copia, poi apre LinkedIn */}
+      {linkedinPending && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 bg-black/70" onClick={() => setLinkedinPending(null)}>
+          <div className="card w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}
+            style={{ borderColor: 'rgba(10,102,194,0.5)', background: 'rgba(10,10,30,0.98)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#0A66C2' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-txt">Condividi su LinkedIn</p>
+                <p className="text-xs text-muted">Il testo è già copiato negli appunti 📋</p>
+              </div>
+            </div>
+            <div className="rounded-xl p-3 text-xs text-muted leading-relaxed whitespace-pre-wrap"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', maxHeight: 120, overflowY: 'auto' }}>
+              {linkedinPending}
+            </div>
+            <p className="text-xs text-center" style={{ color: '#c4b5fd' }}>
+              ✨ Apriamo LinkedIn — il testo si incollerà automaticamente nel tuo post
+            </p>
+            <button onClick={() => {
+              window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank')
+              setLinkedinPending(null)
+            }} className="w-full py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
+              style={{ background: '#0A66C2' }}>
+              Apri LinkedIn e incolla →
+            </button>
+            <button onClick={() => setLinkedinPending(null)}
+              className="text-xs text-muted text-center w-full py-1">Annulla</button>
+          </div>
+        </div>
+      )}
+
       {selectedBadge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/60" onClick={() => setSelectedBadge(null)}>
           <div className="card max-w-xs w-full text-center" onClick={e => e.stopPropagation()}
@@ -671,15 +727,10 @@ export default function Profile() {
             <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere)}</p>
             <div className="space-y-2">
               <button
-                onClick={() => {
-                  const postText = `${selectedBadge.shareText}\n\n👉 lefaremosapere-mocha.vercel.app`
-                  // Copy to clipboard, then open LinkedIn
-                  if (navigator.clipboard) {
-                    navigator.clipboard.writeText(postText).catch(() => {})
-                  }
-                  const linkedinUrl = `https://www.linkedin.com/feed/?shareActive=true`
-                  window.open(linkedinUrl, '_blank')
-                  setTimeout(() => alert('📋 Testo copiato! Incollalo nel post LinkedIn che si è aperto.'), 500)
+                onClick={async () => {
+                  const postText = `${selectedBadge.shareText}\n\n👉 lefaremosapere.vercel.app`
+                  try { await navigator.clipboard.writeText(postText) } catch(e) {}
+                  setLinkedinPending(postText)
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
                 style={{ background: '#0A66C2', color: 'white' }}>
