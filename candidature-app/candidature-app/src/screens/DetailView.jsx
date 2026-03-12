@@ -353,60 +353,43 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             </div>
           </div>
 
-          {/* HAI ACCETTATO? */}
-          {!form.offerta_risposta ? (
-            <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' }}>
-              <p className="text-sm font-bold text-txt text-center">🤝 Hai già deciso?</p>
-              <div className="flex gap-3">
-                <button onClick={async () => {
-                  setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
-                  setSaving(true)
-                  await updateCandidatura(c.id, {
-                    stato: 'Assunta',
-                    offerta_risposta: 'si',
-                    offerta_ral: form.offerta_ral ? parseInt(form.offerta_ral) : null,
-                    offerta_scadenza: form.offerta_scadenza || null,
-                    offerta_note: form.offerta_note || null,
-                    offerta_feeling: form.offerta_feeling || null,
-                    data_inizio: form.data_inizio || null,
-                    welfare: welfareList,
-                    welfare_note: form.welfare_note || null,
-                  })
-                  setSaving(false)
-                  setIsDirty(false)
-                  await addXP(50)
-                  await checkBadges()
-                  triggerConfetti()
-                  setShowAssuntaCelebration(true)
-                }} className="flex-1 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 20px rgba(16,185,129,0.35)' }}>
-                  ✅ Sì, ho accettato!
-                </button>
-                <button onClick={async () => {
-                  setForm(f => ({ ...f, offerta_risposta: 'no' }))
-                  await updateCandidatura(c.id, { offerta_risposta: 'no', welfare: welfareList })
-                  setIsDirty(false)
-                }} className="flex-1 py-3 rounded-2xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
-                  ❌ No, per ora
-                </button>
-              </div>
+          {/* HAI ACCETTATO? — sempre visibile finché stato = Offerta ricevuta */}
+          <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' }}>
+            <p className="text-sm font-bold text-txt text-center">🤝 Hai già deciso?</p>
+            <div className="flex gap-3">
+              <button onClick={async () => {
+                setForm(f => ({ ...f, offerta_risposta: 'si', stato: 'Assunta' }))
+                setSaving(true)
+                await updateCandidatura(c.id, {
+                  stato: 'Assunta',
+                  offerta_risposta: 'si',
+                  offerta_ral: form.offerta_ral ? parseInt(form.offerta_ral) : null,
+                  offerta_scadenza: form.offerta_scadenza || null,
+                  offerta_note: form.offerta_note || null,
+                  offerta_feeling: form.offerta_feeling || null,
+                  data_inizio: form.data_inizio || null,
+                  welfare: welfareList,
+                  welfare_note: form.welfare_note || null,
+                })
+                setSaving(false)
+                setIsDirty(false)
+                await addXP(50)
+                await checkBadges()
+                triggerConfetti()
+                setShowAssuntaCelebration(true)
+              }} className="flex-1 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
+                style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 20px rgba(16,185,129,0.35)' }}>
+                ✅ Sì, ho accettato!
+              </button>
+              <button onClick={async () => {
+                setForm(f => ({ ...f, offerta_risposta: 'no' }))
+                await updateCandidatura(c.id, { offerta_risposta: 'no', welfare: welfareList })
+                setIsDirty(false)
+              }} className="flex-1 py-3 rounded-2xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
+                ❌ No, per ora
+              </button>
             </div>
-          ) : (
-            <div className="card space-y-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted">
-                  {form.offerta_risposta === 'si' ? "✅ Hai accettato l'offerta" : "❌ Hai declinato l'offerta"}
-                </span>
-                <button onClick={async () => {
-                  setForm(f => ({ ...f, offerta_risposta: null, stato: 'Offerta ricevuta' }))
-                  await updateCandidatura(c.id, { offerta_risposta: null, stato: 'Offerta ricevuta' })
-                  setIsDirty(false)
-                }} className="text-xs text-purple-soft underline active:opacity-60">
-                  Ho cliccato per sbaglio
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* Dettagli offerta */}
           <div className="card space-y-3" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>

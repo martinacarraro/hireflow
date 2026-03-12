@@ -373,9 +373,10 @@ export function AppProvider({ children }) {
       if (!earned.includes(badge.id) && badge.check(stats)) {
         newBadges.push(badge.id)
         const bName = profile?.genere === 'f' && badge.nameF ? badge.nameF : profile?.genere === 'm' && badge.nameM ? badge.nameM : badge.name
+        const bDesc = profile?.genere === 'f' && badge.descF ? badge.descF : profile?.genere === 'm' && badge.descM ? badge.descM : badge.desc
         showToast(`🎉 Badge sbloccato: ${bName}!`, 'success')
         triggerConfetti()
-        pushNotification(`🏅 Badge: ${bName}!`, bDesc || badge.desc)
+        pushNotification(`🏅 Badge: ${bName}!`, bDesc)
       }
     }
     if (newBadges.length) {
