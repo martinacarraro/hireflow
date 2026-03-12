@@ -477,7 +477,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             shape: i % 3 === 0 ? 'circle' : 'rect',
           }))
           return (
-            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'none' }}>
+            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'auto', background: 'rgba(10,10,26,0.95)' }}>
               <style>{`
                 @keyframes confettiFall {
                   0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
@@ -1202,7 +1202,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             shape: i % 3 === 0 ? 'circle' : 'rect',
           }))
           return (
-            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'none' }}>
+            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'auto', background: 'rgba(10,10,26,0.95)' }}>
               <style>{`
                 @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 80%{opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
                 @keyframes celebPop { 0%{transform:scale(0.5) translateY(30px);opacity:0} 60%{transform:scale(1.08) translateY(0);opacity:1} 100%{transform:scale(1) translateY(0);opacity:1} }
