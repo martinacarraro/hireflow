@@ -50,6 +50,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [saved, setSaved] = useState(false)
   const [interviewMode, setInterviewMode] = useState(false)
   const [showAssuntaCelebration, setShowAssuntaCelebration] = useState(false)
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackStep, setFeedbackStep] = useState(0)
   const [feedbackAnswers, setFeedbackAnswers] = useState({})
@@ -347,16 +348,14 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   ✅ Sì, ho accettato!
                 </button>
                 <button onClick={async () => {
-                  setForm(f => ({ ...f, offerta_risposta: 'no', stato: 'Rifiutata' }))
+                  setForm(f => ({ ...f, offerta_risposta: 'no' }))
                   await updateCandidatura(c.id, {
-                    stato: 'Rifiutata',
                     offerta_risposta: 'no',
                     welfare: welfareList,
                   })
                   setIsDirty(false)
-                  onBack()
                 }} className="flex-1 py-3 rounded-xl font-bold text-sm border border-border text-muted active:scale-95 transition-all">
-                  ❌ No, declino
+                  ❌ No, per ora
                 </button>
               </div>
             </div>
@@ -432,29 +431,127 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
 
         </div>
 
-        {/* Celebration overlay */}
-        {showAssuntaCelebration && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
-            style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}>
-            <div className="card w-full max-w-sm text-center" style={{ borderColor: 'rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,47,255,0.08))' }}>
-              <div className="text-6xl mb-3">🎉</div>
-              <h2 className="text-xl font-bold text-txt mb-1">
-                {profile?.genere === 'f' ? 'Sei stata assunta!' : profile?.genere === 'm' ? 'Sei stato assunto!' : 'Sei stat* assunt*!'}
-              </h2>
-              <p className="text-2xl font-bold mb-2" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {form.azienda} 🌟
-              </p>
-              <p className="text-sm text-muted leading-relaxed mb-4">
-                {profile?.nome ? `${profile.nome}, ce` : 'Ce'} l'hai fatta davvero. Ogni candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
-              </p>
-              <div className="text-xs text-muted mb-4 bg-surface rounded-xl p-3">🔥 +50 XP guadagnati!</div>
-              <button onClick={() => { setShowAssuntaCelebration(false); onUpdate?.() }}
-                className="btn-primary w-full py-3 text-sm font-bold">
-                🚀 Perfetto!
-              </button>
+        {/* Celebration overlay — auto-dismiss dopo 2s poi review */}
+        {showAssuntaCelebration && (() => {
+          setTimeout(() => {
+            setShowAssuntaCelebration(false)
+            setShowReviewPrompt(true)
+          }, 2000)
+          return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
+              style={{ background: 'rgba(0,0,0,0.75)' }}>
+              <div className="text-center space-y-4">
+                <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
+                <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
+                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading, sans-serif)', textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
+                  {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
+                </h2>
+                <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+                  {form.azienda} 🌟
+                </p>
+                <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
+
+        {/* Review prompt — dopo la celebrazione */}
+        {showReviewPrompt && (() => {
+          const [fbStep, setFbStep] = React.useState(0) // 0=domande, 1=inviato
+          const [fbUtilita, setFbUtilita] = React.useState(null)
+          const [fbCosa, setFbCosa] = React.useState('')
+          const [fbMigliorare, setFbMigliorare] = React.useState('')
+          const [fbSending, setFbSending] = React.useState(false)
+
+          const sendFeedback = async () => {
+            setFbSending(true)
+            try {
+              await fetch('https://formspree.io/f/xpqydppa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                  _subject: '🏆 Feedback da utente assunto/a — Le faremo sapere',
+                  azienda: form.azienda,
+                  ruolo: form.ruolo,
+                  utilita: fbUtilita,
+                  cosa_e_piaciuto: fbCosa,
+                  cosa_migliorare: fbMigliorare,
+                  nome: profile?.nome || 'Anonimo',
+                  genere: profile?.genere || '-',
+                })
+              })
+            } catch(e) {}
+            setFbSending(false)
+            setFbStep(1)
+          }
+
+          return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
+              style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}>
+              <div className="card w-full max-w-sm space-y-4" style={{ borderColor: 'rgba(123,47,255,0.4)', background: 'linear-gradient(135deg, rgba(123,47,255,0.07), rgba(255,45,139,0.05))' }}>
+
+                {fbStep === 0 ? (<>
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">💜</div>
+                    <h3 className="text-lg font-bold text-txt" style={{ fontFamily: 'var(--font-heading, sans-serif)' }}>
+                      Un ultimo favore?
+                    </h3>
+                    <p className="text-xs text-muted mt-1">
+                      Hai trovato lavoro con l'app — il tuo feedback vale oro per migliorarla per chi verrà dopo di te 🙏
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">L'app ti ha aiutato?</p>
+                    <div className="flex gap-2">
+                      {['🤩 Tantissimo', '😊 Abbastanza', '😐 Poco'].map(opt => (
+                        <button key={opt} onClick={() => setFbUtilita(opt)}
+                          className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95"
+                          style={{
+                            background: fbUtilita === opt ? 'rgba(123,47,255,0.25)' : 'transparent',
+                            borderColor: fbUtilita === opt ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
+                            color: fbUtilita === opt ? '#c4b5fd' : 'rgba(240,240,255,0.5)',
+                          }}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa ti è piaciuto di più?</p>
+                    <input className="input-field text-sm" placeholder="Es: tracciare tutto in un posto..."
+                      value={fbCosa} onChange={e => setFbCosa(e.target.value)} />
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Cosa miglioreresti?</p>
+                    <input className="input-field text-sm" placeholder="Es: vorrei poter esportare..."
+                      value={fbMigliorare} onChange={e => setFbMigliorare(e.target.value)} />
+                  </div>
+
+                  <button onClick={sendFeedback} disabled={fbSending || !fbUtilita}
+                    className="w-full py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
+                    style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: (!fbUtilita || fbSending) ? 0.5 : 1 }}>
+                    {fbSending ? '⏳ Invio...' : '💜 Invia feedback'}
+                  </button>
+                  <button onClick={() => { setShowReviewPrompt(false); onUpdate?.() }}
+                    className="text-xs text-disabled py-1 w-full text-center">
+                    Salta
+                  </button>
+                </>) : (
+                  <div className="text-center space-y-3 py-4">
+                    <div className="text-5xl">🙏</div>
+                    <h3 className="text-lg font-bold text-txt">Grazie mille!</h3>
+                    <p className="text-sm text-muted">Il tuo feedback aiuterà tanti altri a trovare lavoro. In bocca al lupo per il nuovo percorso! 💜</p>
+                    <button onClick={() => { setShowReviewPrompt(false); onUpdate?.() }}
+                      className="btn-primary w-full py-3 text-sm font-bold mt-2">
+                      🚀 Vai!
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })()}
       </div>
     )
   }
