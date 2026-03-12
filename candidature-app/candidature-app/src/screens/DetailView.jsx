@@ -462,22 +462,69 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </div>
 
         {/* Celebration overlay — auto-dismiss dopo 2s poi review */}
-        {showAssuntaCelebration && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
-            style={{ background: 'rgba(0,0,0,0.75)' }}>
-            <div className="text-center space-y-4">
-              <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
-              <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
-              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading, sans-serif)', textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
-                {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
-              </h2>
-              <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-                {form.azienda} 🌟
-              </p>
-              <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
+        {showAssuntaCelebration && (() => {
+          const pieces = Array.from({ length: 60 }, (_, i) => ({
+            id: i,
+            left: Math.random() * 100,
+            delay: Math.random() * 1.5,
+            dur: 1.8 + Math.random() * 1.2,
+            color: ['#7B2FFF','#FF2D8B','#10B981','#FBBF24','#60A5FA','#F87171','#C4B5FD','#34D399'][i % 8],
+            size: 7 + Math.random() * 8,
+            rot: Math.random() * 360,
+            shape: i % 3 === 0 ? 'circle' : 'rect',
+          }))
+          return (
+            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'none' }}>
+              <style>{`
+                @keyframes confettiFall {
+                  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                  80%  { opacity: 1; }
+                  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+                }
+                @keyframes celebPop {
+                  0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
+                  60%  { transform: scale(1.08) translateY(0); opacity: 1; }
+                  100% { transform: scale(1) translateY(0); opacity: 1; }
+                }
+              `}</style>
+              {pieces.map(p => (
+                <div key={p.id} style={{
+                  position: 'absolute',
+                  left: p.left + 'vw',
+                  top: -20,
+                  width: p.size,
+                  height: p.shape === 'circle' ? p.size : p.size * 0.4,
+                  borderRadius: p.shape === 'circle' ? '50%' : '2px',
+                  background: p.color,
+                  transform: `rotate(${p.rot}deg)`,
+                  animation: `confettiFall ${p.dur}s ${p.delay}s ease-in both`,
+                }} />
+              ))}
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+                style={{ animation: 'celebPop 0.6s 0.2s ease-out both' }}>
+                <div style={{ fontSize: 72, lineHeight: 1, marginBottom: 16 }}>🏆</div>
+                <h1 style={{
+                  fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1.1,
+                  textShadow: '0 0 40px rgba(123,47,255,0.9), 0 2px 8px rgba(0,0,0,0.8)',
+                  marginBottom: 8,
+                }}>
+                  {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
+                </h1>
+                <p style={{
+                  fontSize: 22, fontWeight: 800, marginBottom: 8,
+                  background: 'linear-gradient(135deg,#10B981,#7B2FFF)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>
+                  {form.azienda} 🌟
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 280, lineHeight: 1.5 }}>
+                  {profile?.nome ? profile.nome + ', ogni' : 'Ogni'} candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
+                </p>
+                <div style={{ marginTop: 16, fontSize: 36 }}>🎉🥂✨</div>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Review prompt — dopo la celebrazione */}
         {showReviewPrompt && (
@@ -1140,22 +1187,52 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       />
 
       {/* 🌟 ASSUNTA CELEBRATION — auto-dismiss via useEffect */}
-      {showAssuntaCelebration && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="text-center space-y-4">
-            <div style={{ fontSize: 80, lineHeight: 1 }}>🎉🥳🎊</div>
-            <div style={{ fontSize: 48, lineHeight: 1 }}>🎈🍾🎆</div>
-            <h2 className="text-3xl font-bold text-white" style={{ textShadow: '0 0 40px rgba(123,47,255,0.8)' }}>
-              {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
-            </h2>
-            <p className="text-xl font-bold" style={{ background: 'linear-gradient(135deg,#10B981,#7B2FFF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              {form.azienda} 🌟
-            </p>
-            <div style={{ fontSize: 40, lineHeight: 1 }}>✨💜🚀</div>
-          </div>
-        </div>
-      )}
+      {showAssuntaCelebration && (() => {
+          const pieces = Array.from({ length: 60 }, (_, i) => ({
+            id: i,
+            left: Math.random() * 100,
+            delay: Math.random() * 1.5,
+            dur: 1.8 + Math.random() * 1.2,
+            color: ['#7B2FFF','#FF2D8B','#10B981','#FBBF24','#60A5FA','#F87171','#C4B5FD','#34D399'][i % 8],
+            size: 7 + Math.random() * 8,
+            rot: Math.random() * 360,
+            shape: i % 3 === 0 ? 'circle' : 'rect',
+          }))
+          return (
+            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ pointerEvents: 'none' }}>
+              <style>{`
+                @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 80%{opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+                @keyframes celebPop { 0%{transform:scale(0.5) translateY(30px);opacity:0} 60%{transform:scale(1.08) translateY(0);opacity:1} 100%{transform:scale(1) translateY(0);opacity:1} }
+              `}</style>
+              {pieces.map(p => (
+                <div key={p.id} style={{
+                  position: 'absolute', left: p.left + 'vw', top: -20,
+                  width: p.size, height: p.shape === 'circle' ? p.size : p.size * 0.4,
+                  borderRadius: p.shape === 'circle' ? '50%' : '2px',
+                  background: p.color, transform: `rotate(${p.rot}deg)`,
+                  animation: `confettiFall ${p.dur}s ${p.delay}s ease-in both`,
+                }} />
+              ))}
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+                style={{ animation: 'celebPop 0.6s 0.2s ease-out both' }}>
+                <div style={{ fontSize: 72, lineHeight: 1, marginBottom: 16 }}>🏆</div>
+                <h1 style={{ fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1.1,
+                  textShadow: '0 0 40px rgba(123,47,255,0.9), 0 2px 8px rgba(0,0,0,0.8)', marginBottom: 8 }}>
+                  {profile?.genere === 'f' ? 'SEI STATA ASSUNTA!' : profile?.genere === 'm' ? 'SEI STATO ASSUNTO!' : 'SEI STAT* ASSUNT*!'}
+                </h1>
+                <p style={{ fontSize: 22, fontWeight: 800, marginBottom: 8,
+                  background: 'linear-gradient(135deg,#10B981,#7B2FFF)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  {form.azienda} 🌟
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 280, lineHeight: 1.5 }}>
+                  {profile?.nome ? profile.nome + ', ogni' : 'Ogni'} candidatura, ogni ghosting, ogni attesa — ne valeva la pena. 💜
+                </p>
+                <div style={{ marginTop: 16, fontSize: 36 }}>🎉🥂✨</div>
+              </div>
+            </div>
+          )
+        })()}
 
 
 

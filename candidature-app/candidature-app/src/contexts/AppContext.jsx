@@ -111,10 +111,10 @@ export function AppProvider({ children }) {
     if (error) { showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return null }
     setCandidature(prev => [row, ...prev])
     const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
-    await addXP(xp)
+    try { await addXP(xp) } catch(e) { console.error('addXP error:', e) }
     showToast(`🎉 Candidatura aggiunta! +${xp} XP`, 'success')
-    if (isFirst) { triggerConfetti() } else { triggerConfetti() }
-    await checkBadges()
+    triggerConfetti()
+    try { await checkBadges() } catch(e) { console.error('checkBadges error:', e) }
     return row
   }
 
