@@ -357,29 +357,29 @@ const { t, i18n } = useTranslation()
           <SectionLabel>{t('profile.leInfoTitolo')}</SectionLabel>
           <div className="space-y-2 mb-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Genere</span>
+              <span className="text-xs text-muted">{t('profile.genere')}</span>
               <span className="text-xs text-txt font-medium">
-                {profile?.genere === 'f' ? '👩 Donna'
-                : profile?.genere === 'm' ? '👨 Uomo'
-                : profile?.genere === 'nb' ? '🌈 Non binario/a'
-                : profile?.genere === 'x' ? '🤐 Preferisco non dirlo'
-                : <span className="text-disabled italic">Non specificato</span>}
+               profile?.genere === 'f' ? t('profile.genereDonna')
+: profile?.genere === 'm' ? t('profile.genereUomo')
+: profile?.genere === 'nb' ? t('profile.genereNB')
+: profile?.genere === 'x' ? t('profile.genereX')
+: <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Età</span>
+              <span className="text-xs text-muted">{t('profile.eta')}</span>
               <span className="text-xs text-txt font-medium">
-                {profile?.eta ? `${profile.eta} anni` : <span className="text-disabled italic">Non specificata</span>}
+                {profile?.eta ? `${profile.eta} ${t('profile.anniSuffix')}` : <span className="text-disabled italic">Non specificata</span>}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Settore</span>
+              <span className="text-xs text-muted">{t('profile.settore')}</span>
               <span className="text-xs text-txt font-medium">
                 {profile?.settore || <span className="text-disabled italic">Non specificato</span>}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Come ci hai trovato</span>
+              <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
               <span className="text-xs text-txt font-medium">
                 {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
               </span>
