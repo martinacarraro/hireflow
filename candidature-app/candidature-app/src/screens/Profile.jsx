@@ -135,7 +135,7 @@ export default function Profile() {
   const [infoSettoreCustom, setInfoSettoreCustom] = useState('')
   const [infoFonte, setInfoFonte]             = useState(profile?.come_conosciuto || '')
   const fileRef = useRef()
-const { i18n } = useTranslation()
+const { t, i18n } = useTranslation()
   const nome   = profile?.nome || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utente'
   const foto   = user?.user_metadata?.avatar_url
   const xp     = profile?.xp_points || 0
