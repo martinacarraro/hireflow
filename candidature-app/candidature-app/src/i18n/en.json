@@ -116,5 +116,17 @@
   "attesa": "Waiting",
   "secondoCol": "2nd Int.",
   "offerta": "Offer"
+},
+"cal": {
+  "titolo": "Calendar 📅",
+  "sottotitolo": "Interviews and calls organized by month",
+  "prossimi30": "Next 30 days",
+  "nessunoUpcoming": "No interviews in the next 30 days",
+  "colloquiMese": "Interviews per month",
+  "eventi": "events",
+  "nessunoMese": "No interviews this month",
+  "oggi": "Today! 🔥",
+  "domani": "Tomorrow ⚡",
+  "fraGiorni": "In {{giorni}} days"
 }
 }

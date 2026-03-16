@@ -117,5 +117,17 @@
     "attesa": "Attesa",
     "secondoCol": "2° Coll.",
     "offerta": "Offerta"
-  }
+  },
+  "cal": {
+  "titolo": "Calendario 📅",
+  "sottotitolo": "Colloqui e call organizzati per mese",
+  "prossimi30": "Prossimi 30 giorni",
+  "nessunoUpcoming": "Nessun colloquio nei prossimi 30 giorni",
+  "colloquiMese": "Colloqui per mese",
+  "eventi": "eventi",
+  "nessunoMese": "Nessun colloquio in questo mese",
+  "oggi": "Oggi! 🔥",
+  "domani": "Domani ⚡",
+  "fraGiorni": "Fra {{giorni}} giorni"
+}
 }

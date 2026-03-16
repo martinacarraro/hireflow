@@ -2,24 +2,30 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { CompanyAvatar, StatusBadge } from '../components/UI'
 import { STATUS_CONFIG, formatDate } from '../lib/utils'
+import { useTranslation } from 'react-i18next'
 
-const MESI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
-const MESI_FULL = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
-const STATI_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED']
+const MESI_IT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
+const MESI_FULL_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
+const MESI_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MESI_FULL_EN = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
 export default function Calendar({ onDetail }) {
   const { candidature, unreadCount, notifications, markAllNotificationsRead } = useApp()
+  const { t, i18n } = useTranslation()
   const [showNotifs, setShowNotifs] = useState(false)
+
+  const MESI = i18n.language === 'en' ? MESI_EN : MESI_IT
+  const MESI_FULL = i18n.language === 'en' ? MESI_FULL_EN : MESI_FULL_IT
 
   if (showNotifs) return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
         <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
-        <h2 className="font-bold text-txt">Notifiche 🔔</h2>
+        <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
       </div>
       <div className="flex-1 scrollable px-4 py-4">
         {notifications.length === 0
-          ? <div className="text-center py-16 text-muted text-sm">🔕 Nessuna notifica ancora</div>
+          ? <div className="text-center py-16 text-muted text-sm">🔕 {t('home.nessunaNotifica')}</div>
           : notifications.map(n => (
             <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
               {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
@@ -33,11 +39,11 @@ export default function Calendar({ onDetail }) {
       </div>
     </div>
   )
+
   const now = new Date()
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth())
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
 
-  // All events (candidature with colloquio date OR data_invio)
   const eventi = useMemo(() => {
     return candidature
       .filter(c => c.data_colloquio)
@@ -50,7 +56,6 @@ export default function Calendar({ onDetail }) {
       .sort((a, b) => a._date - b._date)
   }, [candidature])
 
-  // Stats per month (last 6 months)
   const monthStats = useMemo(() => {
     const stats = []
     for (let i = 5; i >= 0; i--) {
@@ -60,7 +65,7 @@ export default function Calendar({ onDetail }) {
       stats.push({ m, y, label: MESI[m], count, isSelected: m === selectedMonth && y === selectedYear })
     }
     return stats
-  }, [eventi, selectedMonth, selectedYear])
+  }, [eventi, selectedMonth, selectedYear, MESI])
 
   const maxCount = Math.max(...monthStats.map(s => s.count), 1)
 
@@ -69,7 +74,6 @@ export default function Calendar({ onDetail }) {
     [eventi, selectedMonth, selectedYear]
   )
 
-  // Upcoming (next 30 days)
   const upcoming = useMemo(() => {
     const today = new Date(); today.setHours(0,0,0,0)
     const in30 = new Date(today); in30.setDate(in30.getDate() + 30)
@@ -89,8 +93,8 @@ export default function Calendar({ onDetail }) {
     <div className="screen">
       <div className="px-5 pt-safe pt-4 pb-3 flex items-start justify-between flex-shrink-0">
         <div>
-          <h2 className="text-xl font-bold text-txt">Calendario 📅</h2>
-          <p className="text-xs text-muted mt-0.5">Colloqui e call organizzati per mese</p>
+          <h2 className="text-xl font-bold text-txt">{t('cal.titolo')}</h2>
+          <p className="text-xs text-muted mt-0.5">{t('cal.sottotitolo')}</p>
         </div>
         <button onClick={() => setShowNotifs(true)} className="relative p-2 active:scale-90 transition-transform">
           <span className="text-2xl">🔔</span>
@@ -103,12 +107,10 @@ export default function Calendar({ onDetail }) {
       </div>
 
       <div className="flex-1 scrollable px-4 pb-6 space-y-4">
-
-        {/* Prossimi appuntamenti */}
         {upcoming.length > 0 && (
           <div className="card border-l-[3px] border-l-green">
             <p className="text-xs uppercase tracking-widest font-semibold text-green mb-3">
-              🔜 Prossimi 30 giorni
+              🔜 {t('cal.prossimi30')}
             </p>
             <div className="space-y-2">
               {upcoming.map(c => (
@@ -121,14 +123,13 @@ export default function Calendar({ onDetail }) {
         {upcoming.length === 0 && (
           <div className="card text-center py-4">
             <p className="text-2xl mb-1">📭</p>
-            <p className="text-sm text-muted">Nessun colloquio nei prossimi 30 giorni</p>
+            <p className="text-sm text-muted">{t('cal.nessunoUpcoming')}</p>
           </div>
         )}
 
-        {/* Bar chart ultimi 6 mesi */}
         <div className="card">
           <p className="text-xs uppercase tracking-widest font-semibold text-muted mb-4">
-            📊 Colloqui per mese
+            📊 {t('cal.colloquiMese')}
           </p>
           <div className="flex items-end justify-between gap-1.5 h-20">
             {monthStats.map(s => (
@@ -151,21 +152,19 @@ export default function Calendar({ onDetail }) {
           </div>
         </div>
 
-        {/* Navigator mese selezionato */}
         <div className="flex items-center justify-between">
           <button onClick={prevMonth} className="text-muted px-2 py-1 active:scale-90 transition-transform">‹</button>
           <h3 className="text-base font-bold text-txt">
             {MESI_FULL[selectedMonth]} {selectedYear}
-            <span className="text-xs text-muted font-normal ml-2">{eventiMese.length} eventi</span>
+            <span className="text-xs text-muted font-normal ml-2">{eventiMese.length} {t('cal.eventi')}</span>
           </h3>
           <button onClick={nextMonth} className="text-muted px-2 py-1 active:scale-90 transition-transform">›</button>
         </div>
 
-        {/* Lista eventi mese */}
         {eventiMese.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-3xl mb-2">🗓️</p>
-            <p className="text-sm text-muted">Nessun colloquio in questo mese</p>
+            <p className="text-sm text-muted">{t('cal.nessunoMese')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -180,11 +179,12 @@ export default function Calendar({ onDetail }) {
 }
 
 function UpcomingCard({ c, onPress }) {
+  const { t } = useTranslation()
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Colloquio']
   const date = new Date(c.data_colloquio)
   const today = new Date(); today.setHours(0,0,0,0)
   const diff = Math.round((date - today) / 86400000)
-  const label = diff === 0 ? 'Oggi! 🔥' : diff === 1 ? 'Domani ⚡' : `Fra ${diff} giorni`
+  const label = diff === 0 ? t('cal.oggi') : diff === 1 ? t('cal.domani') : t('cal.fraGiorni', { giorni: diff })
   return (
     <button onClick={onPress} className="w-full flex items-center gap-3 text-left active:scale-[0.98] transition-transform">
       <CompanyAvatar name={c.azienda} size={36} />
@@ -201,10 +201,14 @@ function UpcomingCard({ c, onPress }) {
 }
 
 function EventCard({ c, onPress }) {
+  const { i18n } = useTranslation()
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Colloquio']
   const date = new Date(c.data_colloquio)
   const day = date.getDate()
-  const dayName = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][date.getDay()]
+  const DAY_NAMES_IT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab']
+  const DAY_NAMES_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+  const dayNames = i18n.language === 'en' ? DAY_NAMES_EN : DAY_NAMES_IT
+  const dayName = dayNames[date.getDay()]
   return (
     <button onClick={onPress}
       className="w-full card flex items-center gap-3 text-left active:scale-[0.98] transition-transform p-3">
