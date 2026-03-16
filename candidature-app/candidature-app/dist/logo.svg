@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background gradient: coral → violet -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF4D6D"/>
+      <stop offset="50%" style="stop-color:#C77DFF"/>
+      <stop offset="100%" style="stop-color:#4361EE"/>
+    </linearGradient>
+    <!-- Envelope body gradient -->
+    <linearGradient id="envGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#f0e6ff;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Clock gradient -->
+    <linearGradient id="clockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD166"/>
+      <stop offset="100%" style="stop-color:#FF6B6B"/>
+    </linearGradient>
+    <!-- Shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#2d00f7" flood-opacity="0.25"/>
+    </filter>
+    <!-- Inner glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- App icon rounded square background -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>
+
+  <!-- Decorative dots top-right -->
+  <circle cx="410" cy="90" r="12" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="440" cy="65" r="7" fill="rgba(255,255,255,0.15)"/>
+  <circle cx="385" cy="60" r="5" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- Decorative dots bottom-left -->
+  <circle cx="100" cy="430" r="10" fill="rgba(255,255,255,0.15)"/>
+  <circle cx="72" cy="455" r="6" fill="rgba(255,255,255,0.1)"/>
+
+  <!-- ENVELOPE BODY -->
+  <g filter="url(#shadow)">
+    <rect x="88" y="168" width="310" height="215" rx="20" ry="20" fill="url(#envGrad)"/>
+  </g>
+
+  <!-- Envelope flap (top triangle) -->
+  <polygon points="88,168 256,295 398,168" fill="#E8D5FF" opacity="0.9"/>
+  <!-- Flap fold line -->
+  <polyline points="88,168 256,295 398,168" fill="none" stroke="#C77DFF" stroke-width="2.5" opacity="0.6"/>
+
+  <!-- Envelope bottom crease lines -->
+  <line x1="88" y1="383" x2="230" y2="270" stroke="#C77DFF" stroke-width="2" opacity="0.4"/>
+  <line x1="398" y1="383" x2="282" y2="270" stroke="#C77DFF" stroke-width="2" opacity="0.4"/>
+
+  <!-- CLOCK BADGE (bottom right of envelope, overlapping) -->
+  <circle cx="358" cy="330" r="62" fill="#1a1a2e" opacity="0.15"/>
+  <circle cx="358" cy="325" r="58" fill="url(#clockGrad)" filter="url(#shadow)"/>
+  <circle cx="358" cy="325" r="48" fill="white" opacity="0.95"/>
+  <!-- Clock face ticks -->
+  <line x1="358" y1="283" x2="358" y2="291" stroke="#FF6B6B" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="358" y1="359" x2="358" y2="367" stroke="#FF6B6B" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="316" y1="325" x2="324" y2="325" stroke="#FF6B6B" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="392" y1="325" x2="400" y2="325" stroke="#FF6B6B" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Clock hands -->
+  <line x1="358" y1="325" x2="358" y2="300" stroke="#4361EE" stroke-width="4" stroke-linecap="round"/>
+  <line x1="358" y1="325" x2="378" y2="338" stroke="#FF4D6D" stroke-width="3" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="358" cy="325" r="5" fill="#4361EE"/>
+
+  <!-- THREE DOTS "..." speech bubble above envelope (waiting indicator) -->
+  <rect x="155" y="108" width="118" height="48" rx="24" fill="#FFD166" filter="url(#shadow)"/>
+  <!-- Speech bubble tail -->
+  <polygon points="195,156 215,178 232,156" fill="#FFD166"/>
+  <!-- Dots -->
+  <circle cx="187" cy="132" r="7" fill="#FF4D6D"/>
+  <circle cx="214" cy="132" r="7" fill="#C77DFF"/>
+  <circle cx="241" cy="132" r="7" fill="#4361EE"/>
+</svg>
