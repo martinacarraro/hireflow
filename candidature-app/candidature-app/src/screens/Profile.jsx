@@ -263,12 +263,12 @@ const { i18n } = useTranslation()
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
         <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
-        <h2 className="font-bold text-txt">Notifiche 🔔</h2>
-        {unreadCount > 0 && <button onClick={markAllNotificationsRead} className="ml-auto text-xs text-purple-soft">Segna lette</button>}
+        <h2 className="font-bold text-txt">{t('profile.notifiche')}</h2>
+        {unreadCount > 0 && <button onClick={markAllNotificationsRead} className="ml-auto text-xs text-purple-soft">{t('profile.segnaTutte')}</button>}
       </div>
       <div className="flex-1 scrollable px-4 py-4">
         {notifications.length === 0
-          ? <div className="text-center py-16"><p className="text-4xl mb-2">🔕</p><p className="text-muted text-sm">Nessuna notifica ancora</p></div>
+          ? <div className="text-center py-16"><p className="text-4xl mb-2">🔕</p><p className="text-muted text-sm">{t('profile.nessunaNotifica')}</p></div>
           : notifications.map(n => (
             <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
               {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
@@ -287,7 +287,7 @@ const { i18n } = useTranslation()
   return (
     <div className="screen">
       <div className="px-5 pt-safe pt-4 pb-2 flex items-center justify-between flex-shrink-0">
-        <h2 className="text-xl font-bold text-txt">Profilo 👤</h2>
+        <h2 className="text-xl font-bold text-txt">{t('profile.titolo')}</h2>
         <button onClick={() => setShowNotifs(true)} className="relative p-2">
           <span className="text-2xl">🔔</span>
           {unreadCount > 0 && (
@@ -303,8 +303,8 @@ const { i18n } = useTranslation()
 <a href="https://ko-fi.com/lefaremosapere" target="_blank" rel="noopener noreferrer"
   className="block w-full rounded-2xl px-4 py-3 text-center active:opacity-80 transition-all"
   style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}>
-  <p className="text-sm font-semibold text-txt">☕ Ti piace l'app? Offrimi un caffè 💜</p>
-  <p className="text-xs text-muted mt-0.5">Un piccolo gesto per supportare il progetto</p>
+  <p className="text-sm font-semibold text-txt">{t('profile.caffe')}</p>
+  <p className="text-xs text-muted mt-0.5">{t('profile.caffeDesc')}</p>
 </a>
 
         {/* Avatar + nome */}
@@ -354,7 +354,7 @@ const { i18n } = useTranslation()
         {/* XP */}
         {/* LE TUE INFO */}
         <div className="card">
-          <SectionLabel>LE TUE INFO 📋</SectionLabel>
+          <SectionLabel>{t('profile.leInfoTitolo')}</SectionLabel>
           <div className="space-y-2 mb-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">Genere</span>
@@ -398,7 +398,7 @@ const { i18n } = useTranslation()
 
         {/* IL TUO LIVELLO */}
         <div className="card">
-          <SectionLabel>IL TUO LIVELLO ⭐</SectionLabel>
+          <SectionLabel>{t('profile.tuoLivello')}</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
           {xp === 0 && (
             <button onClick={async () => {
@@ -427,8 +427,8 @@ const { i18n } = useTranslation()
 
         {/* Badge */}
         <div className="card">
-          <SectionLabel>I TUOI BADGE 🏅</SectionLabel>
-          <p className="text-xs text-muted mb-3">{earned.length}/{BADGES.length} sbloccati — tocca per condividere</p>
+          <SectionLabel>{t('profile.tuoiBadge')}</SectionLabel>
+          <p className="text-xs text-muted mb-3">{earned.length}/{BADGES.length} {t('profile.badgeSbloccati')}</p>
           <div className="grid grid-cols-4 gap-2">
             {BADGES.map(badge => {
               const isEarned = earned.includes(badge.id)
@@ -451,32 +451,32 @@ const { i18n } = useTranslation()
 
         {/* Motto */}
         <div className="card border-l-[3px] border-l-purple">
-          <SectionLabel>CONDIVIDI CON CHI CERCA LAVORO 💌</SectionLabel>
-          <p className="text-xs text-muted mb-3">Conosci qualcuno che sta mandando candidature? Mandagli Le faremo sapere!</p>
+          <SectionLabel>{t('profile.condividi')}</SectionLabel>
+          <p className="text-xs text-muted mb-3">{t('profile.condividiDesc')}</p>
           <button onClick={handleShare} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            📤 Condividi Le faremo sapere
+            {t('profile.condividiBtn')}
           </button>
         </div>
 
         {/* Importa */}
         <div className="card">
-          <SectionLabel>📥 IMPORTA CANDIDATURE</SectionLabel>
-          <p className="text-xs text-muted mb-3 leading-relaxed">Scarica il template, compilalo e ricaricalo. Oppure usa un tuo Excel — rileva le colonne in automatico.</p>
+          <SectionLabel>{t('profile.importa')}</SectionLabel>
+          <p className="text-xs text-muted mb-3 leading-relaxed">{t('profile.importaDesc')}</p>
           <button onClick={downloadTemplate} className="btn-secondary w-full flex items-center justify-center gap-2 py-2.5 text-sm mb-3">
-            📄 Scarica template Excel
+            {t('profile.scaricaTemplate')}
           </button>
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImport} />
           <button onClick={() => fileRef.current?.click()} disabled={importing}
             className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            {importing ? <><Spinner size={16} /> Importazione...</> : '📤 Carica il tuo file Excel'}
+            {importing ? <><Spinner size={16} /> {t('profile.importazione')}</> : '{t('profile.caricaExcel')}'}
           </button>
           {importError && <p className="text-xs text-red mt-2">{importError}</p>}
-          <p className="text-[10px] text-muted mt-2 text-center">Supporta .xlsx, .xls, .csv</p>
+          <p className="text-[10px] text-muted mt-2 text-center">{t('profile.supportaFormati')}</p>
         </div>
 
         {/* Preferenze */}
         <div className="card">
-         <SectionLabel>PREFERENZE 🔔</SectionLabel>
+         <SectionLabel>{t('add.notifiche')} 🔔</SectionLabel>
           <div className="flex items-center justify-between py-2.5 border-b border-border">
             <div>
               <p className="text-sm font-medium text-txt">🌍 Lingua / Language</p>
@@ -505,8 +505,8 @@ const { i18n } = useTranslation()
               <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)' }}>
                 <span className="text-lg">✅</span>
                 <div>
-                  <p className="text-xs font-semibold text-green-400">Notifiche attive</p>
-                  <p className="text-[10px] text-muted">Riceverai aggiornamenti sulle candidature</p>
+                  <p className="text-xs font-semibold text-green-400">{t('profile.notificheAttive')}</p>
+                  <p className="text-[10px] text-muted">{t('profile.notificheAttiveDesc')}</p>
                 </div>
               </div>
             )
@@ -515,15 +515,15 @@ const { i18n } = useTranslation()
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
                   <span className="text-lg">🔕</span>
                   <div>
-                    <p className="text-xs font-semibold text-red-400">Notifiche bloccate</p>
-                    <p className="text-[10px] text-muted">Devi abilitarle dalle impostazioni</p>
+                    <p className="text-xs font-semibold text-red-400">{t('profile.notificheBlocccate')}</p>
+                    <p className="text-[10px] text-muted">{t('profile.notificheBloccateDesc')}</p>
                   </div>
                 </div>
                 <button onClick={() => {
                   if (/android/i.test(navigator.userAgent)) window.open('intent://settings#Intent;scheme=android-app;end', '_blank')
                   else alert('Vai in Impostazioni → App → Le faremo sapere → Notifiche → Abilita')
                 }} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-border text-muted active:scale-95 transition-all">
-                  ⚙️ Apri impostazioni notifiche
+                  {t('profile.apriImpostazioni')}
                 </button>
               </div>
             )
@@ -533,11 +533,11 @@ const { i18n } = useTranslation()
                 if (ok) updateProfile({ notifiche_push_globali: true })
               }} className="w-full mt-2 py-3 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color: 'white' }}>
-                🔔 Abilita notifiche push
+                {t('profile.abilitaNotifiche')}
               </button>
             )
           })()}
-          <p className="text-[10px] text-muted mt-1 leading-relaxed">⚠️ Richiede l'app installata come PWA per funzionare su mobile.</p>
+          <p className="text-[10px] text-muted mt-1 leading-relaxed">{t('profile.avvisoPWA')}</p>
         </div>
 
         {/* Archivio */}
@@ -576,23 +576,23 @@ const { i18n } = useTranslation()
         <div className="card">
 
 
-          <SectionLabel>🔒 PRIVACY & TERMINI</SectionLabel>
+          <SectionLabel>{t('profile.privacy')}</SectionLabel>
           <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-between py-2 text-sm text-txt active:opacity-70">
             <span>Privacy Policy</span><span className="text-muted">→</span>
           </a>
           <div className="border-t border-border" />
           <p className="text-[10px] text-muted mt-2 leading-relaxed">
-            I tuoi dati sono salvati su Supabase (EU) e non vengono mai condivisi con terzi.
+            {t('profile.privacyDesc')}
           </p>
         </div>
 
         {/* Supporto */}
         <div className="card space-y-2">
           <SectionLabel>SUPPORTO</SectionLabel>
-          <a href="mailto:lefaremosapereapp@gmail.com" className="flex items-center gap-2 py-2 text-sm text-txt">💬 Dai il tuo feedback</a>
+          <a href="mailto:lefaremosapereapp@gmail.com" className="flex items-center gap-2 py-2 text-sm text-txt">{t('profile.feedback')}</a>
           <div className="border-t border-border" />
-          <p className="text-xs text-muted text-center pt-1">Le faremo sapere v1.0 — Fatto con 💜</p>
+          <p className="text-xs text-muted text-center pt-1">{t('profile.versione')}</p>
         </div>
 
         {/* Account */}
@@ -601,12 +601,12 @@ const { i18n } = useTranslation()
             <button onClick={() => setShowGuestModal(true)}
               className="w-full py-3.5 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
               style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' }}>
-              🚀 Crea account e salva tutto
+              {t('profile.creaAccount')}
             </button>
             <button onClick={async () => { await signOut() }}
               className="w-full py-3 rounded-2xl border font-semibold text-sm active:scale-95 transition-all"
               style={{ borderColor: '#F59E0B', color: '#F59E0B' }}>
-              🚪 Esci dalla modalità ospite
+              {t('profile.esciOspite')}
             </button>
           </div>
         ) : user ? (
@@ -614,10 +614,10 @@ const { i18n } = useTranslation()
             <button onClick={() => setConfirmSignOut(true)}
               className="w-full py-3 rounded-2xl border font-semibold text-sm active:scale-95 transition-all"
               style={{ borderColor: '#F59E0B', color: '#F59E0B' }}>
-              🚪 Esci dall'account
+              {t('profile.esciAccount')}
             </button>
             <button onClick={() => setConfirmDelete(true)} className="btn-danger w-full py-3">
-              🗑️ Elimina account
+              {t('profile.eliminaAccount')}
             </button>
           </div>
         ) : null}
