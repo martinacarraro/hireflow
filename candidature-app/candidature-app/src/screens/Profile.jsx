@@ -483,8 +483,8 @@ const { i18n } = useTranslation()
               <p className="text-xs text-muted">Cambia la lingua</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => { i18n.changeLanguage('it'); localStorage.setItem('lingua', 'it') }} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: i18n.language === 'it' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)', color: 'white', border: i18n.language === 'it' ? 'none' : '1px solid rgba(255,255,255,0.15)' }}>🇮🇹 IT</button>
-              <button onClick={() => { i18n.changeLanguage('en'); localStorage.setItem('lingua', 'en') }} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: i18n.language === 'en' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)', color: 'white', border: i18n.language === 'en' ? 'none' : '1px solid rgba(255,255,255,0.15)' }}>🇬🇧 EN</button>
+              <button onClick={() => { i18n.changeLanguage('it'); localStorage.setItem('lingua', 'it'); window.location.reload() }} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: i18n.language === 'it' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)', color: 'white', border: i18n.language === 'it' ? 'none' : '1px solid rgba(255,255,255,0.15)' }}>🇮🇹 IT</button>
+             <button onClick={() => { i18n.changeLanguage('en'); localStorage.setItem('lingua', 'en'); window.location.reload() }} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: i18n.language === 'en' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)', color: 'white', border: i18n.language === 'en' ? 'none' : '1px solid rgba(255,255,255,0.15)' }}>🇬🇧 EN</button>
             </div>
           </div>
           <div className="flex items-center justify-between py-2.5">
