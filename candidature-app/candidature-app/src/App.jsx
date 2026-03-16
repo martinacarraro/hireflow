@@ -13,11 +13,14 @@ import Stats from './screens/Stats'
 import Profile from './screens/Profile'
 import Calendar from './screens/Calendar'
 import Tutorial from './components/Tutorial'
-
+import LanguageSelector from './components/LanguageSelector'
 export default function App() {
   const { user, loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const [showSplash, setShowSplash] = useState(true)
+  const [linguaScelta, setLinguaScelta] = useState(
+  !!localStorage.getItem('lingua')
+)
   const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
     // Only show if never seen AND not already logged in (user in localStorage = had session before)
     const hasSeen = localStorage.getItem('lfs_seen_intro')
@@ -116,7 +119,9 @@ export default function App() {
   if (showSplash || loading) {
     return <Splash onDone={() => setShowSplash(false)} />
   }
-
+if (!linguaScelta) {
+  return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
+}
   if (showFirstOnboarding) {
     return (
       <FirstTimeIntro onDone={() => {

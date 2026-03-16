@@ -4,7 +4,7 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './contexts/AppContext'
 import './index.css'
-
+import './i18n/index.js'
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
