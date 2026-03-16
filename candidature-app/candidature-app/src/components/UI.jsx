@@ -1,15 +1,15 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { STATUS_CONFIG, PRIORITA_CONFIG, getLevel, getXpProgress } from '../lib/utils'
-
 // ─── STATUS BADGE ─────────────────────────────────────────────────
 export function StatusBadge({ stato, size = 'sm', genere }) {
+  const { t } = useTranslation()
   const cfg = STATUS_CONFIG[stato] || STATUS_CONFIG['Inviata']
   const p = size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-2.5 py-0.5 text-xs'
   const active = ['Colloquio','Prima call','Secondo colloquio','Vista','In attesa risposta','Offerta ricevuta','Assunta'].includes(stato)
-  // Gendered label: solo per Assunta, dove labelM e labelNB sono definiti in STATUS_CONFIG
   const label = stato === 'Assunta' && genere
-    ? (genere === 'm' ? (cfg.labelM || cfg.label) : genere === 'nb' ? (cfg.labelNB || cfg.label) : cfg.label)
-    : cfg.label
+    ? t(`home.statiLabel.${genere === 'm' ? 'Assunto' : genere === 'nb' ? 'Assunt*' : 'Assunta'}`)
+    : t(`home.statiLabel.${stato}`, stato)
   return (
     <span className={`status-badge ${p} font-semibold`}
       style={{
@@ -291,38 +291,39 @@ export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel, dan
 
 // ─── TAB BAR ─────────────────────────────────────────────────────
 export function TabBar({ active, onChange, unread = 0 }) {
+  const { t } = useTranslation()
   const tabs = [
     { id: 'home',     icon: '🏠', label: 'Home' },
-    { id: 'calendar', icon: '📅', label: 'Calendario' },
-    { id: 'add',      icon: '+',  label: 'Aggiungi', special: true },
+    { id: 'calendar', icon: '📅', label: 'Cal' },
+    { id: 'add',      icon: '+',  label: '', special: true },
     { id: 'stats',    icon: '📊', label: 'Stats' },
-    { id: 'profile',  icon: '👤', label: 'Profilo' },
+    { id: 'profile',  icon: '👤', label: t('profile.titolo').replace(' 👤','') },
   ]
   return (
     <div data-tutorial="tabbar" className="bg-surface border-t border-border flex-shrink-0 overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-end h-16">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => onChange(t.id)}
+        {tabs.map(tab => (
+          <button key={tab.id} onClick={() => onChange(tab.id)}
             className={`flex-1 flex flex-col items-center justify-end pb-2 gap-0.5 transition-all active:scale-95
-              ${active === t.id && !t.special ? 'text-purple' : 'text-disabled'}`}>
-            {t.special ? (
+              ${active === tab.id && !tab.special ? 'text-purple' : 'text-disabled'}`}>
+            {tab.special ? (
               <div className="flex flex-col items-center" style={{ marginBottom: '4px' }}>
                 <span data-tutorial="add-btn" className="flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold text-white shadow-btn"
                   style={{ marginTop: '-28px', background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', boxShadow: '0 6px 24px rgba(255,45,139,0.4)' }}>
-                  {t.icon}
+                  {tab.icon}
                 </span>
               </div>
             ) : (
               <>
                 <span className="text-xl leading-none relative">
-                  {t.icon}
-                  {t.id === 'profile' && unread > 0 && (
+                  {tab.icon}
+                  {tab.id === 'profile' && unread > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red text-white text-[8px] rounded-full flex items-center justify-center font-bold px-1">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] leading-none">{t.label}</span>
+                <span className="text-[10px] leading-none">{tab.label}</span>
               </>
             )}
           </button>
