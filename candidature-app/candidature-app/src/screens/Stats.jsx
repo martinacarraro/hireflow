@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { STATUS_CONFIG, daysSince } from '../lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export default function Stats({ onOpenCandidatura }) {
   const { candidature, unreadCount, notifications, markAllNotificationsRead, profile } = useApp()
+  const { t } = useTranslation()
   const [showNotifs, setShowNotifs] = useState(false)
   const [expandedAzienda, setExpandedAzienda] = useState(null)
 
@@ -11,11 +13,11 @@ export default function Stats({ onOpenCandidatura }) {
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
         <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
-        <h2 className="font-bold text-txt">Notifiche 🔔</h2>
+        <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
       </div>
       <div className="flex-1 scrollable px-4 py-4">
         {notifications.length === 0
-          ? <div className="text-center py-16 text-muted text-sm">🔕 Nessuna notifica ancora</div>
+          ? <div className="text-center py-16 text-muted text-sm">🔕 {t('home.nessunaNotifica')}</div>
           : notifications.map(n => (
             <div key={n.id} className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''}`}>
               {!n.read && <div className="w-2 h-2 rounded-full bg-purple mt-1.5 flex-shrink-0" />}
@@ -35,8 +37,6 @@ export default function Stats({ onOpenCandidatura }) {
     const byStato = (s) => candidature.filter(c => c.stato === s).length
     const colloqui = byStato('Prima call') + byStato('Colloquio') + byStato('In attesa risposta') + byStato('Secondo colloquio') + byStato('Non mi piace') + byStato('Rifiutata') + byStato('GHOSTED')
     const ghosted = byStato('GHOSTED')
-
-    // Distribution by stato
     const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
     const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
     const offerte = byStato('Offerta ricevuta')
@@ -46,7 +46,6 @@ export default function Stats({ onOpenCandidatura }) {
       ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
       : 0
 
-    // By fonte
     const fonteMap = {}
     candidature.forEach(c => {
       if (c.fonte) {
@@ -57,7 +56,6 @@ export default function Stats({ onOpenCandidatura }) {
       }
     })
 
-    // By week (last 8 weeks)
     const weeks = []
     for (let i = 7; i >= 0; i--) {
       const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
@@ -67,17 +65,14 @@ export default function Stats({ onOpenCandidatura }) {
         const d = new Date(c.data_invio || c.created_at)
         return d >= start && d <= end
       }).length
-      const label = `W-${i}`
-      weeks.push({ label: i === 0 ? 'Questa' : `${i}w fa`, count })
+      weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
     }
 
-    // GHOSTED hall of shame
     const ghostedList = candidature
       .filter(c => c.stato === 'GHOSTED')
       .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
       .sort((a, b) => b.giorni - a.giorni)
 
-    // Sentiment over time (by month)
     const sentimentMap = {}
     const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
     candidature.forEach(c => {
@@ -98,12 +93,11 @@ export default function Stats({ onOpenCandidatura }) {
         avg: Math.round((val.sum / val.total) * 10) / 10
       }))
 
-    // Best company (most interviews)
     const aziendaMap = {}
     candidature.forEach(c => {
       if (!c.azienda) return
       if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
-      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
+      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta','Assunta'].includes(c.stato)) {
         aziendaMap[c.azienda].count++
         aziendaMap[c.azienda].cands.push(c)
       }
@@ -114,10 +108,10 @@ export default function Stats({ onOpenCandidatura }) {
   }, [candidature])
 
   const kpis = [
-    { emoji: '📤', label: 'Totale inviate',   value: stats.total,    color: '#60A5FA' },
-    { emoji: '🎙️', label: 'Colloqui',          value: stats.colloqui, color: '#34D399' },
-    { emoji: '📈', label: 'Tasso risposta',   value: `${stats.tasso}%`, color: '#8B5CF6' },
-    { emoji: '⏱️', label: 'Media attesa',      value: `${stats.avgAttesa}gg`, color: '#FBBF24' },
+    { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total,           color: '#60A5FA' },
+    { emoji: '🎙️', label: t('stats.colloqui'),      value: stats.colloqui,        color: '#34D399' },
+    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`,     color: '#8B5CF6' },
+    { emoji: '⏱️', label: t('stats.mediaAttesa'),   value: `${stats.avgAttesa}${t('home.ggFa').replace(' ago','').replace(' fa','')}`, color: '#FBBF24' },
   ]
 
   const maxWeek = Math.max(...stats.weeks.map(w => w.count), 1)
@@ -127,8 +121,8 @@ export default function Stats({ onOpenCandidatura }) {
     <div className="screen">
       <div className="px-5 pt-safe pt-4 pb-3 flex items-start justify-between flex-shrink-0">
         <div>
-          <h2 className="text-xl font-bold text-txt">Le tue stats 📊</h2>
-          <p className="text-sm text-muted italic">Perché i numeri non mentono.</p>
+          <h2 className="text-xl font-bold text-txt">{t('stats.titolo')}</h2>
+          <p className="text-sm text-muted italic">{t('stats.sottotitolo')}</p>
         </div>
         <button onClick={() => setShowNotifs(true)} className="relative p-2 active:scale-90 transition-transform">
           <span className="text-2xl">🔔</span>
@@ -144,11 +138,10 @@ export default function Stats({ onOpenCandidatura }) {
         {candidature.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="text-5xl mb-4">📊</div>
-            <p className="text-muted text-sm">Aggiungi candidature per vedere le statistiche!</p>
+            <p className="text-muted text-sm">{t('stats.nessunaDato')}</p>
           </div>
         ) : (
           <>
-            {/* KPI grid */}
             <div className="grid grid-cols-2 gap-3">
               {kpis.map(k => (
                 <div key={k.label} className="card flex flex-col gap-1">
@@ -159,9 +152,8 @@ export default function Stats({ onOpenCandidatura }) {
               ))}
             </div>
 
-            {/* Donut / State breakdown */}
             <div className="card">
-              <p className="section-label">DISTRIBUZIONE PER STATO</p>
+              <p className="section-label">{t('stats.distribuzione')}</p>
               <div className="space-y-2.5">
                 {Object.entries(STATUS_CONFIG).map(([stato, cfg]) => {
                   const count = candidature.filter(c => c.stato === stato).length
@@ -183,11 +175,9 @@ export default function Stats({ onOpenCandidatura }) {
               </div>
             </div>
 
-            {/* Candidature per settimana */}
-            {/* Distribuzione per stato */}
             {stats.statoDistrib.length > 0 && (
               <div className="card">
-                <p className="section-label">DISTRIBUZIONE PER STATO</p>
+                <p className="section-label">{t('stats.distribuzione')}</p>
                 {(() => {
                   const maxCount = Math.max(...stats.statoDistrib.map(s => s.count), 1)
                   return (
@@ -201,7 +191,7 @@ export default function Stats({ onOpenCandidatura }) {
                             <div className="w-full rounded-t-md transition-all"
                               style={{ height: `${pct}px`, minHeight: count ? 4 : 0, background: cfg.color ? cfg.color + '55' : 'rgba(139,92,246,0.3)', borderTop: `2px solid ${cfg.color || '#8B5CF6'}` }} />
                             <span className="text-[8px] text-muted text-center leading-tight" style={{ maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                              {cfg.emoji} {stato === 'In attesa risposta' ? 'Attesa' : stato === 'Secondo colloquio' ? '2° Coll.' : stato === 'Offerta ricevuta' ? 'Offerta' : stato}
+                              {cfg.emoji} {stato === 'In attesa risposta' ? t('stats.attesa') : stato === 'Secondo colloquio' ? t('stats.secondoCol') : stato === 'Offerta ricevuta' ? t('stats.offerta') : stato}
                             </span>
                           </div>
                         )
@@ -213,7 +203,7 @@ export default function Stats({ onOpenCandidatura }) {
             )}
 
             <div className="card">
-              <p className="section-label">CANDIDATURE PER SETTIMANA</p>
+              <p className="section-label">{t('stats.perSettimana')}</p>
               <div className="flex items-end gap-1.5 h-24 mt-2">
                 {stats.weeks.map((w, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -223,16 +213,15 @@ export default function Stats({ onOpenCandidatura }) {
                         background: i === 7 ? '#8B5CF6' : 'rgba(139,92,246,0.35)',
                         minHeight: w.count ? 4 : 0,
                       }} />
-                    <span className="text-[9px] text-muted">{w.label}</span>
+                    <span className="text-[9px] text-muted">{i === 7 ? t('stats.questa') : `${7-i}w`}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Fonte più efficace */}
             {Object.keys(stats.fonteMap).length > 0 && (
               <div className="card">
-                <p className="section-label">FONTE PIÙ EFFICACE</p>
+                <p className="section-label">{t('stats.fonteEfficace')}</p>
                 <div className="space-y-2.5 mt-2">
                   {Object.entries(stats.fonteMap)
                     .sort((a, b) => b[1].colloqui - a[1].colloqui)
@@ -240,7 +229,7 @@ export default function Stats({ onOpenCandidatura }) {
                     <div key={fonte}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-txt">{fonte}</span>
-                        <span className="text-muted">{data.colloqui} colloqui / {data.total} inv.</span>
+                        <span className="text-muted">{data.colloqui} {t('stats.colloquiLabel')} / {data.total} {t('stats.invLabel')}</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
                         <div className="h-full bg-green rounded-full"
@@ -252,24 +241,22 @@ export default function Stats({ onOpenCandidatura }) {
               </div>
             )}
 
-            {/* Insights */}
             <div className="card border-l-[3px] border-l-purple">
-              <p className="section-label">💡 INSIGHTS</p>
+              <p className="section-label">💡 {t('stats.insights')}</p>
               <div className="space-y-2 text-sm text-purple-soft">
-                {stats.tasso >= 15 && <p>🔥 Tasso di risposta {stats.tasso}% — sopra la media. Stai facendo benissimo!</p>}
-                {stats.tasso < 10 && stats.total > 5 && <p>💪 Tasso {stats.tasso}%  — la media è ~10%. Prova a personalizzare di più il CV.</p>}
-                {stats.avgAttesa > 14 && <p>⏳ Attesa media di {stats.avgAttesa} giorni — considera dei follow-up!</p>}
-                {stats.ghosted >= 3 && <p>👻 {stats.ghosted} aziende ti hanno {profile?.genere === 'f' ? 'ghostata' : profile?.genere === 'm' ? 'ghostato' : 'ghostat*'}. Il problema è loro, non tu. 💜</p>}
-                {stats.offerte >= 1 && <p>🏆 {stats.offerte} offerta ricevuta. Ce l'hai fatta!</p>}
-                {stats.total > 0 && stats.colloqui === 0 && <p>🎯 Ancora nessun colloquio — prova a personalizzare le candidature.</p>}
+                {stats.tasso >= 15 && <p>🔥 {t('stats.tassoAlto', { tasso: stats.tasso })}</p>}
+                {stats.tasso < 10 && stats.total > 5 && <p>💪 {t('stats.tassoBasso', { tasso: stats.tasso })}</p>}
+                {stats.avgAttesa > 14 && <p>⏳ {t('stats.attesaLunga', { giorni: stats.avgAttesa })}</p>}
+                {stats.ghosted >= 3 && <p>👻 {t('stats.ghostedMsg', { count: stats.ghosted })}</p>}
+                {stats.offerte >= 1 && <p>🏆 {t('stats.offertaMsg', { count: stats.offerte })}</p>}
+                {stats.total > 0 && stats.colloqui === 0 && <p>🎯 {t('stats.nessunoColloquio')}</p>}
               </div>
             </div>
 
-            {/* Sentiment nel tempo */}
             {stats.sentimentByMonth.length >= 2 && (
               <div className="card">
-                <p className="section-label">😊 FEELING COLLOQUI NEL TEMPO</p>
-                <p className="text-xs text-muted mb-3">Media feeling mensile (1=😭 5=😍)</p>
+                <p className="section-label">😊 {t('stats.feelingTitolo')}</p>
+                <p className="text-xs text-muted mb-3">{t('stats.feelingDesc')}</p>
                 <div className="flex items-end gap-2 h-20 mt-2">
                   {stats.sentimentByMonth.map((m, i) => {
                     const pct = (m.avg / 5) * 100
@@ -287,19 +274,18 @@ export default function Stats({ onOpenCandidatura }) {
                 <p className="text-xs text-muted mt-2 italic">
                   {stats.sentimentByMonth.length >= 2 &&
                     stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg > stats.sentimentByMonth[0].avg
-                    ? '📈 Il tuo feeling è migliorato nel tempo!'
+                    ? t('stats.feelingMigliorato')
                     : stats.sentimentByMonth[stats.sentimentByMonth.length-1].avg < stats.sentimentByMonth[0].avg
-                    ? '💪 Momento difficile — ma ogni colloquio è pratica!'
-                    : '→ Feeling stabile nel tempo.'}
+                    ? t('stats.feelingPeggiorato')
+                    : t('stats.feelingStabile')}
                 </p>
               </div>
             )}
 
-            {/* Top aziende */}
             {stats.topAziende.length > 0 && (
               <div className="card">
-                <p className="section-label">🏢 AZIENDE PIÙ ATTIVE</p>
-                <p className="text-xs text-muted mb-3">Aziende con più colloqui/avanzamenti</p>
+                <p className="section-label">🏢 {t('stats.aziendeAttive')}</p>
+                <p className="text-xs text-muted mb-3">{t('stats.aziendeAttiveDesc')}</p>
                 <div className="space-y-2">
                   {stats.topAziende.map(([nome, data], i) => (
                     <div key={nome}>
@@ -312,7 +298,7 @@ export default function Stats({ onOpenCandidatura }) {
                       }} className="flex items-center gap-3 py-1 w-full active:opacity-70">
                         <span className="text-lg">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
                         <span className="flex-1 text-sm font-medium text-txt truncate text-left">{nome}</span>
-                        <span className="text-xs text-purple-soft font-semibold">{data.count} avanzamenti</span>
+                        <span className="text-xs text-purple-soft font-semibold">{data.count} {t('stats.avanzamenti')}</span>
                         {data.cands.length > 1 && <span className="text-muted text-xs">{expandedAzienda === nome ? '▲' : '▼'}</span>}
                       </button>
                       {expandedAzienda === nome && data.cands.length > 1 && (
@@ -332,22 +318,20 @@ export default function Stats({ onOpenCandidatura }) {
               </div>
             )}
 
-            {/* Hall of Shame */}
             {stats.ghostedList.length > 0 && (
               <div className="card">
-                <p className="section-label">👻 HALL OF SHAME</p>
-                <p className="text-xs text-muted mb-3 italic">Le aziende che sono sparite nel nulla.</p>
+                <p className="section-label">👻 {t('stats.hallOfShame')}</p>
+                <p className="text-xs text-muted mb-3 italic">{t('stats.hallOfShameDesc')}</p>
                 <div className="space-y-2">
                   {stats.ghostedList.slice(0, 5).map(cand => (
                     <button key={cand.id} onClick={() => onOpenCandidatura && onOpenCandidatura(cand)}
-                      className="flex items-center justify-between py-1.5 w-full text-left
-                      border-b border-border last:border-0 active:opacity-70">
+                      className="flex items-center justify-between py-1.5 w-full text-left border-b border-border last:border-0 active:opacity-70">
                       <div>
                         <p className="text-sm font-medium text-txt">{cand.azienda}</p>
                         <p className="text-xs text-muted">{cand.ruolo}</p>
                       </div>
                       <span className="text-xs text-red font-medium">
-                        {cand.giorni}gg di silenzio →
+                        {cand.giorni}{t('stats.ggSilenzio')} →
                       </span>
                     </button>
                   ))}
