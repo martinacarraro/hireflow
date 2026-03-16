@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LOADING_TIPS, LOADING_TIPS_EN, randomInt } from '../lib/utils'
+import { LOADING_TIPS, randomInt } from '../lib/utils'
 
 export default function Splash({ onDone }) {
   const { t, i18n } = useTranslation()
