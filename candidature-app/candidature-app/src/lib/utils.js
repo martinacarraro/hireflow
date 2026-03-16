@@ -468,6 +468,33 @@ export const LOADING_TIPS = [
   { cat: '🚀 Pro tip',   text: "Candidarsi alle 9-11 di mattina aumenta le chance di essere visti. I recruiter iniziano la giornata freschi." },
   { cat: '🚀 Pro tip',   text: "Un messaggio diretto al recruiter su LinkedIn dopo la candidatura può fare la differenza." },
 ]
+export const LOADING_TIPS_EN = [
+  { cat: '🎙️ Interview', text: "Arrive 5 minutes early (not 20) — it shows organization, not anxiety." },
+  { cat: '🎙️ Interview', text: "The question 'Do you have any questions for us?' is NOT rhetorical. Prepare at least 2." },
+  { cat: '🎙️ Interview', text: "Talk about results with numbers: 'I increased X by 30%' beats 'I worked on X'." },
+  { cat: '🎙️ Interview', text: "If you don't understand a question, ask them to repeat it. It shows attention, not ignorance." },
+  { cat: '🎙️ Interview', text: "End of interview: always ask 'What are the next steps?' It positions you as someone who means business." },
+  { cat: '🎙️ Interview', text: "After the interview, send a thank-you email within 24h. Few people do it. Those few are remembered." },
+  { cat: '🎙️ Interview', text: "On salary: research the average on LinkedIn or Glassdoor before answering. Don't shoot in the dark." },
+  { cat: '📄 CV',        text: "The perfect CV fits one page (if you have less than 10 years of experience). Less is more." },
+  { cat: '📄 CV',        text: "Customize every CV. Copy keywords from the job posting — ATS systems will thank you." },
+  { cat: '📄 CV',        text: "Apply even if you don't meet 100% of the requirements. Companies write their wish list." },
+  { cat: '📄 CV',        text: "LinkedIn with 'Open to work' visible only to recruiters = applications that come to you." },
+  { cat: '📄 CV',        text: "Gap in your CV? Don't hide it. Prepare to tell it in a positive way." },
+  { cat: '💜 Mindset',  text: "Job searching is a funnel. The more you apply, the more interviews you get. It's math." },
+  { cat: '💜 Mindset',  text: "A rejection is not a judgment on you. It's just a mismatch. Often not even that." },
+  { cat: '💜 Mindset',  text: "Ghosting is a company's rudeness, not your fault. Period." },
+  { cat: '💜 Mindset',  text: "The average response rate is under 10%. If you get more than 5%, you're already winning." },
+  { cat: '💜 Mindset',  text: "Treating job searching like a real job (fixed hours, breaks) makes it less stressful." },
+  { cat: '💜 Mindset',  text: "Talk about your search with friends and family. 70% of jobs are found through networking." },
+  { cat: '🏆 Offer',    text: "Got an offer? You can negotiate. 85% of companies expect a counteroffer." },
+  { cat: '🏆 Offer',    text: "Before signing, read the full contract. It's normal, professional, and your right." },
+  { cat: '🏆 Offer',    text: "Compare the full package: salary, benefits, holidays, remote work. Pay is just one part." },
+  { cat: '🚀 Pro tip',  text: "Tracking your applications (like you're doing here!) reduces the anxiety of 'how many did I send?'." },
+  { cat: '🚀 Pro tip',  text: "Using this app? You're already more organized than 90% of job seekers out there." },
+  { cat: '🚀 Pro tip',  text: "Applying between 9-11am increases your chances of being seen. Recruiters start fresh." },
+  { cat: '🚀 Pro tip',  text: "A direct message to the recruiter on LinkedIn after applying can make all the difference." },
+]
 
 // ─── CHECKLIST DEFAULT TASKS ─────────────────────────────────────
 
