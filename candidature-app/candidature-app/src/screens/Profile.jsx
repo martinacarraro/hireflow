@@ -22,7 +22,7 @@ const FONTI = ['Instagram','TikTok','LinkedIn','Amico/a','Google','Reddit','Altr
 
 const getBadgeName = (badge, genere, t) => t(`badges.${badge.id}`, badge.name)
 
-const getBadgeDesc = (badge, genere) => {
+const getBadgeDesc = (badge, genere, t) => {
   if (badge.descF && badge.descM) {
     if (genere === 'f') return badge.descF
     if (genere === 'm') return badge.descM
@@ -693,7 +693,7 @@ const { t, i18n } = useTranslation()
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-txt">Condividi su LinkedIn</p>
+                <p className="text-sm font-bold text-txt">t('profile.condividiLinkedIn')</p>
                 <p className="text-xs text-muted">Il testo è già copiato negli appunti 📋</p>
               </div>
             </div>
@@ -709,7 +709,7 @@ const { t, i18n } = useTranslation()
               setLinkedinPending(null)
             }} className="w-full py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
               style={{ background: '#0A66C2' }}>
-              Apri LinkedIn e incolla →
+              t('profile.apriLinkedIn')
             </button>
             <button onClick={() => setLinkedinPending(null)}
               className="text-xs text-muted text-center w-full py-1">Annulla</button>
@@ -724,7 +724,7 @@ const { t, i18n } = useTranslation()
             <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
               dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
             <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere, t)}</h3>
-            <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere)}</p>
+            <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere, t)}</p>
             <div className="space-y-2">
               <button
                 onClick={async () => {
@@ -746,10 +746,10 @@ const { t, i18n } = useTranslation()
                   })
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
-                🔗 Copia link + testo
+                t('profile.copiaLink')
               </button>
             </div>
-            <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">Chiudi</button>
+            <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">{t('profile.chiudiBadge')}</button>
           </div>
         </div>
       )}
