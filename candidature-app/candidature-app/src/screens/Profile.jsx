@@ -468,7 +468,7 @@ const { i18n } = useTranslation()
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImport} />
           <button onClick={() => fileRef.current?.click()} disabled={importing}
             className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-            {importing ? <><Spinner size={16} /> {t('profile.importazione')}</> : '{t('profile.caricaExcel')}'}
+            {importing ? <><Spinner size={16} /> {t('profile.importazione')}</> : t('profile.caricaExcel')}
           </button>
           {importError && <p className="text-xs text-red mt-2">{importError}</p>}
           <p className="text-[10px] text-muted mt-2 text-center">{t('profile.supportaFormati')}</p>
