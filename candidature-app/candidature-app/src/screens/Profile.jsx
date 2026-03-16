@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { XpBar, LevelBadge, SectionLabel, ConfirmDialog, Spinner } from '../components/UI'
 import { BADGES } from '../lib/utils'
 import { supabase } from '../lib/supabase'
-
+import { useTranslation } from 'react-i18next'
 const GENERI = [
   { value: 'f', label: 'Donna', emoji: '👩' },
   { value: 'm', label: 'Uomo', emoji: '👨' },
@@ -134,7 +134,7 @@ export default function Profile() {
   const [infoSettoreCustom, setInfoSettoreCustom] = useState('')
   const [infoFonte, setInfoFonte]             = useState(profile?.come_conosciuto || '')
   const fileRef = useRef()
-
+const { i18n } = useTranslation()
   const nome   = profile?.nome || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utente'
   const foto   = user?.user_metadata?.avatar_url
   const xp     = profile?.xp_points || 0
@@ -475,7 +475,40 @@ export default function Profile() {
 
         {/* Preferenze */}
         <div className="card">
-          <SectionLabel>PREFERENZE 🔔</SectionLabel>
+          <SectionLabel>PREFERENZE 🔔</SectionLabel><div className="card">
+  <SectionLabel>PREFERENZE 🔔</SectionLabel>
+
+  {/* Selezione lingua */}
+  <div className="flex items-center justify-between py-2.5 border-b border-border">
+    <div>
+      <p className="text-sm font-medium text-txt">🌍 Lingua / Language</p>
+      <p className="text-xs text-muted">Cambia la lingua dell'app</p>
+    </div>
+    <div className="flex gap-2">
+      <button
+        onClick={() => { i18n.changeLanguage('it'); localStorage.setItem('lingua', 'it') }}
+        className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+        style={{
+          background: i18n.language === 'it' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)',
+          color: 'white',
+          border: i18n.language === 'it' ? 'none' : '1px solid rgba(255,255,255,0.15)'
+        }}>
+        🇮🇹 IT
+      </button>
+      <button
+        onClick={() => { i18n.changeLanguage('en'); localStorage.setItem('lingua', 'en') }}
+        className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+        style={{
+          background: i18n.language === 'en' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)',
+          color: 'white',
+          border: i18n.language === 'en' ? 'none' : '1px solid rgba(255,255,255,0.15)'
+        }}>
+        🇬🇧 EN
+      </button>
+    </div>
+  </div>
+
+  <div className="flex items-center justify-between py-2.5">
           <div className="flex items-center justify-between py-2.5">
             <div>
               <p className="text-sm font-medium text-txt">🔔 Notifiche push</p>
