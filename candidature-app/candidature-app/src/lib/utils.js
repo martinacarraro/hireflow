@@ -423,9 +423,14 @@ export const MOTTOS_SERA = [
 ]
 
 // Ritorna la frase giusta in base all'ora — cambia ogni giorno
-export function getMotto() {
+export function getMotto(lang = 'it') {
   const h = new Date().getHours()
   const day = new Date().getDate()
+  if (lang === 'en') {
+    if (h >= 5 && h < 12) return MOTTOS_MATTINO_EN[day % MOTTOS_MATTINO_EN.length]
+    if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO_EN[day % MOTTOS_POMERIGGIO_EN.length]
+    return MOTTOS_SERA_EN[day % MOTTOS_SERA_EN.length]
+  }
   if (h >= 5 && h < 12) return MOTTOS_MATTINO[day % MOTTOS_MATTINO.length]
   if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO[day % MOTTOS_POMERIGGIO.length]
   return MOTTOS_SERA[day % MOTTOS_SERA.length]
@@ -483,12 +488,47 @@ export function getInitial(name = '') {
   return name.trim().charAt(0).toUpperCase() || '?'
 }
 
-export function getGreeting(name = '') {
+export function getGreeting(name = '', lang = 'it') {
   const h = new Date().getHours()
+  if (lang === 'en') {
+    if (h >= 5 && h < 12)  return `Good morning ${name} ☀️`
+    if (h >= 12 && h < 18) return `Hello ${name} 👋`
+    return `Good evening ${name} 🌙`
+  }
   if (h >= 5 && h < 12)  return `Buongiorno ${name} ☀️`
   if (h >= 12 && h < 18) return `Ciao ${name} 👋`
   return `Buonasera ${name} 🌙`
 }
+export const MOTTOS_MATTINO_EN = [
+  'Good morning. Every application you send today is a step forward. 🌅',
+  'The early bird catches the worm — and you have your CV ready. 💛',
+  'A new day, new opportunities not to be missed. 🚀',
+  'Start the day with one goal: one more application. 🎯',
+  'The job market never sleeps — and neither do you. Go! ☀️',
+  'Every morning is a new chapter. Write it well. ✍️',
+]
+
+export const MOTTOS_POMERIGGIO_EN = [
+  'You are building something, one application at a time. 🧱',
+  '"We\'ll let you know." — And you keep count. 📬',
+  'Every no brings you closer to the right yes. ✨',
+  'Don\'t wait for them to get back to you — follow up. 📞',
+  'Organisation is half the battle. The other half is you. 💜',
+  'Your next job already exists. You\'re finding it. 💡',
+  'Every interview is practice for the right one. 🎙️',
+  '"We\'ll review your profile." — Meanwhile, you move on. 🚀',
+]
+
+export const MOTTOS_SERA_EN = [
+  'Good day. Tomorrow we start again, stronger than today. 🌙',
+  'Company silence is never the final word. 🤐',
+  'Hold on. The market doesn\'t know what it\'s missing yet. 💪',
+  'Every day that passes you\'re closer to the right answer. 🌟',
+  'Rest. Those who job hunt with heart and mind deserve a break too. 💜',
+  'Job hunting is a marathon, not a sprint. Great pace today. 🏃',
+  'Ghosted? It happens to the best. Keep going. 👻',
+]
+
 
 export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
