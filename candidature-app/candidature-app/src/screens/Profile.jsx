@@ -20,18 +20,7 @@ const SETTORI = [
 ]
 const FONTI = ['Instagram','TikTok','LinkedIn','Amico/a','Google','Reddit','Altro']
 
-const getBadgeName = (badge, genere) => {
-  if (badge.nameF && badge.nameM) {
-    if (genere === 'f') return badge.nameF
-    if (genere === 'm') return badge.nameM
-    return badge.name
-  }
-  const n = badge.name
-  if (!n.endsWith('*')) return n
-  if (genere === 'f') return n.slice(0,-1) + 'a'
-  if (genere === 'm') return n.slice(0,-1) + 'o'
-  return n
-}
+const getBadgeName = (badge, genere) => t(`badges.${badge.id}`, badge.name)
 
 const getBadgeDesc = (badge, genere) => {
   if (badge.descF && badge.descM) {

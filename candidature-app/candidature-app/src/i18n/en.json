@@ -379,5 +379,27 @@
   "salta": "Skip",
   "avanti": "Next →",
   "inizia": "🚀 Let's go!"
+},
+"badges": {
+  "first": "First Application",
+  "ten": "Sharpshooter",
+  "twentyfive": "Unstoppable",
+  "fifty": "Legend",
+  "colloquio1": "In the Game",
+  "fire": "On Fire",
+  "resilient": "Resilient",
+  "offer": "You made it!",
+  "assunta": "You really made it!",
+  "ghosthunter": "Ghost Hunter",
+  "writer": "Writer",
+  "dates": "Punctual",
+  "world": "Cosmopolitan",
+  "checklist": "Organised",
+  "hundred": "Centurion",
+  "speed": "Speed Runner",
+  "linked": "Link Master",
+  "streak3": "Consistent",
+  "secondcol": "Finalist",
+  "pioneer": "Pioneer"
 }
 }

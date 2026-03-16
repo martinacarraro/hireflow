@@ -379,5 +379,27 @@
   "salta": "Salta",
   "avanti": "Avanti →",
   "inizia": "🚀 Inizia!"
+},
+"badges": {
+  "first": "Prima Candidatura",
+  "ten": "Cecchina",
+  "twentyfive": "Instancabile",
+  "fifty": "Leggenda",
+  "colloquio1": "In the Game",
+  "fire": "On Fire",
+  "resilient": "Resiliente",
+  "offer": "Ce l'hai fatta!",
+  "assunta": "Ce l'hai fatta davvero!",
+  "ghosthunter": "Ghost Hunter",
+  "writer": "Scrittrice",
+  "dates": "Puntuale",
+  "world": "Cosmopolita",
+  "checklist": "Organizzata",
+  "hundred": "Centurione",
+  "speed": "Speed Runner",
+  "linked": "Link Master",
+  "streak3": "Costante",
+  "secondcol": "Finalista",
+  "pioneer": "Pioniera"
 }
 }
