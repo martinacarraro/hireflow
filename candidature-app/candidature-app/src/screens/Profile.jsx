@@ -20,7 +20,7 @@ const SETTORI = [
 ]
 const FONTI = ['Instagram','TikTok','LinkedIn','Amico/a','Google','Reddit','Altro']
 
-const getBadgeName = (badge, genere) => t(`badges.${badge.id}`, badge.name)
+const getBadgeName = (badge, genere, t) => t(`badges.${badge.id}`, badge.name)
 
 const getBadgeDesc = (badge, genere) => {
   if (badge.descF && badge.descM) {
@@ -430,7 +430,7 @@ const { t, i18n } = useTranslation()
                     : <span className="text-2xl mb-1">🔒</span>
                   }
                   <p className="text-[9px] leading-tight" style={{ color: isEarned ? badge.color : '#6B7280' }}>
-                    {isEarned ? getBadgeName(badge, profile?.genere) : '???'}
+                    {isEarned ? getBadgeName(badge, profile?.genere, t) : '???'}
                   </p>
                 </button>
               )
@@ -723,7 +723,7 @@ const { t, i18n } = useTranslation()
             style={{ borderTop: `3px solid ${selectedBadge.color}` }}>
             <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
               dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
-            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere)}</h3>
+            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere, t)}</h3>
             <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere)}</p>
             <div className="space-y-2">
               <button
@@ -740,7 +740,7 @@ const { t, i18n } = useTranslation()
               <button
                 onClick={() => {
                   const link = `https://lefaremosapere-mocha.vercel.app?badge=${selectedBadge.id}`
-                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${getBadgeName(selectedBadge, profile?.genere)}\n👉 ${link}`
+                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${getBadgeName(selectedBadge, profile?.genere, t)}\n👉 ${link}`
                   navigator.clipboard.writeText(text).then(() => {
                     alert('Link e testo copiati! 📋 Incollali dove vuoi.')
                   })
