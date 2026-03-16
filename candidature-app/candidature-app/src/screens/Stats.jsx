@@ -162,7 +162,7 @@ export default function Stats({ onOpenCandidatura }) {
                   return (
                     <div key={stato}>
                       <div className="flex justify-between text-xs mb-1">
-                        <span style={{ color: cfg.color }}>{cfg.emoji} {stato}</span>
+                        <span style={{ color: cfg.color }}>{cfg.emoji} {t(`home.statiLabel.${stato}`, stato)}</span>
                         <span className="text-muted">{count} ({pct}%)</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -191,7 +191,7 @@ export default function Stats({ onOpenCandidatura }) {
                             <div className="w-full rounded-t-md transition-all"
                               style={{ height: `${pct}px`, minHeight: count ? 4 : 0, background: cfg.color ? cfg.color + '55' : 'rgba(139,92,246,0.3)', borderTop: `2px solid ${cfg.color || '#8B5CF6'}` }} />
                             <span className="text-[8px] text-muted text-center leading-tight" style={{ maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                              {cfg.emoji} {stato === 'In attesa risposta' ? t('stats.attesa') : stato === 'Secondo colloquio' ? t('stats.secondoCol') : stato === 'Offerta ricevuta' ? t('stats.offerta') : stato}
+                              {cfg.emoji} {t(`home.statiLabel.${stato}`, stato)}
                             </span>
                           </div>
                         )

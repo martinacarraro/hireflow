@@ -79,8 +79,25 @@
     "eliminaTitle": "Delete {{count}} applications",
     "eliminaMsg": "You are about to delete {{count}} applications. This action is irreversible.",
     "archiviaTitle": "Archive {{count}} applications",
-    "archiviaMsg": "Archived applications disappear from home but remain saved."
+    "archiviaMsg": "Archived applications disappear from home but remain saved.",
+    "statiLabel": {
+      "Inviata": "Sent",
+      "Vista": "Seen",
+      "Prima call": "First call",
+      "Colloquio": "Interview",
+      "Secondo colloquio": "2nd Interview",
+      "In attesa risposta": "Waiting",
+      "Non mi piace": "Not interested",
+      "Rifiutata": "Rejected",
+      "GHOSTED": "GHOSTED",
+      "Spontanea": "Spontaneous",
+      "Offerta ricevuta": "Offer received",
+      "Assunta": "Hired",
+      "Assunto": "Hired",
+      "Assunt*": "Hired"
+    }
   },
+  
   "stats": {
   "titolo": "Your stats 📊",
   "sottotitolo": "Because numbers don't lie.",

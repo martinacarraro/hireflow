@@ -80,7 +80,23 @@
     "eliminaTitle": "Elimina {{count}} candidature",
     "eliminaMsg": "Stai per eliminare {{count}} candidature. Questa azione è irreversibile.",
     "archiviaTitle": "Archivia {{count}} candidature",
-    "archiviaMsg": "Le candidature archiviate spariscono dalla home ma restano salvate."
+    "archiviaMsg": "Le candidature archiviate spariscono dalla home ma restano salvate.",
+  "statiLabel": {
+  "Inviata": "Inviata",
+  "Vista": "Vista",
+  "Prima call": "Prima call",
+  "Colloquio": "Colloquio",
+  "Secondo colloquio": "Secondo colloquio",
+  "In attesa risposta": "In attesa risposta",
+  "Non mi piace": "Non mi piace",
+  "Rifiutata": "Rifiutata",
+  "GHOSTED": "GHOSTED",
+  "Spontanea": "Spontanea",
+  "Offerta ricevuta": "Offerta ricevuta",
+  "Assunta": "Assunta",
+  "Assunto": "Assunto",
+  "Assunt*": "Assunt*"
+}
   },
   "stats": {
     "titolo": "Le tue stats 📊",
