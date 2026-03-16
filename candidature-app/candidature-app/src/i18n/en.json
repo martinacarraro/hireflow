@@ -345,5 +345,22 @@
   "copiaLink": "🔗 Copy link + text",
   "linkCopiato": "Link and text copied! 📋 Paste them anywhere.",
   "chiudiBadge": "Close"
+},
+"tutorial": {
+  "welcomeF": "Welcome!",
+  "welcomeM": "Welcome!",
+  "welcomeNB": "Welcome!",
+  "welcomeBody": "This quick tour shows you the main features.\nYou can skip it at any time.",
+  "addTitle": "Add applications",
+  "addBody": "Tap this button to add a new application. It takes 30 seconds.",
+  "tabsTitle": "The sections",
+  "tabsBody": "📅 Calendar → interviews by date\n📊 Stats → charts and insights\n👤 Profile → level, badges and settings",
+  "homeTitle": "Your applications",
+  "homeBody": "See everything in order. Tap an application to open it, update it and add notes.",
+  "excelTitle": "Already have applications?",
+  "excelBody": "Go to Profile → Import Applications: download the Excel template, fill it in and upload it. The app fills itself in seconds! 🚀",
+  "salta": "Skip",
+  "avanti": "Next →",
+  "inizia": "🚀 Let's go!"
 }
 }

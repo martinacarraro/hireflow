@@ -346,5 +346,22 @@
   "copiaLink": "🔗 Copia link + testo",
   "linkCopiato": "Link e testo copiati! 📋 Incollali dove vuoi.",
   "chiudiBadge": "Chiudi"
+},
+"tutorial": {
+  "welcomeF": "Benvenuta!",
+  "welcomeM": "Benvenuto!",
+  "welcomeNB": "Benvenut*!",
+  "welcomeBody": "Questo breve tour ti mostra le funzioni principali.\nPuoi saltarlo in qualsiasi momento.",
+  "addTitle": "Aggiungi candidature",
+  "addBody": "Premi questo tasto per aggiungere una nuova candidatura. Ci vogliono 30 secondi.",
+  "tabsTitle": "Le sezioni",
+  "tabsBody": "📅 Calendario → colloqui per data\n📊 Stats → grafici e insight\n👤 Profilo → livello, badge e impostazioni",
+  "homeTitle": "Le tue candidature",
+  "homeBody": "Qui vedi tutto in ordine. Tocca una candidatura per aprirla, aggiornarla e aggiungere note.",
+  "excelTitle": "Hai già candidature?",
+  "excelBody": "Vai in Profilo → Importa Candidature: scarica il template Excel, compilalo e caricalo. L'app si completa da sola! 🚀",
+  "salta": "Salta",
+  "avanti": "Avanti →",
+  "inizia": "🚀 Inizia!"
 }
 }

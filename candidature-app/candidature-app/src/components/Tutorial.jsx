@@ -1,53 +1,45 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApp } from '../contexts/AppContext'
 
-const getSteps = (genere) => [
+const getSteps = (genere, t) => [
   {
     id: 'welcome',
     emoji: '👋',
-    title: genere === 'f' ? 'Benvenuta!' : genere === 'm' ? 'Benvenuto!' : 'Benvenut*!',
-    body: 'Questo breve tour ti mostra le funzioni principali.\nPuoi saltarlo in qualsiasi momento.',
+    title: genere === 'f' ? t('tutorial.welcomeF') : genere === 'm' ? t('tutorial.welcomeM') : t('tutorial.welcomeNB'),
+    body: t('tutorial.welcomeBody'),
     target: null,
     tooltipPos: 'center',
   },
   {
     id: 'add',
     emoji: '➕',
-    title: 'Aggiungi candidature',
-    body: 'Premi questo tasto per aggiungere una nuova candidatura. Ci vogliono 30 secondi.',
+    title: t('tutorial.addTitle'),
+    body: t('tutorial.addBody'),
     target: '[data-tutorial="add-btn"]',
-    pad: 12,
-    shape: 'circle',
-    tooltipPos: 'top',
-    arrow: 'down',
+    pad: 12, shape: 'circle', tooltipPos: 'top', arrow: 'down',
   },
   {
     id: 'tabs',
     emoji: '📊',
-    title: 'Le sezioni',
-    body: '📅 Calendario → colloqui per data\n📊 Stats → grafici e insight\n👤 Profilo → livello, badge e impostazioni',
+    title: t('tutorial.tabsTitle'),
+    body: t('tutorial.tabsBody'),
     target: '[data-tutorial="tabbar"]',
-    pad: 6,
-    shape: 'rect',
-    tooltipPos: 'top',
-    arrow: 'down',
+    pad: 6, shape: 'rect', tooltipPos: 'top', arrow: 'down',
   },
   {
     id: 'home',
     emoji: '🏠',
-    title: 'Le tue candidature',
-    body: 'Qui vedi tutto in ordine. Tocca una candidatura per aprirla, aggiornarla e aggiungere note.',
+    title: t('tutorial.homeTitle'),
+    body: t('tutorial.homeBody'),
     target: '[data-tutorial="card-list"]',
-    pad: 8,
-    shape: 'rect',
-    tooltipPos: 'bottom',
-    arrow: 'up',
+    pad: 8, shape: 'rect', tooltipPos: 'bottom', arrow: 'up',
   },
   {
     id: 'excel',
     emoji: '📥',
-    title: 'Hai già candidature?',
-    body: "Vai in Profilo → Importa Candidature: scarica il template Excel, compilalo e caricalo. L'app si completa da sola! 🚀",
+    title: t('tutorial.excelTitle'),
+    body: t('tutorial.excelBody'),
     target: null,
     tooltipPos: 'center',
   },
@@ -55,7 +47,8 @@ const getSteps = (genere) => [
 
 export default function Tutorial({ onDone }) {
   const { profile } = useApp()
-  const STEPS = useMemo(() => getSteps(profile?.genere), [profile?.genere])
+  const { t } = useTranslation()
+  const STEPS = useMemo(() => getSteps(profile?.genere, t), [profile?.genere, t])
   const [step, setStep] = useState(0)
   const [visible, setVisible] = useState(false)
   const [spotRect, setSpotRect] = useState(null)
@@ -181,10 +174,10 @@ export default function Tutorial({ onDone }) {
             <p style={{ fontSize: 12.5, color: '#999', lineHeight: 1.65, textAlign: 'center', whiteSpace: 'pre-line' }}>{cur.body}</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={skip} style={{ flex: 1, padding: '9px 0', borderRadius: 12, background: 'transparent', border: '1px solid #1e1e38', color: '#555', fontSize: 12, cursor: 'pointer' }}>
-                Salta
+                {t('tutorial.salta')}
               </button>
               <button onClick={next} style={{ flex: 2, padding: '9px 0', borderRadius: 12, background: 'linear-gradient(135deg,#7B2FFF,#FF2D8B)', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                {isLast ? '🚀 Inizia!' : 'Avanti →'}
+                {isLast ? t('tutorial.inizia') : t('tutorial.avanti')}
               </button>
             </div>
           </div>
