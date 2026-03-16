@@ -3,7 +3,7 @@ import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
-
+import { useTranslation } from 'react-i18next'
 
 function GuestConvertModal({ onClose, onSuccess }) {
   const [email, setEmail] = React.useState('')
@@ -11,10 +11,11 @@ function GuestConvertModal({ onClose, onSuccess }) {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const { migrateGuestToAccount } = useApp()
+  const { t } = useTranslation()
 
   const handle = async () => {
-    if (!email || !password) return setError('Compila tutti i campi')
-    if (password.length < 6) return setError('Password minimo 6 caratteri')
+    if (!email || !password) return setError(t('home.compilaCampi'))
+    if (password.length < 6) return setError(t('home.passwordMinimo'))
     setLoading(true); setError('')
     const result = await migrateGuestToAccount(email, password)
     setLoading(false)
@@ -28,21 +29,21 @@ function GuestConvertModal({ onClose, onSuccess }) {
         <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
         <div className="text-center">
           <p className="text-2xl mb-1">👻✨</p>
-          <h3 className="font-bold text-txt text-lg">Salva i tuoi progressi</h3>
-          <p className="text-muted text-sm mt-1">Crea un account gratuito e non perdi nulla — candidature, XP e badge.</p>
+          <h3 className="font-bold text-txt text-lg">{t('home.salvaProgressi')}</h3>
+          <p className="text-muted text-sm mt-1">{t('home.salvaProgressiDesc')}</p>
         </div>
-        <input className="input-field" type="email" placeholder="La tua email"
+        <input className="input-field" type="email" placeholder={t('login.tuaEmail')}
           value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="input-field" type="password" placeholder="Scegli una password (min. 6 caratteri)"
+        <input className="input-field" type="password" placeholder={t('home.scegliPassword')}
           value={password} onChange={e => setPassword(e.target.value)} />
         {error && <p className="text-red text-xs text-center">{error}</p>}
         <button onClick={handle} disabled={loading}
           className="w-full py-3.5 rounded-2xl font-bold text-white transition-opacity"
           style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: loading ? 0.6 : 1 }}>
-          {loading ? '⏳ Salvataggio...' : '🚀 Crea account e salva tutto'}
+          {loading ? t('home.salvataggio') : t('home.creaAccountSalva')}
         </button>
         <button onClick={onClose} className="w-full text-center text-muted text-sm py-2">
-          Continua come ospite
+          {t('home.continuaOspite')}
         </button>
       </div>
     </div>
@@ -52,56 +53,52 @@ function GuestConvertModal({ onClose, onSuccess }) {
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
+  const { t } = useTranslation()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
 
-  // Restore scroll position when returning from detail
   useEffect(() => {
     if (scrollRef.current && scrollPos > 0) {
       scrollRef.current.scrollTop = scrollPos
     }
   }, [])
 
-  // Scroll to top when home tab tapped again
   useEffect(() => {
     if (scrollToTop > 0 && scrollRef.current) {
       scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [scrollToTop])
 
-  // Save scroll position as user scrolls
   const handleScroll = useCallback((e) => {
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
+
   const motto = getMotto()
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [collapsed, setCollapsed] = useState({ 'Ritirata': true })
-  const [reminderFor, setReminderFor] = useState(null) // candidatura for custom reminder
-
-  // Selezione multipla
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
-    { emoji: '📞', label: 'Prima call', stato: 'Prima call',         color: '#A855F7' },
-    { emoji: '🎙️', label: 'Colloquio', stato: 'Colloquio',          color: '#22C55E' },
-    { emoji: '🎙️🎙️', label: '2° Col.',  stato: 'Secondo colloquio',  color: '#16A34A' },
-    { emoji: '⏳', label: 'Attesa',     stato: 'In attesa risposta', color: '#EAB308' },
-    { emoji: '📤', label: 'Inviata',    stato: 'Inviata',            color: '#3B82F6' },
-    { emoji: '👀', label: 'Vista',      stato: 'Vista',              color: '#F97316' },
-    { emoji: '❌', label: 'Rifiutata',  stato: 'Rifiutata',          color: '#EF4444' },
-    { emoji: '😕', label: 'Non piace',  stato: 'Non mi piace',       color: '#6D28D9' },
-    { emoji: '👻', label: 'Ghostate',   stato: 'GHOSTED',            color: '#6B7280' },
-    { emoji: '💡', label: 'Spontanea',  stato: 'Spontanea',          color: '#9CA3AF' },
+    { emoji: '📞', label: t('home.primaCall'),  stato: 'Prima call',         color: '#A855F7' },
+    { emoji: '🎙️', label: t('home.colloquio'),  stato: 'Colloquio',          color: '#22C55E' },
+    { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
+    { emoji: '⏳', label: t('home.attesa'),      stato: 'In attesa risposta', color: '#EAB308' },
+    { emoji: '📤', label: t('home.inviata'),     stato: 'Inviata',            color: '#3B82F6' },
+    { emoji: '👀', label: t('home.vista'),       stato: 'Vista',              color: '#F97316' },
+    { emoji: '❌', label: t('home.rifiutata'),   stato: 'Rifiutata',          color: '#EF4444' },
+    { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
+    { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
+    { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
   ]
     .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
     .filter(s => s.count > 0),
-  [candidature])
+  [candidature, t])
 
   const candidatureFiltrate = useMemo(() => {
     let list = candidature.filter(c => !c.archiviata)
@@ -135,12 +132,11 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
-
-  // Duplicate candidatura
   const handleDuplicate = async (cand) => {
     const { id, created_at, updated_at, user_id, ...rest } = cand
     await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
   }
+
   const greet = getGreeting(nome)
 
   const toggleSelect = (id) => {
@@ -151,14 +147,10 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     })
   }
 
-  const selectAll = () => {
-    setSelected(new Set(candidatureFiltrate.map(c => c.id)))
-  }
+  const selectAll = () => setSelected(new Set(candidatureFiltrate.map(c => c.id)))
 
   const handleBulkDelete = async () => {
-    for (const id of selected) {
-      await deleteCandidatura(id)
-    }
+    for (const id of selected) await deleteCandidatura(id)
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkDelete(false)
@@ -167,32 +159,26 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
 
   const handleBulkArchive = async () => {
-    for (const id of selected) {
-      await updateCandidatura(id, { archiviata: true })
-    }
+    for (const id of selected) await updateCandidatura(id, { archiviata: true })
     setSelected(new Set())
     setSelectMode(false)
     setConfirmBulkArchive(false)
   }
 
-  const exitSelectMode = () => {
-    setSelectMode(false)
-    setSelected(new Set())
-  }
+  const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()) }
 
-  // ── NOTIFICATION PANEL ──────────────────────────────────────
   if (showNotifs) {
     return (
       <div className="screen">
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
           <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
-          <h2 className="font-bold text-txt">Notifiche 🔔</h2>
+          <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
         </div>
         <div className="flex-1 scrollable px-4 py-4">
           {notifications.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-2">🔕</p>
-              <p className="text-muted text-sm">Nessuna notifica ancora</p>
+              <p className="text-muted text-sm">{t('home.nessunaNotifica')}</p>
             </div>
           ) : notifications.map(n => (
             <div key={n.id}
@@ -219,7 +205,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     )
   }
 
-  // ── EMPTY STATE ──────────────────────────────────────────────
   if (candidature.length === 0) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -227,11 +212,11 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <EmptyState
             emoji="📭"
-            title="Nessuna candidatura ancora"
-            subtitle="Aggiungi la prima — ci vogliono 30 secondi. 😌"
+            title={t('home.nessunaCandidatura')}
+            subtitle={t('home.nessunaCandidaturaDesc')}
             action={
               <button onClick={onAdd} className="btn-primary mt-2 px-8">
-                + Aggiungi la prima candidatura
+                {t('home.aggiungiPrima')}
               </button>
             }
           />
@@ -240,7 +225,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     )
   }
 
-  // ── MAIN ────────────────────────────────────────────────────
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <HomeHeader
@@ -258,7 +242,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
         onToggleSearch={() => { setShowSearch(s => !s); setSearchQuery('') }}
       />
 
-      {/* Search bar */}
       {showSearch && (
         <div className="px-4 pb-2 flex-shrink-0">
           <div className="relative">
@@ -266,7 +249,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
             <input
               autoFocus
               className="input-field pl-9 pr-9 text-sm w-full"
-              placeholder="Cerca azienda, ruolo, sede..."
+              placeholder={t('home.cercaPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -279,34 +262,30 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
       )}
 
       <div data-tutorial="card-list" className="flex-1 scrollable px-4 pt-2 pb-20" ref={scrollRef} onScroll={handleScroll}>
-
-        {/* Motto */}
         {!selectMode && (
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
           </div>
         )}
 
-        {/* GUEST BANNER */}
         {isGuest && (
           <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
             style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
             onClick={() => setShowGuestModal(true)}>
             <span className="text-xl">👻</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-txt">Modalità ospite — i dati non sono salvati</p>
-              <p className="text-xs text-muted">Tocca qui per creare un account gratuito →</p>
+              <p className="text-sm font-semibold text-txt">{t('home.modalitaOspite')}</p>
+              <p className="text-xs text-muted">{t('home.modalitaOspiteDesc')}</p>
             </div>
           </div>
         )}
 
-        {/* Filtri */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setFiltroStato(null)}
             className={`flex-shrink-0 rounded-full px-3 py-1.5 border text-xs font-semibold transition-all
               ${!filtroStato ? 'bg-purple border-purple text-white' : 'bg-surface border-border text-muted'}`}>
-            Tutti
+            {t('home.tutti')}
           </button>
           {stats.map(s => (
             <button key={s.stato}
@@ -323,11 +302,10 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
 
         {filtroStato && (
           <p className="text-xs text-muted mb-3">
-            Filtro: <span className="text-purple-soft font-semibold">{filtroStato}</span> — {candidatureFiltrate.length} candidature
+            {t('home.filtro')}: <span className="text-purple-soft font-semibold">{filtroStato}</span> — {candidatureFiltrate.length} {t('home.candidature')}
           </p>
         )}
 
-        {/* Lista */}
         {STATUS_GROUP_ORDER.map(stato => {
           const items = grouped[stato]
           if (!items) return null
@@ -340,8 +318,8 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
                 <div className="flex items-center gap-2">
                   <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: cfg.color }}>
                     {cfg.emoji} {stato === 'Assunta'
-  ? (profile?.genere === 'm' ? 'Assunto' : profile?.genere === 'nb' ? 'Assunt*' : 'Assunta')
-  : stato}
+                      ? (profile?.genere === 'm' ? 'Assunto' : profile?.genere === 'nb' ? 'Assunt*' : 'Assunta')
+                      : stato}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                     style={{ color: cfg.color, background: cfg.bg }}>
@@ -369,16 +347,16 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
 
       <ConfirmDialog
         isOpen={confirmBulkDelete}
-        title={`Elimina ${selected.size} candidature`}
-        message={`Stai per eliminare ${selected.size} candidature. Questa azione è irreversibile.`}
+        title={t('home.eliminaTitle', { count: selected.size })}
+        message={t('home.eliminaMsg', { count: selected.size })}
         onConfirm={handleBulkDelete}
         onCancel={() => setConfirmBulkDelete(false)}
         danger
       />
       <ConfirmDialog
         isOpen={confirmBulkArchive}
-        title={`Archivia ${selected.size} candidature`}
-        message={`Le candidature archiviate spariscono dalla home ma restano salvate. Puoi vederle nel Profilo.`}
+        title={t('home.archiviaTitle', { count: selected.size })}
+        message={t('home.archiviaMsg')}
         onConfirm={handleBulkArchive}
         onCancel={() => setConfirmBulkArchive(false)}
       />
@@ -389,27 +367,27 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
           onSuccess={() => setShowGuestModal(false)}
         />
       )}
-
     </div>
   )
 }
 
 function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
+  const { t } = useTranslation()
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
         <>
           <div className="flex items-center gap-3">
-            <button onClick={onExitSelect} className="text-muted text-sm active:scale-90">✕ Annulla</button>
-            <span className="text-sm font-semibold text-txt">{selectedCount} selezionate</span>
+            <button onClick={onExitSelect} className="text-muted text-sm active:scale-90">✕ {t('home.annulla')}</button>
+            <span className="text-sm font-semibold text-txt">{selectedCount} {t('home.selezionate')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={onSelectAll} className="text-xs text-purple-soft font-medium">Tutte</button>
+            <button onClick={onSelectAll} className="text-xs text-purple-soft font-medium">{t('home.tutte')}</button>
             <button onClick={onArchiveSelected}
               disabled={selectedCount === 0}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
                 ${selectedCount > 0 ? 'bg-surface border border-border text-muted active:scale-95' : 'bg-border text-disabled'}`}>
-              📦 Archivia ({selectedCount})
+              📦 {t('home.archivia')} ({selectedCount})
             </button>
             <button onClick={onDeleteSelected}
               disabled={selectedCount === 0}
@@ -446,6 +424,7 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
 }
 
 function DeadlineRow({ scadenza }) {
+  const { t } = useTranslation()
   const today = new Date(); today.setHours(0,0,0,0)
   const deadline = new Date(scadenza); deadline.setHours(0,0,0,0)
   const diff = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
@@ -453,13 +432,13 @@ function DeadlineRow({ scadenza }) {
   if (diff > 0) {
     return (
       <p className="text-xs font-semibold mt-1" style={{ color: '#34D399' }}>
-        ⏰ Responso entro {diff} {diff === 1 ? 'giorno' : 'giorni'}
+        ⏰ {t('home.responsoEntro', { giorni: diff, label: diff === 1 ? t('home.giorno') : t('home.giorni') })}
       </p>
     )
   } else if (diff === 0) {
     return (
       <p className="text-xs font-semibold mt-1" style={{ color: '#FBBF24' }}>
-        ⏰ Responso atteso oggi!
+        ⏰ {t('home.responsoOggi')}
       </p>
     )
   } else {
@@ -467,11 +446,11 @@ function DeadlineRow({ scadenza }) {
     return (
       <div className="mt-1">
         <p className="text-xs font-semibold" style={{ color: giorni <= 3 ? '#FBBF24' : '#F87171' }}>
-          {giorni <= 3 ? '⚠️' : '🚨'} Dovevano rispondere {giorni} {giorni === 1 ? 'giorno' : 'giorni'} fa
+          {giorni <= 3 ? '⚠️' : '🚨'} {t('home.dovevanoRispondere', { giorni, label: giorni === 1 ? t('home.giorno') : t('home.giorni') })}
         </p>
         {giorni > 3 && (
           <p className="text-[10px] font-medium mt-0.5" style={{ color: '#F87171' }}>
-            💬 Considera di ricontattare il recruiter!
+            💬 {t('home.consideraRicontattare')}
           </p>
         )}
       </div>
@@ -487,8 +466,8 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
   const STATI_ATTIVI = ['Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Offerta ricevuta']
   const isActive = STATI_ATTIVI.includes(c.stato)
+  const { t } = useTranslation()
 
-  // Long press: only if NOT scrolling
   const pressTimer = React.useRef(null)
   const startPos = React.useRef({ x: 0, y: 0 })
   const didScroll = React.useRef(false)
@@ -525,7 +504,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
       }}>
       {isStale && (
         <div className="flex items-center gap-1 mb-2 text-amber text-xs">
-          <span>⚠️</span><span>Nessuna risposta da {days} giorni</span>
+          <span>⚠️</span><span>{t('home.nessunaRisposta', { giorni: days })}</span>
         </div>
       )}
       <div className="flex items-start gap-3">
@@ -543,10 +522,9 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <div className="flex-shrink-0">
-                <StatusBadge stato={c.stato} genere={genere} />
-              </div>
+              <StatusBadge stato={c.stato} genere={genere} />
+            </div>
           </div>
-          {/* Date colloquio — sempre visibili se presenti */}
           {(c.data_colloquio || c.data_secondo_colloquio) && (
             <div className="mt-1.5 space-y-0.5">
               {c.data_colloquio && (
@@ -561,7 +539,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {c.priorita && isRecent && isActive && <PriorityBadge priorita={c.priorita} />}
-              <span className="text-xs text-muted font-medium">{days}gg fa</span>
+              <span className="text-xs text-muted font-medium">{days}{t('home.ggFa')}</span>
             </div>
           </div>
           {c.data_scadenza_responso && <DeadlineRow scadenza={c.data_scadenza_responso} />}
