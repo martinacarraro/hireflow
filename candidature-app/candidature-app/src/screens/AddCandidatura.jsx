@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
 import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
+import { useTranslation } from 'react-i18next'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
 export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura } = useApp()
+  const { t } = useTranslation()
   const [form, setForm] = useState({
     azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
     sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
@@ -38,17 +40,18 @@ export default function AddCandidatura({ onBack, onDone }) {
       } catch {
         setSuggestions([])
       }
-      setShowSugg(true) // sempre aperto mentre si digita
+      setShowSugg(true)
     }, 350)
   }, [form.azienda])
+
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
     const e = {}
-    if (!form.azienda.trim()) e.azienda = 'Campo obbligatorio'
-    if (!form.ruolo.trim()) e.ruolo = 'Campo obbligatorio'
-    if (!form.fonte) e.fonte = 'Seleziona la fonte'
+    if (!form.azienda.trim()) e.azienda = t('add.campoObbligatorio')
+    if (!form.ruolo.trim()) e.ruolo = t('add.campoObbligatorio')
+    if (!form.fonte) e.fonte = t('add.selezionaFonte')
     setErrors(e)
     return !Object.keys(e).length
   }
@@ -58,7 +61,7 @@ export default function AddCandidatura({ onBack, onDone }) {
     setLoading(true)
     const payload = {
       ...form,
-      azienda_domain: companyDomain,  // '' = no logo, 'domain.com' = logo, undefined = not set
+      azienda_domain: companyDomain,
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
       data_colloquio: form.data_colloquio || null,
@@ -72,26 +75,22 @@ export default function AddCandidatura({ onBack, onDone }) {
 
   return (
     <div className="screen">
-      {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">
-          ←
-        </button>
+        <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
         <div>
-          <h2 className="font-bold text-txt text-base">Nuova candidatura ✍️</h2>
-          <p className="text-xs text-muted italic">Compila i campi per aggiungere una candidatura.</p>
+          <h2 className="font-bold text-txt text-base">{t('add.titolo')}</h2>
+          <p className="text-xs text-muted italic">{t('add.sottotitolo')}</p>
         </div>
       </div>
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
 
-        {/* FONDAMENTALI */}
-        <SectionLabel>I FONDAMENTALI ✱</SectionLabel>
+        <SectionLabel>{t('add.fondamentali')}</SectionLabel>
 
-        <Field label="🏢 Azienda *">
+        <Field label={t('add.azienda')}>
           <div className="relative">
             <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
-              placeholder="Es: Spotify, Ferrero, Studio Rossi..."
+              placeholder={t('add.aziendaPlaceholder')}
               value={form.azienda}
               onChange={e => { set('azienda', e.target.value); setCompanyDomain(''); setShowSugg(false) }}
               onBlur={() => setTimeout(() => setShowSugg(false), 200)}
@@ -127,7 +126,7 @@ export default function AddCandidatura({ onBack, onDone }) {
                   <div className="w-8 h-8 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-purple-soft text-lg">+</span>
                   </div>
-                  <p className="text-sm text-muted">Usa "{form.azienda}" come nome personalizzato</p>
+                  <p className="text-sm text-muted">{t('add.usaNomePersonalizzato', { nome: form.azienda })}</p>
                 </button>
               </div>
             )}
@@ -135,70 +134,63 @@ export default function AddCandidatura({ onBack, onDone }) {
           {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
         </Field>
 
-        <Field label="💼 Ruolo *">
+        <Field label={t('add.ruolo')}>
           <input className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
-            placeholder="Es: UX Designer, Data Analyst, PM..."
+            placeholder={t('add.ruoloPlaceholder')}
             value={form.ruolo} onChange={e => set('ruolo', e.target.value)} />
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
-        <Field label="📋 Stato *">
+        <Field label={t('add.stato')}>
           <ChoicePicker value={form.stato} options={STATI}
             onChange={v => set('stato', v)} colorFn={statusColor} />
         </Field>
 
-        {/* DATE */}
-        <Field label="📅 Data candidatura *">
+        <Field label={t('add.dataCandidatura')}>
           <input className="input-field" type="date"
             value={form.data_invio} onChange={e => set('data_invio', e.target.value)} />
         </Field>
 
         {statiConColloquio.includes(form.stato) && (
-          <Field label="🗓️ Data colloquio">
+          <Field label={t('add.dataColloquio')}>
             <input className="input-field" type="date"
               value={form.data_colloquio} onChange={e => set('data_colloquio', e.target.value)} />
           </Field>
         )}
 
-        {/* SEDE */}
-        <SectionLabel>DOVE?</SectionLabel>
+        <SectionLabel>{t('add.dove')}</SectionLabel>
         <div className="flex gap-3">
-          <Field label="📍 Sede">
-            <input className="input-field" placeholder="Milano, Roma..."
+          <Field label={t('add.sede')}>
+            <input className="input-field" placeholder={t('add.sedePlaceholder')}
               value={form.sede} onChange={e => set('sede', e.target.value)} />
           </Field>
-          <Field label="🌍 Paese">
+          <Field label={t('add.paese')}>
             <input className="input-field" placeholder="Italia"
               value={form.paese} onChange={e => set('paese', e.target.value)} />
           </Field>
         </div>
 
-        {/* DETAILS */}
-        <SectionLabel>I DETTAGLI</SectionLabel>
+        <SectionLabel>{t('add.dettagli')}</SectionLabel>
 
-        <Field label="📣 Fonte *">
-          <ChoicePicker value={form.fonte} options={FONTI}
-            onChange={v => set('fonte', v)} />
-          {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">📣 Seleziona la fonte — ci aiuta a capire dove funziona meglio 🙏</p>}
+        <Field label={t('add.fonte')}>
+          <ChoicePicker value={form.fonte} options={FONTI} onChange={v => set('fonte', v)} />
+          {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">{t('add.fonteAvviso')}</p>}
         </Field>
 
-        <Field label="🔗 Link annuncio">
+        <Field label={t('add.linkAnnuncio')}>
           <div className="flex gap-2">
             <input className="input-field flex-1 text-sm" type="url"
-              placeholder="Incolla link LinkedIn, Indeed, sito..."
+              placeholder={t('add.linkPlaceholder')}
               value={form.link_annuncio} onChange={e => set('link_annuncio', e.target.value)} />
             {form.link_annuncio && (
               <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
-                className="flex-shrink-0 px-3 py-2 rounded-xl border border-border text-muted text-sm active:scale-95 transition-all">
-                ↗
-              </a>
+                className="flex-shrink-0 px-3 py-2 rounded-xl border border-border text-muted text-sm active:scale-95 transition-all">↗</a>
             )}
           </div>
           {form.link_annuncio && (
             <button
               onClick={async () => {
-                setImporting(true)
-                setImportNote('')
+                setImporting(true); setImportNote('')
                 try {
                   const jinaUrl = `https://r.jina.ai/${form.link_annuncio}`
                   const res = await fetch(jinaUrl, { headers: { 'Accept': 'text/plain' } })
@@ -227,29 +219,26 @@ ${snippet}`
                   if (parsed.ruolo) set('ruolo', parsed.ruolo)
                   if (parsed.sede) set('sede', parsed.sede)
                   if (parsed.descrizione) set('note', parsed.descrizione)
-                  setImportNote('✅ Dati importati! Controlla e correggi se necessario.')
+                  setImportNote(t('add.importOk'))
                 } catch(e) {
-                  setImportNote('⚠️ Impossibile leggere questa pagina. Compila manualmente.')
+                  setImportNote(t('add.importErrore'))
                 }
                 setImporting(false)
               }}
               disabled={importing}
               className="mt-2 w-full py-2.5 rounded-xl text-sm font-semibold border border-purple/40 text-purple-soft active:scale-95 transition-all flex items-center justify-center gap-2"
               style={{ background: 'rgba(123,47,255,0.1)' }}>
-              {importing
-                ? <><span className="animate-spin">⏳</span> Importo dati...</>
-                : <> ✨ Importa dati automaticamente</>}
+              {importing ? <><span className="animate-spin">⏳</span> {t('add.importando')}</> : <>✨ {t('add.importaAuto')}</>}
             </button>
           )}
           {importNote && <p className="text-xs mt-1" style={{ color: importNote.startsWith('✅') ? '#34D399' : '#FBBF24' }}>{importNote}</p>}
         </Field>
 
-        <Field label="⚡ Priorità">
-          <ChoicePicker value={form.priorita} options={PRIORITA}
-            onChange={v => set('priorita', v)} />
+        <Field label={t('add.priorita')}>
+          <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)} />
         </Field>
 
-        <Field label="💰 Stipendio indicativo">
+        <Field label={t('add.stipendio')}>
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
@@ -265,33 +254,28 @@ ${snippet}`
           </div>
         </Field>
 
-        {/* NOTES */}
-        <SectionLabel>PRIME IMPRESSIONI</SectionLabel>
+        <SectionLabel>{t('add.primeImpressioni')}</SectionLabel>
         <Field>
           <textarea className="input-field resize-none" rows={3}
-            placeholder="Cosa ti ha convinto a candidarti? Prime sensazioni..."
+            placeholder={t('add.notePlaceholder')}
             value={form.note} onChange={e => set('note', e.target.value)} />
         </Field>
 
-        {/* NOTIFICATIONS */}
         <div className="flex items-center justify-between py-2">
           <div>
-            <p className="text-sm font-medium text-txt">🔔 Notifiche push</p>
-            <p className="text-xs text-muted">Promemoria per questa candidatura</p>
+            <p className="text-sm font-medium text-txt">🔔 {t('add.notifiche')}</p>
+            <p className="text-xs text-muted">{t('add.notificheDesc')}</p>
           </div>
           <button onClick={() => set('notifiche_push', !form.notifiche_push)}
-            className={`w-12 h-6 rounded-full transition-all duration-200 relative
-              ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200
-              ${form.notifiche_push ? 'left-6.5' : 'left-0.5'}`} />
+            className={`w-12 h-6 rounded-full transition-all duration-200 relative ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push ? 'left-6.5' : 'left-0.5'}`} />
           </button>
         </div>
 
-        {/* SUBMIT */}
         <div className="pt-4 pb-6">
           <button onClick={handleSubmit} disabled={loading}
             className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2">
-            {loading ? <Spinner size={20} /> : 'Aggiungi candidatura 🚀'}
+            {loading ? <Spinner size={20} /> : t('add.aggiungi')}
           </button>
         </div>
       </div>
