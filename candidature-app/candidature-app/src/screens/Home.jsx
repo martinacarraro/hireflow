@@ -11,7 +11,7 @@ function GuestConvertModal({ onClose, onSuccess }) {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const { migrateGuestToAccount } = useApp()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const handle = async () => {
     if (!email || !password) return setError(t('home.compilaCampi'))
@@ -53,7 +53,7 @@ function GuestConvertModal({ onClose, onSuccess }) {
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
 
@@ -73,7 +73,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
 
-  const motto = getMotto()
+  const motto = getMotto(i18n.language)
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
@@ -137,7 +137,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
   }
 
-  const greet = getGreeting(nome)
+  const greet = getGreeting(nome, i18n.language)
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -194,7 +194,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
                 <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
                 <p className="text-xs text-muted mt-0.5">{n.body}</p>
                 <p className="text-[10px] text-disabled mt-1">
-                  {new Date(n.time).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  {new Date(n.time).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
               {n.candidaturaId && <span className="text-muted text-xs flex-shrink-0 mt-0.5">→</span>}
@@ -372,7 +372,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
 }
 
 function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, onExitSelect, onSelectAll, selectedCount, totalCount, onDeleteSelected, onArchiveSelected, showSearch, onToggleSearch }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
@@ -424,7 +424,7 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
 }
 
 function DeadlineRow({ scadenza }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const today = new Date(); today.setHours(0,0,0,0)
   const deadline = new Date(scadenza); deadline.setHours(0,0,0,0)
   const diff = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
@@ -466,7 +466,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
   const STATI_ATTIVI = ['Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Offerta ricevuta']
   const isActive = STATI_ATTIVI.includes(c.stato)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const pressTimer = React.useRef(null)
   const startPos = React.useRef({ x: 0, y: 0 })

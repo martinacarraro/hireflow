@@ -16,6 +16,12 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP, checkBadges } = useApp()
   const { user } = useApp()
   const { t } = useTranslation()
+  const trStatus = (status) => t(`add.stati.${status}`, status)
+  const trPriority = (priority) => t(`add.priorita.${priority}`, priority)
+  const trFonte = (fonte) => t(`add.fonti.${fonte}`, fonte)
+  const interviewTypeKey = (tipo) => tipo === '📞 Telefonico' ? 'phone' : tipo === '💻 Video' ? 'video' : 'onsite'
+  const trInterviewType = (tipo) => t(`detail.interviewTypes.${interviewTypeKey(tipo)}`, tipo)
+  const trWelfare = (opt) => t(`detail.welfareOptions.${opt}`, opt)
   const [form, setForm] = useState({ ...c })
   const [isDirty, setIsDirty] = useState(false)
   const [checklist, setChecklist] = useState([])
@@ -429,7 +435,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   <button key={opt} onClick={() => toggleWelfare(opt)}
                     className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95"
                     style={{ background:active?'rgba(123,47,255,0.2)':'transparent', borderColor:active?'rgba(123,47,255,0.6)':'rgba(255,255,255,0.08)', color:active?'#c4b5fd':'rgba(240,240,255,0.4)' }}>
-                    {active?'✓ ':''}{opt}
+                    {active?'✓ ':''}{trWelfare(opt)}
                   </button>
                 )
               })}
@@ -622,7 +628,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               try { await updateCandidatura(c.id, { stato:nuovoStato, welfare:Array.isArray(form.welfare)?form.welfare:[] }); setIsDirty(false) } catch(e) {}
             }}
             className="input-field" style={{ color:cfg.color }}>
-            {STATI.map(s => { const sc = STATUS_CONFIG[s]; return <option key={s} value={s}>{sc.emoji} {s}</option> })}
+            {STATI.map(s => { const sc = STATUS_CONFIG[s]; return <option key={s} value={s}>{sc.emoji} {trStatus(s)}</option> })}
           </select>
         </Section>
 
@@ -633,7 +639,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               return (
                 <button key={p} onClick={() => set('priorita', p)}
                   className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all active:scale-95 ${active?'text-white border-transparent bg-purple':'text-muted border-border'}`}>
-                  {pc.emoji} {p}
+                  {pc.emoji} {trPriority(p)}
                 </button>
               )
             })}
@@ -669,9 +675,9 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <p className="text-xs text-muted mb-1">{t('detail.tipo')}</p>
                 <div className="flex gap-2 flex-wrap">
                   {TIPI_COLLOQUIO.map(tipo => (
-                    <button key={tipo} onClick={() => set('tipo_colloquio', tipo)}
+                    <button key={trInterviewType(tipo)} onClick={() => set('tipo_colloquio', tipo)}
                       className={`px-3 py-1.5 rounded-full text-xs border transition-all active:scale-95 ${form.tipo_colloquio===tipo?'bg-purple border-purple text-white':'border-border text-muted'}`}>
-                      {tipo}
+                      {trInterviewType(tipo)}
                     </button>
                   ))}
                 </div>
@@ -791,7 +797,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 <button key={opt}
                   onClick={() => { const cur=form.welfare||[]; set('welfare', selected?cur.filter(w=>w!==opt):[...cur,opt]) }}
                   className={`px-3 py-1.5 rounded-full text-xs border transition-all active:scale-95 ${selected?'bg-green-500/20 border-green-500/60 text-green-400':'border-border text-muted'}`}>
-                  {selected?'✓ ':''}{opt}
+                  {selected?'✓ ':''}{trWelfare(opt)}
                 </button>
               )
             })}
@@ -852,7 +858,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 {FONTI.map(f => (
                   <button key={f} onPointerDown={e => { e.preventDefault(); set('fonte', f) }}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95 ${form.fonte===f?'bg-purple border-purple text-white':'bg-surface border-border text-muted'}`}>
-                    {f}
+                    {trFonte(f)}
                   </button>
                 ))}
               </div>
