@@ -199,7 +199,8 @@
     "fonti": {
       "Sito aziendale": "Sito aziendale",
       "Spontanea": "Spontanea",
-      "Altro": "Altro"
+      "Altro": "Altro",
+      "prioritaLabel": "PRIORITÀ"
     }
   },
   "detail": {

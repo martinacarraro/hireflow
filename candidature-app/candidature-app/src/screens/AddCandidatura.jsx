@@ -236,7 +236,7 @@ ${snippet}`
           {importNote && <p className="text-xs mt-1" style={{ color: importNote.startsWith('✅') ? '#34D399' : '#FBBF24' }}>{importNote}</p>}
         </Field>
 
-        <Field label={t('add.priorita')}>
+        <Field label={t('add.prioritaLabel', t('detail.priorita'))}>
           <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)}
   labelFn={v => t(`add.priorita.${v}`, v)} />
         </Field>
