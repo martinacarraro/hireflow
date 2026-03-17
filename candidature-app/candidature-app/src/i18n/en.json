@@ -179,7 +179,30 @@
   "aggiungi": "Add application 🚀",
   "campoObbligatorio": "Required field",
   "selezionaFonte": "Select source",
-  "usaNomePersonalizzato": "Use \"{{nome}}\" as custom name"
+  "usaNomePersonalizzato": "Use \"{{nome}}\" as custom name",
+  "stati": {
+  "Inviata": "Sent",
+  "Spontanea": "Spontaneous",
+  "Vista": "Seen",
+  "Prima call": "First call",
+  "Colloquio": "Interview",
+  "Secondo colloquio": "2nd Interview",
+  "In attesa risposta": "Waiting",
+  "Non mi piace": "Not interested",
+  "Rifiutata": "Rejected",
+  "GHOSTED": "GHOSTED",
+  "Offerta ricevuta": "Offer received"
+},
+"priorita": {
+  "Alta": "High",
+  "Media": "Medium",
+  "Bassa": "Low"
+},
+"fonti": {
+  "Sito aziendale": "Company website",
+  "Spontanea": "Spontaneous",
+  "Altro": "Other"
+}
 },
 "detail": {
   "assuntaF": "YOU GOT THE JOB!",

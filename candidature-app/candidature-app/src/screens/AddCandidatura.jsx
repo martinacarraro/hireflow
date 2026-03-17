@@ -143,7 +143,8 @@ export default function AddCandidatura({ onBack, onDone }) {
 
         <Field label={t('add.stato')}>
           <ChoicePicker value={form.stato} options={STATI}
-            onChange={v => set('stato', v)} colorFn={statusColor} />
+  onChange={v => set('stato', v)} colorFn={statusColor}
+  labelFn={v => t(`add.stati.${v}`, v)} />
         </Field>
 
         <Field label={t('add.dataCandidatura')}>
@@ -173,7 +174,8 @@ export default function AddCandidatura({ onBack, onDone }) {
         <SectionLabel>{t('add.dettagli')}</SectionLabel>
 
         <Field label={t('add.fonte')}>
-          <ChoicePicker value={form.fonte} options={FONTI} onChange={v => set('fonte', v)} />
+          <ChoicePicker value={form.fonte} options={FONTI} onChange={v => set('fonte', v)}
+  labelFn={v => t(`add.fonti.${v}`, v)} />
           {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">{t('add.fonteAvviso')}</p>}
         </Field>
 
@@ -235,7 +237,8 @@ ${snippet}`
         </Field>
 
         <Field label={t('add.priorita')}>
-          <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)} />
+          <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)}
+  labelFn={v => t(`add.priorita.${v}`, v)} />
         </Field>
 
         <Field label={t('add.stipendio')}>

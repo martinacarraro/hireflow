@@ -345,7 +345,7 @@ export function Field({ label, children, hint }) {
 }
 
 // ─── CHOICE PICKER (pills) ────────────────────────────────────────
-export function ChoicePicker({ value, options, onChange, colorFn }) {
+export function ChoicePicker({ value, options, onChange, colorFn, labelFn }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map(opt => {
@@ -354,13 +354,10 @@ export function ChoicePicker({ value, options, onChange, colorFn }) {
         return (
           <button key={opt} onClick={() => onChange(opt)}
             className={`pill-btn transition-all active:scale-95 ${
-              active
-                ? 'text-white border-transparent'
-                : 'text-muted border-border bg-transparent'
+              active ? 'text-white border-transparent' : 'text-muted border-border bg-transparent'
             }`}
-            style={active ? { background: color || '#8B5CF6', borderColor: color || '#8B5CF6' }
-                          : {}}>
-            {opt}
+            style={active ? { background: color || '#8B5CF6', borderColor: color || '#8B5CF6' } : {}}>
+            {labelFn ? labelFn(opt) : opt}
           </button>
         )
       })}

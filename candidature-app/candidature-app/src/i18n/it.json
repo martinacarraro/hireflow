@@ -179,7 +179,30 @@
   "aggiungi": "Aggiungi candidatura 🚀",
   "campoObbligatorio": "Campo obbligatorio",
   "selezionaFonte": "Seleziona la fonte",
-  "usaNomePersonalizzato": "Usa \"{{nome}}\" come nome personalizzato"
+  "usaNomePersonalizzato": "Usa \"{{nome}}\" come nome personalizzato",
+  "stati": {
+  "Inviata": "Inviata",
+  "Spontanea": "Spontanea",
+  "Vista": "Vista",
+  "Prima call": "Prima call",
+  "Colloquio": "Colloquio",
+  "Secondo colloquio": "Secondo colloquio",
+  "In attesa risposta": "In attesa risposta",
+  "Non mi piace": "Non mi piace",
+  "Rifiutata": "Rifiutata",
+  "GHOSTED": "GHOSTED",
+  "Offerta ricevuta": "Offerta ricevuta"
+},
+"priorita": {
+  "Alta": "Alta",
+  "Media": "Media",
+  "Bassa": "Bassa"
+},
+"fonti": {
+  "Sito aziendale": "Sito aziendale",
+  "Spontanea": "Spontanea",
+  "Altro": "Altro"
+}
 },
 "detail": {
   "assuntaF": "SEI STATA ASSUNTA!",
