@@ -361,7 +361,11 @@
   "annulla": "Annulla",
   "copiaLink": "🔗 Copia link + testo",
   "linkCopiato": "Link e testo copiati! 📋 Incollali dove vuoi.",
-  "chiudiBadge": "Chiudi"
+  "chiudiBadge": "Chiudi",
+  "linguaLabel": "Lingua / Language",
+"cambiaLingua": "Cambia la lingua",
+"notifichePush": "Notifiche push",
+"notifichePushDesc": "Colloqui, ghosting, streak"
 },
 "tutorial": {
   "welcomeF": "Benvenuta!",

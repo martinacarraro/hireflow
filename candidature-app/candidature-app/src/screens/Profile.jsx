@@ -468,8 +468,8 @@ const { t, i18n } = useTranslation()
          <SectionLabel>{t('add.notifiche')} 🔔</SectionLabel>
           <div className="flex items-center justify-between py-2.5 border-b border-border">
             <div>
-              <p className="text-sm font-medium text-txt">🌍 Lingua / Language</p>
-              <p className="text-xs text-muted">Cambia la lingua</p>
+              <p className="text-sm font-medium text-txt">🌍 {t('profile.linguaLabel')}</p>
+              <p className="text-xs text-muted">{ t('profile.cambiaLingua')}</p>
             </div>
             <div className="flex gap-2">
               <button onClick={() => { i18n.changeLanguage('it'); localStorage.setItem('lingua', 'it'); window.location.reload() }} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: i18n.language === 'it' ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.07)', color: 'white', border: i18n.language === 'it' ? 'none' : '1px solid rgba(255,255,255,0.15)' }}>🇮🇹 IT</button>
@@ -478,8 +478,8 @@ const { t, i18n } = useTranslation()
           </div>
           <div className="flex items-center justify-between py-2.5">
             <div>
-              <p className="text-sm font-medium text-txt">🔔 Notifiche push</p>
-              <p className="text-xs text-muted">Colloqui, ghosting, streak</p>
+              <p className="text-sm font-medium text-txt">🔔 {t('profile.notifichePush')}</p>
+              <p className="text-xs text-muted">{ t('profile.notifichePushDesc')}</p>
             </div>
             <button
               onClick={() => { const v = !(profile?.notifiche_push_globali ?? true); if (v) requestNotificationPermission(); updateProfile({ notifiche_push_globali: v }) }}
