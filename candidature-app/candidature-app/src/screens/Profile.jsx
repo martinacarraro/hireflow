@@ -746,7 +746,7 @@ const { t, i18n } = useTranslation()
                   })
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
-                t('profile.copiaLink')
+                {t('profile.copiaLink')}
               </button>
             </div>
             <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">{t('profile.chiudiBadge')}</button>

@@ -411,7 +411,9 @@
     "linguaLabel": "Lingua / Language",
     "cambiaLingua": "Cambia la lingua",
     "notifichePush": "Notifiche push",
-    "notifichePushDesc": "Colloqui, ghosting, streak"
+    "notifichePushDesc": "Colloqui, ghosting, streak",
+    "copiaLink": "🔗 Copia link + testo",
+  "linkCopiato": "Link e testo copiati! 📋 Incollali dove vuoi."
   },
   "tutorial": {
     "welcomeF": "Benvenuta!",
