@@ -357,38 +357,31 @@ const { t, i18n } = useTranslation()
 </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{t('profile.eta')}</span>
-              <span className="text-xs text-txt font-medium">
-                {profile?.eta ? `${profile.eta} ${t('profile.anniSuffix')}` : <span className="text-disabled italic">Non specificata</span>}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{t('profile.settore')}</span>
-              <span className="text-xs text-txt font-medium">
-                {profile?.settore || <span className="text-disabled italic">Non specificato</span>}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
-              <span className="text-xs text-txt font-medium">
-                {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
-              </span>
-            </div>
+            <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
+            </span>
           </div>
-          <button onClick={() => { 
-    setInfoGenere(profile?.genere || '')
-    setInfoEta(profile?.eta?.toString() || '')
-    setInfoSettore(profile?.settore || '')
-    setInfoFonte(profile?.come_conosciuto || '')
-    setEditInfoBase(true)
-  }} 
-  className="text-xs text-purple-soft font-semibold active:opacity-70"
->
-  ✏️ Modifica info
-</button>
-        </div>
+        </div> {/* Chiude il contenitore delle righe (space-y-2) */}
 
-        {/* IL TUO LIVELLO */}
+        {/* Pulsante Modifica */}
+        <div className="mt-3 flex justify-end">
+          <button 
+            onClick={() => { 
+              setInfoGenere(profile?.genere || '')
+              setInfoEta(profile?.eta?.toString() || '')
+              setInfoSettore(profile?.settore || '')
+              setInfoFonte(profile?.come_conosciuto || '')
+              setEditInfoBase(true)
+            }} 
+            className="text-xs text-purple-soft font-semibold active:opacity-70"
+          >
+            ✏️ Modifica info
+          </button>
+        </div>
+      </div> {/* Chiude la card principale */}
+
+      {/* IL TUO LIVELLO */}
         <div className="card">
           <SectionLabel>{t('profile.tuoLivello')}</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
