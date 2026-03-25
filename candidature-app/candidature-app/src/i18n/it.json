@@ -396,6 +396,7 @@
     "confermaEliminaMsg": "Tutti i tuoi dati verranno eliminati definitivamente. Azione irreversibile.",
     "modificaInfoTitolo": "✏️ Le tue info",
     "genereTitolo": "GENERE",
+    
     "etaTitolo": "ETÀ",
     "settoreTitolo": "SETTORE",
     "comeTrovatoTitolo": "COME HAI TROVATO L'APP?",
@@ -413,7 +414,11 @@
     "notifichePush": "Notifiche push",
     "notifichePushDesc": "Colloqui, ghosting, streak",
     "copiaLink": "🔗 Copia link + testo",
-  "linkCopiato": "Link e testo copiati! 📋 Incollali dove vuoi."
+  "linkCopiato": "Link e testo copiati! 📋 Incollali dove vuoi.",
+  "genereDonna": "Donna",
+"genereUomo": "Uomo",
+"genereNB": "Non binario/a",
+"genereX": "Preferisco non dirlo"
   },
   "tutorial": {
     "welcomeF": "Benvenuta!",

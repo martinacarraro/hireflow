@@ -20,7 +20,7 @@ const SETTORI = [
 ]
 const FONTI = ['Instagram','TikTok','LinkedIn','Amico/a','Google','Reddit','Altro']
 
-const getBadgeName = (badge, genere, t) => t(`badges.${badge.id}`, badge.name)
+const getBadgeName = (badge, genere, t) => t(`badges.${badge.id}`);
 
 const getBadgeDesc = (badge, genere, t) => {
   if (badge.descF && badge.descM) {
@@ -342,18 +342,19 @@ const { t, i18n } = useTranslation()
 
         {/* XP */}
         {/* LE TUE INFO */}
-        <div className="card">
-          <SectionLabel>{t('profile.leInfoTitolo')}</SectionLabel>
-          <div className="space-y-2 mb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{t('profile.genere')}</span>
-              <span className="text-xs text-txt font-medium">
-  {profile?.genere === 'f' ? t('profile.genereDonna')
-  : profile?.genere === 'm' ? t('profile.genereUomo')
-  : profile?.genere === 'nb' ? t('profile.genereNB')
-  : profile?.genere === 'x' ? t('profile.genereX')
-  : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-</span>
+        <div className="flex items-center justify-between">
+  {/* Etichetta a sinistra */}
+  <span className="text-xs text-muted">{t('profile.genere')}</span>
+  
+  {/* Valore a destra */}
+  <span className="text-xs text-txt font-medium">
+    {profile?.genere === 'f' ? t('profile.genereDonna')
+      : profile?.genere === 'm' ? t('profile.genereUomo')
+      : profile?.genere === 'nb' ? t('profile.genereNB')
+      : profile?.genere === 'x' ? t('profile.genereX')
+      : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+  </span>
+</div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted">{t('profile.eta')}</span>
