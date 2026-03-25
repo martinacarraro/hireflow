@@ -668,18 +668,31 @@ const { t, i18n } = useTranslation()
               ))}
             </div>
 
-            <button onClick={async () => {
-              const etaNum = parseInt(infoEta)
-              if (infoEta && etaNum < 16) return
-              const finalSettore = infoSettore === 'Altro' ? (infoSettoreCustom || 'Altro') : infoSettore
-              await updateProfile({
-                genere: infoGenere || undefined,
-                eta: infoEta ? etaNum : undefined,
-                settore: finalSettore || undefined,
-                come_conosciuto: infoFonte || undefined,
-              })
-              setEditInfoBase(false)
-            }} className="btn-primary w-full py-3">💾 Salva</button>
+           <button onClick={async () => {
+  const etaNum = parseInt(infoEta)
+  
+  // Validazione età (già corretta nel tuo)
+  if (infoEta && etaNum < 16) {
+    alert("L'età minima è 16 anni");
+    return;
+  }
+
+  // Gestione settore custom
+  const finalSettore = infoSettore === 'Altro' ? (infoSettoreCustom || 'Altro') : infoSettore
+
+  // INVIO A SUPABASE
+  await updateProfile({
+    genere: infoGenere || null, // Usiamo null se è vuoto, così il DB è contento
+    eta: infoEta ? etaNum : null,
+    settore: finalSettore || null,
+    come_conosciuto: infoFonte || null,
+  })
+
+  // Chiudiamo il modal
+  setEditInfoBase(false)
+}} className="btn-primary w-full py-3">
+  💾 Salva modifiche
+</button>
           </div>
         </div>
       )}
