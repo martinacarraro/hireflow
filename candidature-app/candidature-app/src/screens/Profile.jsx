@@ -375,15 +375,17 @@ const { t, i18n } = useTranslation()
               </span>
             </div>
           </div>
-          <button onClick={() => {
-            setInfoGenere(profile?.genere || '')
-            setInfoEta(profile?.eta?.toString() || '')
-            setInfoSettore(profile?.settore || '')
-            setInfoFonte(profile?.come_conosciuto || '')
-            setEditInfoBase(true)
-          }} className="text-xs text-purple-soft font-semibold active:opacity-70">
-            ✏️ Modifica info
-          </button>
+          <button onClick={() => { 
+    setInfoGenere(profile?.genere || '')
+    setInfoEta(profile?.eta?.toString() || '')
+    setInfoSettore(profile?.settore || '')
+    setInfoFonte(profile?.come_conosciuto || '')
+    setEditInfoBase(true)
+  }} 
+  className="text-xs text-purple-soft font-semibold active:opacity-70"
+>
+  ✏️ Modifica info
+</button>
         </div>
 
         {/* IL TUO LIVELLO */}
