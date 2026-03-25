@@ -411,9 +411,7 @@
     "linguaLabel": "Language / Lingua",
     "cambiaLingua": "Change language",
     "notifichePush": "Push notifications",
-    "notifichePushDesc": "Interviews, ghosting, streak",
-    "copiaLink": "🔗 Copy link + text",
-  "linkCopiato": "Link and text copied! 📋 Paste them anywhere."
+    "notifichePushDesc": "Interviews, ghosting, streak"
   },
   "tutorial": {
     "welcomeF": "Welcome!",

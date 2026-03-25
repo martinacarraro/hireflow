@@ -348,12 +348,14 @@ const { t, i18n } = useTranslation()
   
   {/* Valore a destra */}
   <span className="text-xs text-txt font-medium">
-    {profile?.genere === 'f' ? t('profile.genereDonna')
-      : profile?.genere === 'm' ? t('profile.genereUomo')
-      : profile?.genere === 'nb' ? t('profile.genereNB')
-      : profile?.genere === 'x' ? t('profile.genereX')
-      : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-  </span>
+  {profile?.genere === 'f' && t('profile.genereDonna')}
+  {profile?.genere === 'm' && t('profile.genereUomo')}
+  {profile?.genere === 'nb' && t('profile.genereNB')}
+  {profile?.genere === 'x' && t('profile.genereX')}
+  {!profile?.genere && (
+    <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>
+  )}
+</span>
 </div>
             </div>
             <div className="flex items-center justify-between">
