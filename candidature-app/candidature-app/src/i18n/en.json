@@ -345,9 +345,36 @@
     "tuoNome": "Your name",
     "leInfoTitolo": "YOUR INFO 📋",
     "genere": "Gender",
+    "genderOptions": {
+      "Donna": "Female",
+      "Uomo": "Male",
+      "Non binario/a": "Non-binary",
+      "Preferisco non dirlo": "Prefer not to say"
+    },
     "eta": "Age",
     "settore": "Sector",
     "comeTrovato": "How you found us",
+    "sectorOptions": {
+      "Tech/IT": "Tech/IT",
+      "Marketing/Comunicazione": "Marketing/Communications",
+      "Finanza/Contabilità": "Finance/Accounting",
+      "Legale": "Legal",
+      "HR/Recruitment": "HR/Recruitment",
+      "Design/Creatività": "Design/Creative",
+      "Salute/Medicina": "Healthcare/Medicine",
+      "Istruzione/Formazione": "Education/Training",
+      "Moda/Retail": "Fashion/Retail",
+      "Logistica/Operations": "Logistics/Operations",
+      "Commerciale/Vendite": "Sales/Commercial",
+      "Ingegneria": "Engineering",
+      "Altro": "Other"
+    },
+    "sourceAppOptions": {
+  "LinkedIn": "LinkedIn",
+  "Passaparola": "Word of mouth",
+  "Social Media": "Social Media",
+  "Altro": "Other"
+},
     "nonSpecificato": "Not specified",
     "nonSpecificata": "Not specified",
     "anniSuffix": "years old",
