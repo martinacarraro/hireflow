@@ -305,7 +305,7 @@ const { t, i18n } = useTranslation()
           <div className="flex-1 min-w-0">
             {editNome ? (
               <div className="flex gap-2 mb-1">
-                <input className="input-field text-sm py-1 flex-1" value={nomeEdit} onChange={e => setNomeEdit(e.target.value)} placeholder="Il tuo nome" />
+                <input className="input-field text-sm py-1 flex-1" value={nomeEdit} onChange={e => setNomeEdit(e.target.value)} placeholder={t('profile.tuoNome')} />
                 <button onClick={() => { updateProfile({ nome: nomeEdit }); setEditNome(false) }} className="text-purple-soft text-sm font-medium">✓</button>
               </div>
             ) : (
@@ -314,29 +314,64 @@ const { t, i18n } = useTranslation()
               </button>
             )}
             <p className="text-xs text-muted truncate">{user?.email}</p>
+            
             {editBio ? (
               <div className="mt-1 flex gap-2">
-                <input className="input-field text-xs py-1 flex-1" value={bio} onChange={e => setBio(e.target.value)} placeholder="Es: UX Designer a Milano" />
+                <input className="input-field text-xs py-1 flex-1" value={bio} onChange={e => setBio(e.target.value)} placeholder="Es: UX Designer" />
                 <button onClick={() => { updateProfile({ bio_lavoro: bio }); setEditBio(false) }} className="text-purple-soft text-xs font-medium">✓</button>
               </div>
             ) : (
               <button onClick={() => setEditBio(true)} className="text-left">
-                <p className="text-sm text-purple-soft italic mt-0.5">{profile?.bio_lavoro || 'Aggiungi una bio... ✏️'}</p>
+                <p className="text-sm text-purple-soft italic mt-0.5">{profile?.bio_lavoro || t('profile.aggiungiBio')}</p>
               </button>
             )}
-            {editIndirizzo ? (
-              <div className="mt-1 flex gap-2">
-                <input className="input-field text-xs py-1 flex-1" value={indirizzoEdit}
-                  onChange={e => setIndirizzoEdit(e.target.value)}
-                  placeholder="Es: Via Roma 1, Milano" />
-                <button onClick={() => { updateProfile({ indirizzo_home: indirizzoEdit }); setEditIndirizzo(false) }}
-                  className="text-purple-soft text-xs font-medium">✓</button>
-              </div>
-            ) : (
-              <button onClick={() => { setEditIndirizzo(true); setIndirizzoEdit(profile?.indirizzo_home || '') }} className="text-left">
-                <p className="text-xs text-muted mt-0.5">📍 {profile?.indirizzo_home || 'Aggiungi il tuo indirizzo... ✏️'}</p>
-              </button>
-            )}
+          </div>
+        </div>
+
+        {/* LE TUE INFO (Sistemato per Foto 5) */}
+        <div className="card space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <SectionLabel>{t('profile.leTueInfo')}</SectionLabel>
+            <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-purple-soft bg-purple/10 px-3 py-1.5 rounded-full active:scale-95 transition-all">
+              <Edit2 size={12} />
+              {t('profile.modificaInfo')}
+            </button>
+          </div>
+
+          {/* Genere */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.genere')}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.genere ? t(`profile.genderOptions.${profile.genere}`) : t('profile.nonSpecificato')}
+            </span>
+          </div>
+
+          {/* Età */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.eta')}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.eta || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+            </span>
+          </div>
+
+          {/* Settore */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.settore')}</span>
+            <span className="text-xs text-txt font-medium text-right ml-4">
+              {profile?.settore 
+                ? t(`profile.sectorOptions.${profile.settore}`) 
+                : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+            </span>
+          </div>
+
+          {/* Come ci hai trovato */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
+            <span className="text-xs text-txt font-medium text-right ml-4">
+              {profile?.come_conosciuto 
+                ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) 
+                : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+            </span>
           </div>
         </div>
 
@@ -402,8 +437,7 @@ const { t, i18n } = useTranslation()
           </div>
 
         </>
-
-      {/* IL TUO LIVELLO */}
+{/* IL TUO LIVELLO */}
         <div className="card">
           <SectionLabel>{t('profile.tuoLivello')}</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
@@ -412,22 +446,24 @@ const { t, i18n } = useTranslation()
               setRecalcLoading(true)
               const tot = await recalcXP()
               setRecalcLoading(false)
-              if (tot !== undefined) alert(`✅ XP ricalcolati: ${tot} XP`)
+              if (tot !== undefined) alert(`✅ ${t('profile.xpTotali')}: ${tot}`)
             }} disabled={recalcLoading}
               className="text-xs text-muted border border-border rounded-full px-3 py-1 mt-1 active:scale-95">
-              {recalcLoading ? '⏳ Calcolo...' : '🔄 Ricalcola XP'}
+              {recalcLoading ? t('profile.calcoloInCorso') : t('profile.ricalcolaXP')}
             </button>
           )}
           <div className="flex items-center mt-3">
             {streak > 1 && (
               <div className="flex items-center gap-1.5">
                 <span className="text-lg">🔥</span>
-                <p className="text-sm font-bold text-amber">{streak} giorni di fila</p>
+                <p className="text-sm font-bold text-amber">
+                  {streak} {t('profile.giorniDiFila')}
+                </p>
               </div>
             )}
             <div className="ml-auto text-right">
               <p className="text-lg font-bold text-gold">{xp}</p>
-              <p className="text-[10px] text-muted">XP totali</p>
+              <p className="text-[10px] text-muted">{t('profile.xpTotali')}</p>
             </div>
           </div>
         </div>
@@ -435,7 +471,9 @@ const { t, i18n } = useTranslation()
         {/* Badge */}
         <div className="card">
           <SectionLabel>{t('profile.tuoiBadge')}</SectionLabel>
-          <p className="text-xs text-muted mb-3">{earned.length}/{BADGES.length} {t('profile.badgeSbloccati')}</p>
+          <p className="text-xs text-muted mb-3">
+            {earned.length}/{BADGES.length} {t('profile.badgeSbloccati')}
+          </p>
           <div className="grid grid-cols-4 gap-2">
             {BADGES.map(badge => {
               const isEarned = earned.includes(badge.id)
@@ -456,7 +494,7 @@ const { t, i18n } = useTranslation()
           </div>
         </div>
 
-        {/* Motto */}
+        {/* Motto / Condividi */}
         <div className="card border-l-[3px] border-l-purple">
           <SectionLabel>{t('profile.condividi')}</SectionLabel>
           <p className="text-xs text-muted mb-3">{t('profile.condividiDesc')}</p>
@@ -629,23 +667,26 @@ const { t, i18n } = useTranslation()
           </div>
         ) : null}
       </div>
-
-      {/* Badge modal */}
-      {/* Modifica info profilo */}
-      {editInfoBase && (
+{editInfoBase && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}
           onClick={() => setEditInfoBase(false)}>
           <div className="w-full bg-surface rounded-t-3xl p-5 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-            <p className="font-bold text-txt mb-4">✏️ Le tue info</p>
+            
+            {/* Titolo del Modal */}
+            <p className="font-bold text-txt mb-4">{t('profile.modificaInfoTitolo')}</p>
 
-            <p className="text-xs text-muted mb-2 font-semibold">GENERE</p>
+            {/* Etichetta GENERE */}
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genereTitolo')}</p>
+            
             <div className="grid grid-cols-2 gap-2 mb-4">
               {GENERI.map(g => (
                 <button key={g.value} onClick={() => setInfoGenere(g.value)}
                   className={`py-3 rounded-xl text-xs font-semibold border transition-all active:scale-95 flex items-center gap-2 px-3
                     ${infoGenere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
-                  <span>{g.emoji}</span><span>{g.label}</span>
+                  <span>{g.emoji}</span>
+                  {/* TRADUZIONE DINAMICA DEL GENERE */}
+                  <span>{t(`profile.genderOptions.${g.label}`)}</span>
                 </button>
               ))}
             </div>
@@ -693,13 +734,12 @@ const { t, i18n } = useTranslation()
     alert("L'età minima è 16 anni");
     return;
   }
-
-  // Gestione settore custom
+// Gestione settore custom
   const finalSettore = infoSettore === 'Altro' ? (infoSettoreCustom || 'Altro') : infoSettore
 
   // INVIO A SUPABASE
   await updateProfile({
-    genere: infoGenere || null, // Usiamo null se è vuoto, così il DB è contento
+    genere: infoGenere || null,
     eta: infoEta ? etaNum : null,
     settore: finalSettore || null,
     come_conosciuto: infoFonte || null,
@@ -708,13 +748,13 @@ const { t, i18n } = useTranslation()
   // Chiudiamo il modal
   setEditInfoBase(false)
 }} className="btn-primary w-full py-3">
-  💾 Salva modifiche
+  {t('profile.salva')}
 </button>
           </div>
         </div>
       )}
 
-      {/* LinkedIn share modal — mostra testo, aspetta copia, poi apre LinkedIn */}
+      {/* LinkedIn share modal */}
       {linkedinPending && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 bg-black/70" onClick={() => setLinkedinPending(null)}>
           <div className="card w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}
@@ -724,8 +764,8 @@ const { t, i18n } = useTranslation()
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-txt">{ t('profile.condividiLinkedIn')}</p>
-                <p className="text-xs text-muted">Il testo è già copiato negli appunti 📋</p>
+                <p className="text-sm font-bold text-txt">{t('profile.condividiLinkedIn')}</p>
+                <p className="text-xs text-muted">{t('profile.testoCopiato')}</p>
               </div>
             </div>
             <div className="rounded-xl p-3 text-xs text-muted leading-relaxed whitespace-pre-wrap"
@@ -733,29 +773,35 @@ const { t, i18n } = useTranslation()
               {linkedinPending}
             </div>
             <p className="text-xs text-center" style={{ color: '#c4b5fd' }}>
-              ✨ Il testo è già copiato — incollalo nel post LinkedIn
+              ✨ {t('profile.apriLinkedIn')}
             </p>
             <button onClick={() => {
               window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank')
               setLinkedinPending(null)
             }} className="w-full py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
               style={{ background: '#0A66C2' }}>
-              t('profile.apriLinkedIn')
+              {t('profile.apriLinkedIn')}
             </button>
             <button onClick={() => setLinkedinPending(null)}
-              className="text-xs text-muted text-center w-full py-1">Annulla</button>
+              className="text-xs text-muted text-center w-full py-1">{t('profile.annulla')}</button>
           </div>
         </div>
       )}
 
+      {/* Badge modal — FOTO 3 SISTEMATA */}
       {selectedBadge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/60" onClick={() => setSelectedBadge(null)}>
           <div className="card max-w-xs w-full text-center" onClick={e => e.stopPropagation()}
             style={{ borderTop: `3px solid ${selectedBadge.color}` }}>
             <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
               dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
-            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>{getBadgeName(selectedBadge, profile?.genere, t)}</h3>
-            <p className="text-sm text-muted leading-relaxed mb-5">{getBadgeDesc(selectedBadge, profile?.genere, t)}</p>
+            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>
+              {getBadgeName(selectedBadge, profile?.genere, t)}
+            </h3>
+            {/* DESCRIZIONE BADGE TRADOTTA */}
+            <p className="text-sm text-muted leading-relaxed mb-5">
+              {getBadgeDesc(selectedBadge, profile?.genere, t)}
+            </p>
             <div className="space-y-2">
               <button
                 onClick={async () => {
@@ -766,14 +812,14 @@ const { t, i18n } = useTranslation()
                 className="w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
                 style={{ background: '#0A66C2', color: 'white' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                Condividi su LinkedIn
+                {t('profile.condividiLinkedIn')}
               </button>
               <button
                 onClick={() => {
                   const link = `https://lefaremosapere-mocha.vercel.app?badge=${selectedBadge.id}`
                   const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${getBadgeName(selectedBadge, profile?.genere, t)}\n👉 ${link}`
                   navigator.clipboard.writeText(text).then(() => {
-                    alert('Link e testo copiati! 📋 Incollali dove vuoi.')
+                    alert(t('profile.linkCopiato'))
                   })
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
@@ -785,6 +831,7 @@ const { t, i18n } = useTranslation()
         </div>
       )}
 
+      {/* Guest Modal */}
       {showGuestModal && (
         <GuestConvertModal
           onClose={() => setShowGuestModal(false)}
@@ -793,13 +840,18 @@ const { t, i18n } = useTranslation()
         />
       )}
 
-      <ConfirmDialog isOpen={confirmSignOut} title="Esci dall'account"
-        message="Sicuro/a? I tuoi dati rimarranno al sicuro."
-        onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} />
+      {/* Dialog di conferma — TUTTI TRADOTTI */}
+      <ConfirmDialog isOpen={confirmSignOut} 
+        title={t('profile.confermaEsci')}
+        message={t('profile.confermaEsciMsg')}
+        onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} 
+      />
 
-      <ConfirmDialog isOpen={confirmDelete} title="Elimina account"
-        message="Tutti i tuoi dati verranno eliminati definitivamente. Azione irreversibile."
-        onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger />
+      <ConfirmDialog isOpen={confirmDelete} 
+        title={t('profile.confermaElimina')}
+        message={t('profile.confermaEliminaMsg')}
+        onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger 
+      />
     </div>
   )
 }

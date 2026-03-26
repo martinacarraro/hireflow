@@ -332,8 +332,7 @@
   },
   "splash": {
     "tagline": "The job tracker that truly gets you."
-  },
-  "profile": {
+  },"profile": {
     "titolo": "Profile 👤",
     "notifiche": "Notifications 🔔",
     "segnaTutte": "Mark all as read",
@@ -370,16 +369,30 @@
       "Altro": "Other"
     },
     "sourceAppOptions": {
-  "LinkedIn": "LinkedIn",
-  "Passaparola": "Word of mouth",
-  "Social Media": "Social Media",
-  "Altro": "Other"
-},
+      "LinkedIn": "LinkedIn",
+      "Instagram": "Instagram",
+      "TikTok": "TikTok",
+      "Amico/a": "Friend",
+      "Google": "Google",
+      "Reddit": "Reddit",
+      "Passaparola": "Word of mouth",
+      "Social Media": "Social Media",
+      "Altro": "Other"
+    },
     "nonSpecificato": "Not specified",
     "nonSpecificata": "Not specified",
     "anniSuffix": "years old",
-    "modificaInfo": "✏️ Edit info",
+    "modificaInfo": "Edit info",
     "tuoLivello": "YOUR LEVEL ⭐",
+    "livelli": {
+      "Novizio/a": "Novice",
+      "Esploratore/rice": "Explorer",
+      "Cacciatore/rice di Offerte": "Deal Hunter",
+      "Professionista": "Professional",
+      "Pro della Ricerca": "Search Pro",
+      "Master del Lavoro": "Job Master",
+      "Leggenda": "Legend"
+    },
     "ricalcolaXP": "🔄 Recalculate XP",
     "calcoloInCorso": "⏳ Calculating...",
     "giorniDiFila": "days in a row",
@@ -477,6 +490,9 @@
     "linked": "Link Master",
     "streak3": "Consistent",
     "secondcol": "Finalist",
-    "pioneer": "Pioneer"
+    "pioneer": "Pioneer",
+    "consistent": {
+    "title": "Consistent",
+    "desc": "3 consecutive weeks with at least 1 application."
   }
-}
+},
