@@ -360,12 +360,29 @@ const { t, i18n } = useTranslation()
             {/* Inizio blocco Info e Pulsante */}
         <>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
+            <span className="text-xs text-muted">{t('profile.eta')}</span>
             <span className="text-xs text-txt font-medium">
-              {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
+              {profile?.eta || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
             </span>
           </div>
 
+          {/* Campo Settore */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.settore')}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.settore || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+            </span>
+          </div>
+
+          {/* Campo Come ci hai trovato */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.come_conosciuto || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+            </span>
+          </div>
+
+          {/* Pulsante Modifica */}
           <div className="mt-3 flex justify-end">
             <button 
               onClick={() => { 
@@ -377,9 +394,10 @@ const { t, i18n } = useTranslation()
               }} 
               className="text-xs text-purple-soft font-semibold active:opacity-70"
             >
-              ✏️ Modifica info
+              ✏️ {t('profile.modificaInfo')}
             </button>
           </div>
+
         </>
 
       {/* IL TUO LIVELLO */}
