@@ -357,29 +357,30 @@ const { t, i18n } = useTranslation()
   )}
 </span>
 </div>
-            </div>
-            <div className="flex items-center justify-between">
+            {/* Inizio blocco Info e Pulsante */}
+        <>
+          <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
             <span className="text-xs text-txt font-medium">
               {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
             </span>
           </div>
-        </div> 
-        <div className="mt-3 flex justify-end">
-          <button 
-            onClick={() => { 
-              setInfoGenere(profile?.genere || '')
-              setInfoEta(profile?.eta?.toString() || '')
-              setInfoSettore(profile?.settore || '')
-              setInfoFonte(profile?.come_conosciuto || '')
-              setEditInfoBase(true)
-            }} 
-            className="text-xs text-purple-soft font-semibold active:opacity-70"
-          >
-            ✏️ Modifica info
-          </button>
-        </div>
-      </div> {/* Chiude la card principale */}
+
+          <div className="mt-3 flex justify-end">
+            <button 
+              onClick={() => { 
+                setInfoGenere(profile?.genere || '')
+                setInfoEta(profile?.eta?.toString() || '')
+                setInfoSettore(profile?.settore || '')
+                setInfoFonte(profile?.come_conosciuto || '')
+                setEditInfoBase(true)
+              }} 
+              className="text-xs text-purple-soft font-semibold active:opacity-70"
+            >
+              ✏️ Modifica info
+            </button>
+          </div>
+        </>
 
       {/* IL TUO LIVELLO */}
         <div className="card">
