@@ -283,10 +283,13 @@ const { t, i18n } = useTranslation()
           {unreadCount > 0 && (
             <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
               {unreadCount > 9 ? '9+' : unreadCount}
+              
             </span>
+            
           )}
         </button>
       </div>
+      
 
       <div className="flex-1 scrollable px-4 pb-8 space-y-4">
 {/* Banner caffè */}
@@ -582,8 +585,7 @@ const { t, i18n } = useTranslation()
           <div className="border-t border-border" />
           <p className="text-xs text-muted text-center pt-1">{t('profile.versione')}</p>
         </div>
-
-        {/* Account */}
+{/* Account */}
         {isGuest ? (
           <div className="space-y-3 pb-4">
             <button onClick={() => setShowGuestModal(true)}
@@ -609,192 +611,43 @@ const { t, i18n } = useTranslation()
             </button>
           </div>
         ) : null}
-      </div>
-{editInfoBase && (
+      </div> {/* Fine flex-1 */}
+
+      {/* MODALS: Devono stare dentro il div "screen" o un Fragment per non violare la regola dell'elemento padre unico */}
+      {editInfoBase && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}
           onClick={() => setEditInfoBase(false)}>
           <div className="w-full bg-surface rounded-t-3xl p-5 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-            
-            {/* Titolo del Modal */}
             <p className="font-bold text-txt mb-4">{t('profile.modificaInfoTitolo')}</p>
-
-            {/* Etichetta GENERE */}
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genereTitolo')}</p>
             
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genere')}</p>
             <div className="grid grid-cols-2 gap-2 mb-4">
               {GENERI.map(g => (
                 <button key={g.value} onClick={() => setInfoGenere(g.value)}
-                  className={`py-3 rounded-xl text-xs font-semibold border transition-all active:scale-95 flex items-center gap-2 px-3
-                    ${infoGenere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
-                  <span>{g.emoji}</span>
-                  {/* TRADUZIONE DINAMICA DEL GENERE */}
-                  <span>{t(`profile.genderOptions.${g.label}`)}</span>
+                  className={`py-3 rounded-xl text-xs font-semibold border transition-all ${infoGenere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
+                  <span>{g.emoji}</span> {t(`profile.genderOptions.${g.label}`)}
                 </button>
               ))}
             </div>
 
-            <p className="text-xs text-muted mb-2 font-semibold">ETÀ</p>
-            <input className="input-field w-full mb-1" type="number" min="16" max="100" placeholder="Es: 26"
-              value={infoEta} onChange={e => setInfoEta(e.target.value)} />
-            {infoEta && parseInt(infoEta) < 16 && (
-              <p className="text-red text-xs mb-3">⚠️ Devi avere almeno 16 anni.</p>
-            )}
-            <div className="mb-4" />
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.eta')}</p>
+            <input className="input-field w-full mb-4" type="number" value={infoEta} onChange={e => setInfoEta(e.target.value)} />
 
-            <p className="text-xs text-muted mb-2 font-semibold">SETTORE</p>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {SETTORI.map(s => (
-                <button key={s} onClick={() => setInfoSettore(s)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95
-                    ${infoSettore === s ? 'bg-purple border-purple text-white' : 'border-border text-muted bg-surface'}`}>
-                  {s}
-                </button>
-              ))}
-            </div>
-            {infoSettore === 'Altro' && (
-              <input className="input-field text-sm mb-2" placeholder="Il tuo settore..."
-                value={infoSettoreCustom} onChange={e => setInfoSettoreCustom(e.target.value)} />
-            )}
-            <div className="mb-4" />
-
-            <p className="text-xs text-muted mb-2 font-semibold">COME HAI TROVATO L'APP?</p>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {FONTI.map(f => (
-                <button key={f} onClick={() => setInfoFonte(f)}
-                  className={`py-2.5 rounded-xl text-xs font-semibold border transition-all active:scale-95
-                    ${infoFonte === f ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
-                  {f}
-                </button>
-              ))}
-            </div>
-
-           <button onClick={async () => {
-  const etaNum = parseInt(infoEta)
-  
-  // Validazione età (già corretta nel tuo)
-  if (infoEta && etaNum < 16) {
-    alert("L'età minima è 16 anni");
-    return;
-  }
-// Gestione settore custom
-  const finalSettore = infoSettore === 'Altro' ? (infoSettoreCustom || 'Altro') : infoSettore
-
-  // INVIO A SUPABASE
-  await updateProfile({
-    genere: infoGenere || null,
-    eta: infoEta ? etaNum : null,
-    settore: finalSettore || null,
-    come_conosciuto: infoFonte || null,
-  })
-
-  // Chiudiamo il modal
-  setEditInfoBase(false)
-}} className="btn-primary w-full py-3">
-  {t('profile.salva')}
-</button>
-          </div>
-        </div>
-      )}
-
-      {/* LinkedIn share modal */}
-      {linkedinPending && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6 bg-black/70" onClick={() => setLinkedinPending(null)}>
-          <div className="card w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}
-            style={{ borderColor: 'rgba(10,102,194,0.5)', background: 'rgba(10,10,30,0.98)' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#0A66C2' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              </div>
-              <div>
-                <p className="text-sm font-bold text-txt">{t('profile.condividiLinkedIn')}</p>
-                <p className="text-xs text-muted">{t('profile.testoCopiato')}</p>
-              </div>
-            </div>
-            <div className="rounded-xl p-3 text-xs text-muted leading-relaxed whitespace-pre-wrap"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', maxHeight: 120, overflowY: 'auto' }}>
-              {linkedinPending}
-            </div>
-            <p className="text-xs text-center" style={{ color: '#c4b5fd' }}>
-              ✨ {t('profile.apriLinkedIn')}
-            </p>
-            <button onClick={() => {
-              window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank')
-              setLinkedinPending(null)
-            }} className="w-full py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
-              style={{ background: '#0A66C2' }}>
-              {t('profile.apriLinkedIn')}
+            <button onClick={async () => {
+              const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
+              await updateProfile({ genere: infoGenere, eta: infoEta ? parseInt(infoEta) : null, settore: finalSettore });
+              setEditInfoBase(false);
+            }} className="btn-primary w-full py-3">
+              {t('profile.salva')}
             </button>
-            <button onClick={() => setLinkedinPending(null)}
-              className="text-xs text-muted text-center w-full py-1">{t('profile.annulla')}</button>
           </div>
         </div>
       )}
 
-      {/* Badge modal — FOTO 3 SISTEMATA */}
-      {selectedBadge && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/60" onClick={() => setSelectedBadge(null)}>
-          <div className="card max-w-xs w-full text-center" onClick={e => e.stopPropagation()}
-            style={{ borderTop: `3px solid ${selectedBadge.color}` }}>
-            <div className="w-20 h-20 mx-auto mb-3 rounded-2xl overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: selectedBadge.svg }} />
-            <h3 className="font-bold text-xl mb-1" style={{ color: selectedBadge.color }}>
-              {getBadgeName(selectedBadge, profile?.genere, t)}
-            </h3>
-            {/* DESCRIZIONE BADGE TRADOTTA */}
-            <p className="text-sm text-muted leading-relaxed mb-5">
-              {getBadgeDesc(selectedBadge, profile?.genere, t)}
-            </p>
-            <div className="space-y-2">
-              <button
-                onClick={async () => {
-                  const postText = `${selectedBadge.shareText}\n\n👉 lefaremosapere.vercel.app`
-                  try { await navigator.clipboard.writeText(postText) } catch(e) {}
-                  setLinkedinPending(postText)
-                }}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all flex items-center justify-center gap-2"
-                style={{ background: '#0A66C2', color: 'white' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                {t('profile.condividiLinkedIn')}
-              </button>
-              <button
-                onClick={() => {
-                  const link = `https://lefaremosapere-mocha.vercel.app?badge=${selectedBadge.id}`
-                  const text = `${selectedBadge.shareText}\n\n🏅 Badge: ${getBadgeName(selectedBadge, profile?.genere, t)}\n👉 ${link}`
-                  navigator.clipboard.writeText(text).then(() => {
-                    alert(t('profile.linkCopiato'))
-                  })
-                }}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold border border-border text-muted active:scale-95 transition-all">
-                {t('profile.copiaLink')}
-              </button>
-            </div>
-            <button onClick={() => setSelectedBadge(null)} className="mt-4 text-xs text-disabled">{t('profile.chiudiBadge')}</button>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog isOpen={confirmSignOut} title={t('profile.confermaEsci')} onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} />
+      <ConfirmDialog isOpen={confirmDelete} title={t('profile.confermaElimina')} onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger />
 
-      {/* Guest Modal */}
-      {showGuestModal && (
-        <GuestConvertModal
-          onClose={() => setShowGuestModal(false)}
-          onSuccess={() => setShowGuestModal(false)}
-          migrateGuestToAccount={migrateGuestToAccount}
-        />
-      )}
-
-      {/* Dialog di conferma — TUTTI TRADOTTI */}
-      <ConfirmDialog isOpen={confirmSignOut} 
-        title={t('profile.confermaEsci')}
-        message={t('profile.confermaEsciMsg')}
-        onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} 
-      />
-
-      <ConfirmDialog isOpen={confirmDelete} 
-        title={t('profile.confermaElimina')}
-        message={t('profile.confermaEliminaMsg')}
-        onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger 
-      />
-    </div>
-  )
+    </div> // Fine div "screen"
+  );
 }
