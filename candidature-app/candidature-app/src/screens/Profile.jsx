@@ -634,49 +634,34 @@ const { t, i18n } = useTranslation()
               ))}
             </div>
 
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genereTitolo')}</p>
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              {GENERI.map(g => (
-                <button key={g.value} onClick={() => setInfoGenere(g.value)}
-                  className={`py-4 px-3 rounded-2xl border-2 transition-all flex items-center gap-3
-                    ${infoGenere === g.value 
-                      ? 'border-purple-main bg-purple-main/20 text-white' 
-                      : 'border-white/10 text-muted bg-white/5'}`}>
-                  <span className="text-xl">{g.emoji}</span>
-                  <span className="font-bold">{t(`profile.genderOptions.${g.label}`)}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* ETÀ */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.etaTitolo')}</p>
-            <input className="input-field w-full mb-6 py-4 rounded-2xl" type="number" placeholder="26"
+            <input className="input-field w-full mb-6" type="number" placeholder="26"
               value={infoEta} onChange={e => setInfoEta(e.target.value)} />
 
-            {/* SETTORE */}
+            {/* SETTORE (Stile Pillola Viola) */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settoreTitolo')}</p>
             <div className="flex flex-wrap gap-2 mb-6">
               {SETTORI.map(s => (
                 <button key={s} onClick={() => setInfoSettore(s)}
-                  className={`py-3 px-5 rounded-3xl border-2 font-bold transition-all
+                  className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all active:scale-95
                     ${infoSettore === s 
-                      ? 'border-white bg-transparent text-white' 
-                      : 'border-white/20 text-muted bg-white/5'}`}>
+                      ? 'bg-purple-main border-purple-main text-white' 
+                      : 'border-white/10 text-muted bg-white/5'}`}>
                   {t(`profile.sectorOptions.${s}`) || s}
                 </button>
               ))}
             </div>
 
-            {/* COME HAI TROVATO L'APP (FONTE) */}
+            {/* COME HAI TROVATO L'APP (Stesso identico stile Pillola Viola) */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
-            <div className="grid grid-cols-2 gap-2 mb-8">
+            <div className="flex flex-wrap gap-2 mb-8">
               {FONTI.map(f => {
                 const translationKey = f === 'Amico/a' ? 'Amici' : f;
                 return (
                   <button key={f} onClick={() => setInfoFonte(f)}
-                    className={`py-4 px-3 rounded-2xl border-2 font-bold transition-all
+                    className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all active:scale-95
                       ${infoFonte === f 
-                        ? 'border-purple-main bg-purple-main/20 text-white' 
+                        ? 'bg-purple-main border-purple-main text-white' 
                         : 'border-white/10 text-muted bg-white/5'}`}>
                     {t(`profile.sourceAppOptions.${translationKey}`) || f}
                   </button>
@@ -684,7 +669,7 @@ const { t, i18n } = useTranslation()
               })}
             </div>
 
-            {/* BOTTONE SALVA VIOLA */}
+            {/* BOTTONE SALVA */}
             <button 
               onClick={async () => {
                 const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
@@ -696,7 +681,7 @@ const { t, i18n } = useTranslation()
                 });
                 setEditInfoBase(false);
               }} 
-              className="btn-primary w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+              className="btn-primary w-full py-4 flex items-center justify-center gap-2"
             >
               <span>💾</span>
               {t('profile.salva')}
