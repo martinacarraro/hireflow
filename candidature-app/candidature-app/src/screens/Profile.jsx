@@ -635,47 +635,54 @@ const { t, i18n } = useTranslation()
             </div>
 
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.etaTitolo')}</p>
-            <input className="input-field w-full mb-4" type="number" placeholder="Es: 26"
+            <input className="input-field w-full mb-6" type="number" placeholder="Es: 26"
               value={infoEta} onChange={e => setInfoEta(e.target.value)} />
 
+            {/* SETTORE */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settoreTitolo')}</p>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-6">
               {SETTORI.map(s => (
                 <button key={s} onClick={() => setInfoSettore(s)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all
-                    ${infoSettore === s ? 'bg-purple border-purple text-white' : 'border-border text-muted bg-surface'}`}>
+                  className={`py-2 px-3 rounded-xl text-sm border transition-all active:scale-95
+                    ${infoSettore === s 
+                      ? 'bg-white/10 border-white text-white' 
+                      : 'border-white/10 text-muted bg-white/5'}`}>
                   {t(`profile.sectorOptions.${s}`) || s}
                 </button>
               ))}
             </div>
 
+            {/* COME HAI TROVATO L'APP (FONTE) */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
-            <div className="grid grid-cols-2 gap-2">
-  {FONTI.map(f => (
-    <button
-      key={f}
-      onClick={() => setInfoFonte(f)}
-      className={`py-2 px-3 rounded-xl border text-sm transition-all ${
-        infoFonte === f 
-          ? 'bg-purple-main border-purple-main text-white' 
-          : 'bg-white/5 border-white/10 text-txt hover:bg-white/10'
-      }`}
-    >
-      {t(`profile.sourceAppOptions.${f}`) || f}
-    </button>
-  ))}
-</div>
+            <div className="grid grid-cols-2 gap-2 mb-8">
+              {FONTI.map(f => {
+                const translationKey = f === 'Amico/a' ? 'Amici' : f;
+                return (
+                  <button key={f} onClick={() => setInfoFonte(f)}
+                    className={`py-2 px-3 rounded-xl border text-sm transition-all active:scale-95
+                      ${infoFonte === f 
+                        ? 'bg-white/10 border-white text-white' 
+                        : 'border-white/10 text-muted bg-white/5'}`}>
+                    {t(`profile.sourceAppOptions.${translationKey}`) || f}
+                  </button>
+                );
+              })}
+            </div>
 
-            <button onClick={async () => {
-              const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
-              await updateProfile({
-                genere: infoGenere,
-                eta: infoEta ? parseInt(infoEta) : null,
-                settore: finalSettore,
-                come_conosciuto: infoFonte
-              });
-              setEditInfoBase(false);
-            }} className="btn-primary w-full py-3">
+            {/* BOTTONE SALVA */}
+            <button 
+              onClick={async () => {
+                const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
+                await updateProfile({
+                  genere: infoGenere,
+                  eta: infoEta ? parseInt(infoEta) : null,
+                  settore: finalSettore,
+                  come_conosciuto: infoFonte
+                });
+                setEditInfoBase(false);
+              }} 
+              className="w-full bg-purple-main text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform"
+            >
               {t('profile.salva')}
             </button>
           </div>
@@ -686,6 +693,6 @@ const { t, i18n } = useTranslation()
       <ConfirmDialog isOpen={confirmSignOut} title={t('profile.confermaEsci')} onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} />
       <ConfirmDialog isOpen={confirmDelete} title={t('profile.confermaElimina')} onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger />
 
-    </div> // CHIUDE IL DIV PRINCIPALE 'screen'
+    </div> 
   );
 }
