@@ -332,45 +332,49 @@ const { t, i18n } = useTranslation()
         {/* INFO CARD - UNA SOLA E PULITA */}
         <div className="card space-y-3">
           <div className="flex items-center mb-1">
-            <SectionLabel>{t('profile.leTueInfo')}</SectionLabel>
-            {/* Tasto rimosso da qui come richiesto */}
+            {/* Se t('profile.leTueInfo') non va, scriviamo direttamente il testo */}
+            <SectionLabel>{t('profile.leTueInfo') || 'Le tue info'}</SectionLabel>
           </div>
 
-          {/* Genere - Traduzione corretta */}
+          {/* Genere */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.genere')}</span>
+            <span className="text-xs text-muted">{t('profile.genere') || 'Genere'}</span>
             <span className="text-xs text-txt font-medium">
-              {profile?.genere ? t(`profile.genderOptions.${profile.genere}`) : t('profile.nonSpecificato')}
+              {profile?.genere === 'f' ? (t('profile.genderOptions.Donna') || 'Donna') : 
+               profile?.genere === 'm' ? (t('profile.genderOptions.Uomo') || 'Uomo') : 
+               (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
           </div>
 
           {/* Età */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.eta')}</span>
-            <span className="text-xs text-txt font-medium">{profile?.eta || t('profile.nonSpecificato')}</span>
-          </div>
-
-          {/* Settore - Traduzione forzata */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.settore')}</span>
-            <span className="text-xs text-txt font-medium text-right ml-4">
-              {profile?.settore ? t(`profile.sectorOptions.${profile.settore}`) : t('profile.nonSpecificato')}
+            <span className="text-xs text-muted">{t('profile.eta') || 'Età'}</span>
+            <span className="text-xs text-txt font-medium">
+              {profile?.eta || (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
           </div>
 
-          {/* Come ci hai trovato - Traduzione forzata */}
+          {/* Settore */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
+            <span className="text-xs text-muted">{t('profile.settore') || 'Settore'}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
-              {profile?.come_conosciuto ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) : t('profile.nonSpecificato')}
+              {profile?.settore || (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
           </div>
 
-          {/* UNICO TASTO MODIFICA IN FONDO ALLA CARD */}
+          {/* Come ci hai trovato */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted">{t('profile.comeTrovato') || 'Fonte'}</span>
+            <span className="text-xs text-txt font-medium text-right ml-4">
+              {profile?.come_conosciuto || (t('profile.nonSpecificato') || 'Non specificato')}
+            </span>
+          </div>
+
+          {/* Tasto Modifica in fondo */}
           <div className="pt-2 border-t border-white/5 flex justify-end">
             <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-purple-soft active:scale-95 transition-all">
               <Edit2 size={12} />
-              {t('profile.modificaInfo')}
+              {t('profile.modificaInfo') || 'Modifica info'}
             </button>
           </div>
         </div>
