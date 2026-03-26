@@ -364,9 +364,7 @@ const { t, i18n } = useTranslation()
               {profile?.come_conosciuto || <span className="text-disabled italic">Non specificato</span>}
             </span>
           </div>
-        </div> {/* Chiude il contenitore delle righe (space-y-2) */}
-
-        {/* Pulsante Modifica */}
+        </div> 
         <div className="mt-3 flex justify-end">
           <button 
             onClick={() => { 
