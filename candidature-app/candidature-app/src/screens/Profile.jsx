@@ -331,14 +331,12 @@ const { t, i18n } = useTranslation()
 
         {/* INFO CARD - UNA SOLA E PULITA */}
         <div className="card space-y-3">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center mb-1">
             <SectionLabel>{t('profile.leTueInfo')}</SectionLabel>
-            <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-purple-soft bg-purple/10 px-3 py-1.5 rounded-full active:scale-95 transition-all">
-              <Edit2 size={12} />
-              {t('profile.modificaInfo')}
-            </button>
+            {/* Tasto rimosso da qui come richiesto */}
           </div>
 
+          {/* Genere - Traduzione corretta */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.genere')}</span>
             <span className="text-xs text-txt font-medium">
@@ -346,11 +344,13 @@ const { t, i18n } = useTranslation()
             </span>
           </div>
 
+          {/* Età */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.eta')}</span>
             <span className="text-xs text-txt font-medium">{profile?.eta || t('profile.nonSpecificato')}</span>
           </div>
 
+          {/* Settore - Traduzione forzata */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.settore')}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
@@ -358,29 +358,22 @@ const { t, i18n } = useTranslation()
             </span>
           </div>
 
+          {/* Come ci hai trovato - Traduzione forzata */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
               {profile?.come_conosciuto ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) : t('profile.nonSpecificato')}
             </span>
           </div>
-        </div>
 
-          {/* Pulsante Modifica */}
-          <div className="mt-3 flex justify-end">
-            <button 
-              onClick={() => { 
-                setInfoGenere(profile?.genere || '')
-                setInfoEta(profile?.eta?.toString() || '')
-                setInfoSettore(profile?.settore || '')
-                setInfoFonte(profile?.come_conosciuto || '')
-                setEditInfoBase(true)
-              }} 
-              className="text-xs text-purple-soft font-semibold active:opacity-70"
-            >
-              ✏️ {t('profile.modificaInfo')}
+          {/* UNICO TASTO MODIFICA IN FONDO ALLA CARD */}
+          <div className="pt-2 border-t border-white/5 flex justify-end">
+            <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-purple-soft active:scale-95 transition-all">
+              <Edit2 size={12} />
+              {t('profile.modificaInfo')}
             </button>
           </div>
+        </div>
 
         
 {/* IL TUO LIVELLO */}
