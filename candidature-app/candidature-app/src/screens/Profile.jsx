@@ -336,12 +336,12 @@ const { t, i18n } = useTranslation()
         <div className="card space-y-3">
           <div className="flex items-center mb-1">
             {/* Se t('profile.leTueInfo') non va, scriviamo direttamente il testo */}
-            <SectionLabel>{t('profile.leTueInfo') || 'Le tue info'}</SectionLabel>
+            <SectionLabel>{t('profile.leInfoTitolo')}</SectionLabel>
           </div>
 
           {/* Genere */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.genere') || 'Genere'}</span>
+            <span className="text-xs text-muted">{t('profile.genereTitolo') || 'Genere'}</span>
             <span className="text-xs text-txt font-medium">
               {profile?.genere === 'f' ? (t('profile.genderOptions.Donna') || 'Donna') : 
                profile?.genere === 'm' ? (t('profile.genderOptions.Uomo') || 'Uomo') : 
@@ -351,7 +351,7 @@ const { t, i18n } = useTranslation()
 
           {/* Età */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.eta') || 'Età'}</span>
+            <span className="text-xs text-muted">{t('profile.etaTitolo') || 'Età'}</span>
             <span className="text-xs text-txt font-medium">
               {profile?.eta || (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
@@ -359,7 +359,7 @@ const { t, i18n } = useTranslation()
 
           {/* Settore */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.settore') || 'Settore'}</span>
+            <span className="text-xs text-muted">{t('profile.settoreTitolo') || 'Settore'}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
               {profile?.settore || (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
@@ -367,7 +367,7 @@ const { t, i18n } = useTranslation()
 
           {/* Come ci hai trovato */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.comeTrovato') || 'Fonte'}</span>
+            <span className="text-xs text-muted">{t('profile.comeTrovatoTitolo') || 'Fonte'}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
               {profile?.come_conosciuto || (t('profile.nonSpecificato') || 'Non specificato')}
             </span>
@@ -375,10 +375,10 @@ const { t, i18n } = useTranslation()
 
           {/* Tasto Modifica in fondo */}
           <div className="pt-2 border-t border-white/5 flex justify-end">
-            <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-[11px] font-bold text-purple-soft active:scale-95 transition-all">
-              <Edit2 size={12} />
-              {t('profile.modificaInfo') || 'Modifica info'}
-            </button>
+            <button onClick={() => setEditInfoBase(true)} className="flex items-center gap-1.5 text-purple-soft font-bold text-xs active:scale-95 transition-all">
+  <Edit2 size={12} />
+  {t('profile.modificaInfoTitolo')}
+</button>
           </div>
         </div>
 
@@ -622,7 +622,7 @@ const { t, i18n } = useTranslation()
             
             <p className="font-bold text-txt mb-4">{t('profile.modificaInfoTitolo')}</p>
 
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genere')}</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genereTitolo')}</p>
             <div className="grid grid-cols-2 gap-2 mb-4">
               {GENERI.map(g => (
                 <button key={g.value} onClick={() => setInfoGenere(g.value)}
@@ -634,11 +634,11 @@ const { t, i18n } = useTranslation()
               ))}
             </div>
 
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.eta')}</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.etaTitolo')}</p>
             <input className="input-field w-full mb-4" type="number" placeholder="Es: 26"
               value={infoEta} onChange={e => setInfoEta(e.target.value)} />
 
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settore')}</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settoreTitolo')}</p>
             <div className="flex flex-wrap gap-2 mb-4">
               {SETTORI.map(s => (
                 <button key={s} onClick={() => setInfoSettore(s)}
@@ -649,15 +649,14 @@ const { t, i18n } = useTranslation()
               ))}
             </div>
 
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovato')}</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
             <div className="grid grid-cols-2 gap-2 mb-6">
               {FONTI.map(f => (
-                <button key={f} onClick={() => setInfoFonte(f)}
-                  className={`py-2.5 rounded-xl text-xs font-semibold border transition-all
-                    ${infoFonte === f ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
-                  {t(`profile.sourceAppOptions.${f}`) || f}
-                </button>
-              ))}
+  <button key={f} onClick={() => setInfoFonte(f)} className="...">
+    {/* Nota: sourceAppOptions (con la S minuscola come nel tuo JSON) */}
+    {t(`profile.sourceAppOptions.${f}`) || f}
+  </button>
+))}
             </div>
 
             <button onClick={async () => {
