@@ -369,11 +369,14 @@
       "Ingegneria": "Ingegneria",
       "Altro": "Altro"
     },
-    "sourceAppOptions": {
-      "LinkedIn": "LinkedIn",
-      "Passaparola": "Passaparola",
-      "Social Media": "Social Media",
-      "Altro": "Altro"
+   "sourceAppOptions": {
+    "Instagram": "Instagram",
+    "TikTok": "TikTok",
+    "LinkedIn": "LinkedIn",
+    "Amici": "Amici/Passaparola",
+    "Google": "Google",
+    "Reddit": "Reddit",
+    "Altro": "Altro"
     },
     "nonSpecificato": "Non specificato",
     "nonSpecificata": "Non specificata",
