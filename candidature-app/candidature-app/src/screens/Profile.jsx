@@ -71,7 +71,10 @@ export default function Profile() {
     <div className="screen">
       <div className="px-5 pt-safe pt-4 pb-2 flex items-center justify-between flex-shrink-0">
         <h2 className="text-xl font-bold text-txt">{isIt ? 'Profilo' : 'Profile'}</h2>
-        <button onClick={() => setShowNotifs(true)} className="relative p-2 text-2xl">🔔
+        <button onClick={() => { 
+    setShowNotifs(true); 
+    markAllNotificationsRead(); 
+}} className="relative p-2 text-2xl">🔔
           {unreadCount > 0 && <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">{unreadCount}</span>}
         </button>
       </div>
