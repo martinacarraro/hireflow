@@ -204,7 +204,15 @@ export function AppProvider({ children }) {
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
         showToast('🎙️ Colloquio ottenuto! +15 XP 🎉', 'success'); triggerConfetti()
         pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`, id)
-        await createChecklist(id)
+        // Crea checklist solo se non esiste già
+const { data: existing } = await supabase
+  .from('checklist_items')
+  .select('id')
+  .eq('candidatura_id', id)
+  .limit(1)
+if (!existing || existing.length === 0) {
+  await createChecklist(id)
+}
       } else if (updates.stato === 'Offerta ricevuta') {
         await addXP(XP_EVENTS.OFFERTA)
         showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
