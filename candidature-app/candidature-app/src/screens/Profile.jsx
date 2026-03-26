@@ -635,41 +635,39 @@ const { t, i18n } = useTranslation()
             </div>
 
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.etaTitolo')}</p>
-            <input className="input-field w-full mb-6" type="number" placeholder="Es: 26"
+            <input className="input-field w-full mb-6" type="number" placeholder="26"
               value={infoEta} onChange={e => setInfoEta(e.target.value)} />
 
-            {/* SETTORE */}
+            {/* SETTORE (Pillole viola) */}
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settoreTitolo')}</p>
             <div className="flex flex-wrap gap-2 mb-6">
               {SETTORI.map(s => (
                 <button key={s} onClick={() => setInfoSettore(s)}
-                  className={`py-2 px-3 rounded-xl text-sm border transition-all active:scale-95
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all
                     ${infoSettore === s 
-                      ? 'bg-white/10 border-white text-white' 
-                      : 'border-white/10 text-muted bg-white/5'}`}>
+                      ? 'bg-purple-main border-purple-main text-white' 
+                      : 'border-white/10 text-muted bg-transparent'}`}>
                   {t(`profile.sectorOptions.${s}`) || s}
                 </button>
               ))}
             </div>
 
-            {/* COME HAI TROVATO L'APP (FONTE) */}
-            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
-            <div className="grid grid-cols-2 gap-2 mb-8">
+            {/* COME HAI TROVATO L'APP (Solo testo in griglia) */}
+            <p className="text-xs text-muted mb-4 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2 mb-10">
               {FONTI.map(f => {
                 const translationKey = f === 'Amico/a' ? 'Amici' : f;
                 return (
                   <button key={f} onClick={() => setInfoFonte(f)}
-                    className={`py-2 px-3 rounded-xl border text-sm transition-all active:scale-95
-                      ${infoFonte === f 
-                        ? 'bg-white/10 border-white text-white' 
-                        : 'border-white/10 text-muted bg-white/5'}`}>
+                    className={`text-sm transition-all text-center py-1
+                      ${infoFonte === f ? 'text-white font-bold' : 'text-muted'}`}>
                     {t(`profile.sourceAppOptions.${translationKey}`) || f}
                   </button>
                 );
               })}
             </div>
 
-            {/* BOTTONE SALVA */}
+            {/* BOTTONE SALVA CON EMOJI */}
             <button 
               onClick={async () => {
                 const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
@@ -681,8 +679,9 @@ const { t, i18n } = useTranslation()
                 });
                 setEditInfoBase(false);
               }} 
-              className="w-full bg-purple-main text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform"
+              className="btn-primary w-full py-4 flex items-center justify-center gap-2"
             >
+              <span>💾</span>
               {t('profile.salva')}
             </button>
           </div>
