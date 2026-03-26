@@ -611,32 +611,63 @@ const { t, i18n } = useTranslation()
             </button>
           </div>
         ) : null}
-      </div> {/* Fine flex-1 */}
+      </div> {/* CHIUSURA DEL DIV flex-1 CHE È INIZIATO SOPRA (probabilmente riga 278) */}
 
-      {/* MODALS: Devono stare dentro il div "screen" o un Fragment per non violare la regola dell'elemento padre unico */}
+      {/* MODALS (Fuori dal flusso scrollabile, ma dentro il div principale screen) */}
       {editInfoBase && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}
           onClick={() => setEditInfoBase(false)}>
           <div className="w-full bg-surface rounded-t-3xl p-5 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-            <p className="font-bold text-txt mb-4">{t('profile.modificaInfoTitolo')}</p>
             
+            <p className="font-bold text-txt mb-4">{t('profile.modificaInfoTitolo')}</p>
+
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.genere')}</p>
             <div className="grid grid-cols-2 gap-2 mb-4">
               {GENERI.map(g => (
                 <button key={g.value} onClick={() => setInfoGenere(g.value)}
-                  className={`py-3 rounded-xl text-xs font-semibold border transition-all ${infoGenere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
-                  <span>{g.emoji}</span> {t(`profile.genderOptions.${g.label}`)}
+                  className={`py-3 rounded-xl text-xs font-semibold border transition-all active:scale-95 flex items-center gap-2 px-3
+                    ${infoGenere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
+                  <span>{g.emoji}</span>
+                  <span>{t(`profile.genderOptions.${g.label}`)}</span>
                 </button>
               ))}
             </div>
 
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.eta')}</p>
-            <input className="input-field w-full mb-4" type="number" value={infoEta} onChange={e => setInfoEta(e.target.value)} />
+            <input className="input-field w-full mb-4" type="number" placeholder="Es: 26"
+              value={infoEta} onChange={e => setInfoEta(e.target.value)} />
+
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.settore')}</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {SETTORI.map(s => (
+                <button key={s} onClick={() => setInfoSettore(s)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all
+                    ${infoSettore === s ? 'bg-purple border-purple text-white' : 'border-border text-muted bg-surface'}`}>
+                  {t(`profile.sectorOptions.${s}`) || s}
+                </button>
+              ))}
+            </div>
+
+            <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovato')}</p>
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {FONTI.map(f => (
+                <button key={f} onClick={() => setInfoFonte(f)}
+                  className={`py-2.5 rounded-xl text-xs font-semibold border transition-all
+                    ${infoFonte === f ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface/50'}`}>
+                  {t(`profile.sourceAppOptions.${f}`) || f}
+                </button>
+              ))}
+            </div>
 
             <button onClick={async () => {
               const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
-              await updateProfile({ genere: infoGenere, eta: infoEta ? parseInt(infoEta) : null, settore: finalSettore });
+              await updateProfile({
+                genere: infoGenere,
+                eta: infoEta ? parseInt(infoEta) : null,
+                settore: finalSettore,
+                come_conosciuto: infoFonte
+              });
               setEditInfoBase(false);
             }} className="btn-primary w-full py-3">
               {t('profile.salva')}
@@ -645,9 +676,10 @@ const { t, i18n } = useTranslation()
         </div>
       )}
 
+      {/* Altri dialog di conferma */}
       <ConfirmDialog isOpen={confirmSignOut} title={t('profile.confermaEsci')} onConfirm={() => signOut()} onCancel={() => setConfirmSignOut(false)} />
       <ConfirmDialog isOpen={confirmDelete} title={t('profile.confermaElimina')} onConfirm={handleDeleteAccount} onCancel={() => setConfirmDelete(false)} danger />
 
-    </div> // Fine div "screen"
+    </div> // CHIUDE IL DIV PRINCIPALE 'screen'
   );
 }
