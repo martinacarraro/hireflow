@@ -329,7 +329,7 @@ const { t, i18n } = useTranslation()
           </div>
         </div>
 
-        {/* LE TUE INFO (Sistemato per Foto 5) */}
+        {/* INFO CARD - UNA SOLA E PULITA */}
         <div className="card space-y-3">
           <div className="flex items-center justify-between mb-1">
             <SectionLabel>{t('profile.leTueInfo')}</SectionLabel>
@@ -339,7 +339,6 @@ const { t, i18n } = useTranslation()
             </button>
           </div>
 
-          {/* Genere */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.genere')}</span>
             <span className="text-xs text-txt font-medium">
@@ -347,79 +346,25 @@ const { t, i18n } = useTranslation()
             </span>
           </div>
 
-          {/* Età */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.eta')}</span>
-            <span className="text-xs text-txt font-medium">
-              {profile?.eta || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-            </span>
+            <span className="text-xs text-txt font-medium">{profile?.eta || t('profile.nonSpecificato')}</span>
           </div>
 
-          {/* Settore */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.settore')}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
-              {profile?.settore 
-                ? t(`profile.sectorOptions.${profile.settore}`) 
-                : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+              {profile?.settore ? t(`profile.sectorOptions.${profile.settore}`) : t('profile.nonSpecificato')}
             </span>
           </div>
 
-          {/* Come ci hai trovato */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
             <span className="text-xs text-txt font-medium text-right ml-4">
-              {profile?.come_conosciuto 
-                ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) 
-                : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
+              {profile?.come_conosciuto ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) : t('profile.nonSpecificato')}
             </span>
           </div>
         </div>
-
-        {/* XP */}
-        {/* LE TUE INFO */}
-        <div className="flex items-center justify-between">
-  {/* Etichetta a sinistra */}
-  <span className="text-xs text-muted">{t('profile.genere')}</span>
-  
-  {/* Valore a destra */}
-  <span className="text-xs text-txt font-medium">
-  {profile?.genere ? t(`profile.genderOptions.${profile.genere}`) : t('profile.nonSpecificato')}
-</span>
-
-{/* Valore Settore (Aggiungi anche questo se vuoi tradurre Marketing, Tech, ecc.) */}
-<span className="text-xs text-txt font-medium">
-  {profile?.settore ? t(`profile.sectorOptions.${profile.settore}`) : t('profile.nonSpecificato')}
-</span>
-</div>
-            {/* Inizio blocco Info e Pulsante */}
-        <>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.eta')}</span>
-            <span className="text-xs text-txt font-medium">
-              {profile?.eta || <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-            </span>
-          </div>
-
-          {/* Settore: ADESSO USA LE TRADUZIONI */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted">{t('profile.settore')}</span>
-            <span className="text-xs text-txt font-medium">
-              {profile?.settore 
-                ? t(`profile.sectorOptions.${profile.settore}`) 
-                : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-            </span>
-          </div>
-
-          {/* Come ci hai trovato: USA LE TRADUZIONI (se le hai messe nel JSON) */}
-          <div className="flex items-center justify-between">
-  <span className="text-xs text-muted">{t('profile.comeTrovato')}</span>
-  <span className="text-xs text-txt font-medium">
-    {profile?.come_conosciuto 
-      ? t(`profile.sourceAppOptions.${profile.come_conosciuto}`) 
-      : <span className="text-disabled italic">{t('profile.nonSpecificato')}</span>}
-  </span>
-</div>
 
           {/* Pulsante Modifica */}
           <div className="mt-3 flex justify-end">
@@ -437,7 +382,7 @@ const { t, i18n } = useTranslation()
             </button>
           </div>
 
-        </>
+        
 {/* IL TUO LIVELLO */}
         <div className="card">
           <SectionLabel>{t('profile.tuoLivello')}</SectionLabel>
