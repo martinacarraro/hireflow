@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { XpBar, LevelBadge, SectionLabel, ConfirmDialog, Spinner } from '../components/UI'
 import { BADGES } from '../lib/utils'
 import { supabase } from '../lib/supabase'
+import { Edit2, LogOut, Share2, Coffee, Bell } from 'lucide-react'
 
 const GENERI = [
   { value: 'f', label: 'Donna', emoji: '👩' },
