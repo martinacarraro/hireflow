@@ -650,14 +650,21 @@ const { t, i18n } = useTranslation()
             </div>
 
             <p className="text-xs text-muted mb-2 font-semibold uppercase">{t('profile.comeTrovatoTitolo')}</p>
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              {FONTI.map(f => (
-  <button key={f} onClick={() => setInfoFonte(f)} className="...">
-    {/* Nota: sourceAppOptions (con la S minuscola come nel tuo JSON) */}
-    {t(`profile.sourceAppOptions.${f}`) || f}
-  </button>
-))}
-            </div>
+            <div className="grid grid-cols-2 gap-2">
+  {FONTI.map(f => (
+    <button
+      key={f}
+      onClick={() => setInfoFonte(f)}
+      className={`py-2 px-3 rounded-xl border text-sm transition-all ${
+        infoFonte === f 
+          ? 'bg-purple-main border-purple-main text-white' 
+          : 'bg-white/5 border-white/10 text-txt hover:bg-white/10'
+      }`}
+    >
+      {t(`profile.sourceAppOptions.${f}`) || f}
+    </button>
+  ))}
+</div>
 
             <button onClick={async () => {
               const finalSettore = infoSettore === 'Altro' ? infoSettoreCustom : infoSettore;
