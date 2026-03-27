@@ -95,6 +95,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
     { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
     { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
+    { emoji: '📁', label: t('home.Archiviate'), stato: 'Archiviate', color: '#6B7280' },
   ]
     .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
     .filter(s => s.count > 0),
