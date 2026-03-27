@@ -200,9 +200,12 @@
     "fonti": {
       "Sito aziendale": "Company site",
       "Spontanea": "Cold Outreach",
+      "LinkedIn": "LinkedIn",
+      "Indeed": "Indeed",
+      "Referral": "Referral",
+      "Email": "Email",
       "Altro": "Other",
       "prioritaLabel": "PRIORITY"
-    }
   },
   "detail": {
     "assuntaF": "YOU'RE HIRED!",
@@ -494,4 +497,5 @@
     "secondcol": "Finalist",
     "pioneer": "Pioneer"
   }
+}
 }
