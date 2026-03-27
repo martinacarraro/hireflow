@@ -122,7 +122,18 @@ export function LevelBadge({ xp = 0, genere }) {
   const { t } = useTranslation()
   const lv = getLevel(xp)
   
-  const rawLabel = t(`levels.${lv.name}`, lv.name) 
+  // 1. Colleghiamo il nome "italiano" alla chiave del tuo JSON
+  const mapping = {
+    'Pro della Ricerca': 'esperto',
+    'Cacciatore di Offerte': 'cacciatore',
+    'Novizio*': 'novizio',
+    'Apprendista*': 'apprendista',
+    'Esploratore*': 'esploratore'
+  }
+
+  // 2. Cerchiamo la chiave nel mapping, se non c'è usiamo il nome originale
+  const key = mapping[lv.name] || lv.name
+  const rawLabel = t(`levels.${key}`, lv.name) 
   
   const finalName = rawLabel.endsWith('*')
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
@@ -159,7 +170,7 @@ export function XpBar({ xp = 0, genere }) {
     log = JSON.parse(sessionStorage.getItem(key) || '[]') 
   } catch (e) {}
 
-  return (
+ return (
     <div>
       <div className="flex justify-between text-xs text-muted mb-1">
         <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
@@ -167,20 +178,24 @@ export function XpBar({ xp = 0, genere }) {
           {xp} / {next} XP {showLog ? '▴' : '▾'}
         </button>
       </div>
+
+      {/* 1. LA BARRA VIOLA */}
       <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
         <div className="h-full bg-purple rounded-full xp-fill transition-all"
           style={{ width: `${pct}%` }} />
       </div>
+
+      {/* 2. <--- INCOLLA QUI IL CODICE PER "XP TOTALI" ---> */}
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-[10px] uppercase opacity-50 font-bold tracking-wider">
+           {xp} {t('levels.total_xp')}
+        </span>
+      </div>
+
+      {/* 3. IL LOG (se attivo) */}
       {showLog && (
         <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
-          {log.length === 0 ? (
-            <p className="text-xs text-disabled text-center py-1">Nessun XP guadagnato ancora</p>
-          ) : log.map((e, i) => ( // Qui ho rimosso l'errore di riga 181 (niente più ": any")
-            <div key={i} className="flex justify-between items-center text-xs py-0.5">
-              <span className="text-muted">{e.label}</span>
-              <span className="text-green font-semibold">+{e.amount} XP</span>
-            </div>
-          ))}
+          {/* ... il resto del log ... */}
         </div>
       )}
     </div>

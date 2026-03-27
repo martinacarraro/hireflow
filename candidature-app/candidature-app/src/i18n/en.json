@@ -384,14 +384,12 @@
     "modificaInfo": "✏️ Edit info",
     "tuoLivello": "YOUR LEVEL ⭐",
     "levels": {
-  "1": "Novice",
-  "2": "Apprentice",
-  "3": "Explorer",
-  "4": "Job Hunter",
-  "5": "Search Expert",
-  "6": "Search Pro",
-  "7": "Career Master",
-  "8": "Search Legend"
+  "novizio": "Novice",
+  "apprendista": "Apprentice",
+  "esploratore": "Explorer",
+  "cacciatore": "Job Hunter",
+  "esperto": "Research Pro",
+  "total_xp": "TOTAL XP"
 },
     "ricalcolaXP": "🔄 Recalculate XP",
     "calcoloInCorso": "⏳ Calculating...",

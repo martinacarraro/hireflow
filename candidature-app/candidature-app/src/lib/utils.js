@@ -198,13 +198,13 @@ export function g(profile, f, m, nb) {
 }
 
 export const LEVELS = [
-  { min: 0,    max: 49,   lv: 1, name: 'In cerca',         emoji: '🌱' },
-  { min: 50,   max: 149,  lv: 2, name: 'Determinat*',      emoji: '⚡' },
-  { min: 150,  max: 299,  lv: 3, name: 'In forma',         emoji: '🔥' },
-  { min: 300,  max: 499,  lv: 4, name: 'Warrior',          emoji: '⚔️' },
-  { min: 500,  max: 999,  lv: 5, name: 'Pro della Ricerca',emoji: '🎯' },
-  { min: 1000, max: 99999,lv: 6, name: 'Leggenda',         emoji: '👑' },
-]
+  { lv: 1, min: 0,   max: 99,   name: 'novizio', emoji: '👶' },
+  { lv: 2, min: 100, max: 299,  name: 'apprendista', emoji: '📜' },
+  { lv: 3, min: 300, max: 599,  name: 'esploratore', emoji: '🗺️' },
+  { lv: 4, min: 600, max: 999,  name: 'cacciatore', emoji: '🎯' }, // Il tuo "Cacciatore di Offerte"
+  { lv: 5, min: 1000, max: 1999, name: 'esperto', emoji: '🎯' },     // Il tuo "Pro della Ricerca"
+  // ... e così via per gli altri livelli
+];
 
 export function getLevel(xp = 0) {
   return LEVELS.find(l => xp >= l.min && xp <= l.max) || LEVELS[0]

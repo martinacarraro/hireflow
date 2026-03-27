@@ -384,14 +384,12 @@
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
     "levels": {
-  "Novizio*": "Novizio*",
-  "Apprendista*": "Apprendista*",
-  "Esploratore*": "Esploratore*",
-  "Cacciatore* di Offerte": "Cacciatore* di Offerte",
-  "Esperto* della ricerca": "Esperto* della ricerca",
-  "Pro della ricerca": "Pro della ricerca",
-  "Master del Lavoro": "Master del Lavoro",
-  "Leggenda della ricerca": "Leggenda della ricerca"
+  "novizio": "Novizio*",
+  "apprendista": "Apprendista*",
+  "esploratore": "Esploratore*",
+  "cacciatore": "Cacciatore* di Offerte",
+  "esperto": "Pro della Ricerca",
+  "total_xp": "XP TOTALI"
 },
     "ricalcolaXP": "🔄 Ricalcola XP",
     "calcoloInCorso": "⏳ Calcolo in corso...",
