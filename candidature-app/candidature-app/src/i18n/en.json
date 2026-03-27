@@ -35,8 +35,6 @@
     "erroreConnessione": "Connection error — please try again."
   },
   "home": {
-    "statiLabel": {
-    "Archiviati": "Archived 📁",
     "notifiche": "Notifications 🔔",
     "nessunaNotifica": "No notifications yet",
     "nessunaCandidatura": "No applications yet",
@@ -96,7 +94,8 @@
       "Offerta ricevuta": "Offer received",
       "Assunta": "Hired",
       "Assunto": "Hired",
-      "Assunt*": "Hired"
+      "Assunt*": "Hired",
+      "Archiviati": "Archived 📁"
     }
   },
   "stats": {
@@ -335,7 +334,6 @@
   "splash": {
     "tagline": "The job tracker that truly gets you."
   },
-  
   "profile": {
     "import_title": "IMPORT APPLICATIONS",
     "import_description": "Have an Excel list? Download our template, fill it out and upload it to add everything at once.",
@@ -496,5 +494,4 @@
     "secondcol": "Finalist",
     "pioneer": "Pioneer"
   }
-}
 }

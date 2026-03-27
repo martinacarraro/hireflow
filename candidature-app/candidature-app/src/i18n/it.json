@@ -35,8 +35,6 @@
     "erroreConnessione": "Errore di connessione — riprova."
   },
   "home": {
-    "statiLabel": {
-    "Archiviati": "Archiviati 📁",
     "notifiche": "Notifiche 🔔",
     "nessunaNotifica": "Nessuna notifica ancora",
     "nessunaCandidatura": "Nessuna candidatura ancora",
@@ -96,7 +94,8 @@
       "Offerta ricevuta": "Offerta ricevuta",
       "Assunta": "Assunta",
       "Assunto": "Assunto",
-      "Assunt*": "Assunt*"
+      "Assunt*": "Assunt*",
+      "Archiviati": "Archiviati 📁"
     }
   },
   "stats": {
@@ -236,7 +235,7 @@
     "prontaF": "Sei prontissima.",
     "prontoM": "Sei prontissimo.",
     "prontoNB": "Sei prontissim*.",
-    "inBocca lupo": "In bocca al lupo!",
+    "inBoccaLupo": "In bocca al lupo!",
     "offertaRicevuta": "Offerta ricevuta!",
     "offertaDesc": "Meritata. Ora decidi con calma. 💜",
     "comeTiSenti": "Come ti senti riguardo a questa offerta?",
@@ -389,10 +388,10 @@
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
     "levels": {
-      "novizio": "Novizio",
+      "novizio": "Novizi*",
       "apprendista": "Apprendista",
-      "esploratore": "Esploratore",
-      "cacciatore": "Cacciatore di Offerte",
+      "esploratore": "Esplorator*",
+      "cacciatore": "Cacciator*",
       "esperto": "Pro della Ricerca",
       "total_xp": "XP TOTALI"
     },
@@ -494,5 +493,4 @@
     "secondcol": "Finalista",
     "pioneer": "Pioniere/a"
   }
-}
 }
