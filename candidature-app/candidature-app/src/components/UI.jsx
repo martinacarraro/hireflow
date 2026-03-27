@@ -119,12 +119,18 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
 
 // ─── LEVEL BADGE ─────────────────────────────────────────────────
 export function LevelBadge({ xp = 0, genere }) {
+  const { t } = useTranslation() // <-- AGGIUNGI QUESTO
   const lv = getLevel(xp)
-  const name = lv.name.endsWith('*')
-    ? (genere === 'f' ? lv.name.slice(0,-1) + 'a'
-     : genere === 'm' ? lv.name.slice(0,-1) + 'o'
-     : lv.name)
-    : lv.name
+  
+  // Usiamo t() per tradurre il nome. Nel JSON useremo chiavi tipo "levels.Novizio*"
+  const translatedName = t(`levels.${lv.name}`, lv.name) 
+  
+  const name = translatedName.endsWith('*')
+    ? (genere === 'f' ? translatedName.slice(0,-1) + 'a'
+     : genere === 'm' ? translatedName.slice(0,-1) + 'o'
+     : translatedName)
+    : translatedName
+
   return (
     <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple text-white">
       {lv.emoji} Lv.{lv.lv} {name}
@@ -133,28 +139,31 @@ export function LevelBadge({ xp = 0, genere }) {
 }
 
 // ─── XP BAR ──────────────────────────────────────────────────────
-const XP_LOG_KEY = 'hireflow_xp_log'
-
-export function logXpEvent(label, amount) {
-  try {
-    const log = JSON.parse(sessionStorage.getItem(XP_LOG_KEY) || '[]')
-    log.unshift({ label, amount, time: new Date().toISOString() })
-    sessionStorage.setItem(XP_LOG_KEY, JSON.stringify(log.slice(0, 20)))
-  } catch {}
-}
-
 export function XpBar({ xp = 0, genere }) {
+  const { t } = useTranslation() // <-- 1. Importiamo il traduttore
   const lv = getLevel(xp)
   const pct = getXpProgress(xp)
   const next = lv.max === 99999 ? '∞' : lv.max
   const [showLog, setShowLog] = React.useState(false)
+  
   let log = []
   try { log = JSON.parse(sessionStorage.getItem(XP_LOG_KEY) || '[]') } catch {}
+
+  // 2. Traduciamo il nome base dal JSON (es: "Pro della ricerca")
+  const translatedName = t(`levels.${lv.name}`, { defaultValue: lv.name })
+
+  // 3. Applichiamo la logica del genere sul testo tradotto
+  const displayName = translatedName.endsWith('*') 
+    ? (genere === 'f' ? translatedName.slice(0, -1) + 'a' 
+     : genere === 'm' ? translatedName.slice(0, -1) + 'o' 
+     : translatedName) 
+    : translatedName
 
   return (
     <div>
       <div className="flex justify-between text-xs text-muted mb-1">
-        <span>{lv.emoji} Lv.{lv.lv} — {lv.name.endsWith('*') ? (genere === 'f' ? lv.name.slice(0,-1)+'a' : genere === 'm' ? lv.name.slice(0,-1)+'o' : lv.name) : lv.name}</span>
+        {/* 4. Usiamo displayName invece di lv.name */}
+        <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
         <button onClick={() => setShowLog(v => !v)} className="text-purple-soft font-medium">
           {xp} / {next} XP {showLog ? '▴' : '▾'}
         </button>

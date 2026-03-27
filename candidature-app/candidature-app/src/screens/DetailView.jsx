@@ -271,21 +271,22 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           {form.ora_colloquio && <p className="text-purple-soft font-bold text-lg mt-2">⏰ {form.ora_colloquio.slice(0,5)}</p>}
         </div>
         {checklist.length > 0 && (
-          <div className="card" style={{ borderColor:'rgba(139,92,246,0.3)' }}>
-            <p className="text-xs font-bold text-purple-soft mb-3 uppercase tracking-wider">✅ {t('detail.checklistPre')}</p>
-            <div className="space-y-2">
-              {checklist.map(item => (
-                <button key={item.id} onClick={() => handleToggleChecklist(item)}
-                  className="w-full flex items-center gap-3 py-2 text-left active:scale-95 transition-all">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${item.fatto ? 'bg-green-500 border-green-500' : 'border-border'}`}>
-                    {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
-                  </div>
-                  <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>{item.task}</span>
-                </button>
-              ))}
-            </div>
+  <div className="card" style={{ borderColor:'rgba(139,92,246,0.3)' }}>
+    <p className="text-xs font-bold text-purple-soft mb-3 uppercase tracking-wider">✅ {t('detail.checklistPre')}</p>
+    <div className="space-y-2">
+      {checklist.map(item => (
+        <button key={item.id} onClick={() => handleToggleChecklist(item)}
+          className="w-full flex items-center gap-3 py-2 text-left active:scale-95 transition-all">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${item.fatto ? 'bg-green-500 border-green-500' : 'border-border'}`}>
+            {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
           </div>
-        )}
+          <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>{item.task}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+          
         {form.domande_mie && (
           <div className="card" style={{ borderColor:'rgba(34,197,94,0.3)' }}>
             <p className="text-xs font-bold text-green-400 mb-2 uppercase tracking-wider">🙋 {t('detail.mieDomande')}</p>
