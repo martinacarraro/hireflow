@@ -168,7 +168,7 @@ export function XpBar({ xp = 0, genere }) {
     <div>
       <div className="flex justify-between text-[10px] text-muted mb-1 uppercase font-bold tracking-wider">
         <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
-        <span>{xp} {t('levels.total_xp')}</span>
+        <span>{xp} {t('profile.levels.total_xp')}</span>
       </div>
       
       <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
