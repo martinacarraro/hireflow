@@ -334,10 +334,9 @@
     "tagline": "Il job tracker che ti capisce davvero."
   },
   "profile": {
-    "profile": {
-  "import_title": "IMPORTA CANDIDATURE",
-  "import_description": "Hai una lista Excel? Scarica il nostro template, compilalo e caricalo per aggiungere tutto in un colpo solo.",
-  "lang_title": "LINGUA",
+    "import_title": "IMPORTA CANDIDATURE",
+    "import_description": "Hai una lista Excel? Scarica il nostro template, compilalo e caricalo per aggiungere tutto in un colpo solo.",
+    "lang_title": "LINGUA",
     "titolo": "Profilo 👤",
     "notifiche": "Notifiche 🔔",
     "segnaTutte": "Segna tutte come lette",
@@ -388,13 +387,13 @@
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
     "levels": {
-  "novizio": "Novizio*",
-  "apprendista": "Apprendista*",
-  "esploratore": "Esploratore*",
-  "cacciatore": "Cacciatore* di Offerte",
-  "esperto": "Pro della Ricerca",
-  "total_xp": "XP TOTALI"
-},
+      "novizio": "Novizio*",
+      "apprendista": "Apprendista*",
+      "esploratore": "Esploratore*",
+      "cacciatore": "Cacciatore* di Offerte",
+      "esperto": "Pro della Ricerca",
+      "total_xp": "XP TOTALI"
+    },
     "ricalcolaXP": "🔄 Ricalcola XP",
     "calcoloInCorso": "⏳ Calcolo in corso...",
     "giorniDiFila": "giorni di fila",
@@ -404,7 +403,6 @@
     "condividi": "CONDIVIDI CON ALTRI CANDIDATI 💌",
     "condividiDesc": "Conosci qualcuno che sta cercando lavoro? Condividi Le faremo sapere!",
     "condividiBtn": "📤 Condividi Le faremo sapere",
-    "importa": "📥 IMPORTA CANDIDATURE",
     "importaDesc": "Scarica il template, compilalo e caricalo. O usa il tuo Excel — rileva le colonne in automatico.",
     "scaricaTemplate": "📄 Scarica template Excel",
     "caricaExcel": "📤 Carica il tuo file Excel",
@@ -494,5 +492,4 @@
     "secondcol": "Finalista",
     "pioneer": "Pioniere/a"
   }
-}
 }
