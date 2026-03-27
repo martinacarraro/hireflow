@@ -383,16 +383,16 @@
     "anniSuffix": "years old",
     "modificaInfo": "✏️ Edit info",
     "tuoLivello": "YOUR LEVEL ⭐",
-    "livelli": {
-      "Novizio*": "Novice*",
-      "Apprendista*": "Apprentice*",
-      "Esploratore*": "Explorer*",
-      "Cacciatore* di Offerte": "Offer Hunter*",
-      "Esperto* della ricerca": "Search Expert*",
-      "Pro della ricerca": "Search Pro",
-      "Master del Lavoro": "Job Master",
-      "Leggenda della ricerca": "Search Legend"
-    },
+    "levels": {
+  "1": "Novice",
+  "2": "Apprentice",
+  "3": "Explorer",
+  "4": "Job Hunter",
+  "5": "Search Expert",
+  "6": "Search Pro",
+  "7": "Career Master",
+  "8": "Search Legend"
+},
     "ricalcolaXP": "🔄 Recalculate XP",
     "calcoloInCorso": "⏳ Calculating...",
     "giorniDiFila": "days in a row",

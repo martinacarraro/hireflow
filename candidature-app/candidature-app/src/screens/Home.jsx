@@ -101,23 +101,27 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   [candidature, t])
 
   const candidatureFiltrate = useMemo(() => {
-    let list = candidature.filter(c => !c.archiviata)
+    // 1. Prendiamo tutte le candidature (anche quelle archiviate)
+    let list = [...candidature] 
+    
     if (filtroStato) list = list.filter(c => c.stato === filtroStato)
+    
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       list = list.filter(c =>
         c.azienda?.toLowerCase().includes(q) ||
         c.ruolo?.toLowerCase().includes(q) ||
-        c.sede?.toLowerCase().includes(q) ||
-        c.note?.toLowerCase().includes(q) ||
-        c.domande_fatte?.toLowerCase().includes(q) ||
-        c.domande_mie?.toLowerCase().includes(q) ||
-        c.contatto_hr?.toLowerCase().includes(q) ||
-        c.welfare_note?.toLowerCase().includes(q) ||
-        c.fonte?.toLowerCase().includes(q)
+        c.sede?.toLowerCase().includes(q)
       )
     }
-    return list
+
+    // 2. ORDINAMENTO: Mettiamo le archiviate SEMPRE in fondo
+    return list.sort((a, b) => {
+      if (a.archiviata && !b.archiviata) return 1;
+      if (!a.archiviata && b.archiviata) return -1;
+      // Se hanno lo stesso stato di archiviazione, ordina per data decrescente
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
   }, [candidature, filtroStato, searchQuery])
 
   const grouped = useMemo(() => {

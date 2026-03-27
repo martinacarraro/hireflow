@@ -383,16 +383,16 @@
     "anniSuffix": "anni",
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
-    "livelli": {
-      "Novizio*": "Novizio*",
-      "Apprendista*": "Apprendista*",
-      "Esploratore*": "Esploratore*",
-      "Cacciatore* di Offerte": "Cacciatore* di Offerte",
-      "Esperto* della ricerca": "Esperto* della ricerca",
-      "Pro della ricerca": "Pro della ricerca",
-      "Master del Lavoro": "Master del Lavoro",
-      "Leggenda della ricerca": "Leggenda della ricerca"
-    },
+    "levels": {
+  "Novizio*": "Novizio*",
+  "Apprendista*": "Apprendista*",
+  "Esploratore*": "Esploratore*",
+  "Cacciatore* di Offerte": "Cacciatore* di Offerte",
+  "Esperto* della ricerca": "Esperto* della ricerca",
+  "Pro della ricerca": "Pro della ricerca",
+  "Master del Lavoro": "Master del Lavoro",
+  "Leggenda della ricerca": "Leggenda della ricerca"
+},
     "ricalcolaXP": "🔄 Ricalcola XP",
     "calcoloInCorso": "⏳ Calcolo in corso...",
     "giorniDiFila": "giorni di fila",

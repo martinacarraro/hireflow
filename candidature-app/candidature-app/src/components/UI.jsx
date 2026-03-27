@@ -119,50 +119,50 @@ export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
 
 // ─── LEVEL BADGE ─────────────────────────────────────────────────
 export function LevelBadge({ xp = 0, genere }) {
-  const { t } = useTranslation() // <-- AGGIUNGI QUESTO
+  const { t } = useTranslation()
   const lv = getLevel(xp)
   
-  // Usiamo t() per tradurre il nome. Nel JSON useremo chiavi tipo "levels.Novizio*"
-  const translatedName = t(`levels.${lv.name}`, lv.name) 
+  // 1. Cerchiamo la traduzione (es. "Novizio*")
+  const rawLabel = t(`levels.${lv.name}`, lv.name) 
   
-  const name = translatedName.endsWith('*')
-    ? (genere === 'f' ? translatedName.slice(0,-1) + 'a'
-     : genere === 'm' ? translatedName.slice(0,-1) + 'o'
-     : translatedName)
-    : translatedName
+  // 2. Gestiamo il genere (o/a) solo se c'è l'asterisco
+  const finalName = rawLabel.endsWith('*')
+    ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
+       : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
+       : rawLabel.replace('*', ''))
+    : rawLabel
 
   return (
     <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple text-white">
-      {lv.emoji} Lv.{lv.lv} {name}
+      {lv.emoji} Lv.{lv.lv} {finalName}
     </span>
   )
 }
 
 // ─── XP BAR ──────────────────────────────────────────────────────
 export function XpBar({ xp = 0, genere }) {
-  const { t } = useTranslation() // <-- 1. Importiamo il traduttore
+  const { t } = useTranslation()
   const lv = getLevel(xp)
   const pct = getXpProgress(xp)
   const next = lv.max === 99999 ? '∞' : lv.max
   const [showLog, setShowLog] = React.useState(false)
   
+  const rawLabel = t(`levels.${lv.name}`, lv.name)
+  const displayName = rawLabel.endsWith('*') 
+    ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
+       : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
+       : rawLabel.replace('*', ''))
+    : rawLabel
+
   let log = []
-  try { log = JSON.parse(sessionStorage.getItem(XP_LOG_KEY) || '[]') } catch {}
-
-  // 2. Traduciamo il nome base dal JSON (es: "Pro della ricerca")
-  const translatedName = t(`levels.${lv.name}`, { defaultValue: lv.name })
-
-  // 3. Applichiamo la logica del genere sul testo tradotto
-  const displayName = translatedName.endsWith('*') 
-    ? (genere === 'f' ? translatedName.slice(0, -1) + 'a' 
-     : genere === 'm' ? translatedName.slice(0, -1) + 'o' 
-     : translatedName) 
-    : translatedName
+  try { 
+    const key = window.XP_LOG_KEY || 'job_xp_log'
+    log = JSON.parse(sessionStorage.getItem(key) || '[]') 
+  } catch (e) {}
 
   return (
     <div>
       <div className="flex justify-between text-xs text-muted mb-1">
-        {/* 4. Usiamo displayName invece di lv.name */}
         <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
         <button onClick={() => setShowLog(v => !v)} className="text-purple-soft font-medium">
           {xp} / {next} XP {showLog ? '▴' : '▾'}
