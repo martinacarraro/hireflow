@@ -1,6 +1,6 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
-export const STATI = ['Inviata','Spontanea','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta']
+export const STATI = ['Inviata','Spontanea','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta', 'Archiviate']
 // NOTA: 'Assunta' è escluso da STATI — viene impostato automaticamente quando si accetta un'offerta
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
@@ -27,7 +27,7 @@ export const STATUS_CONFIG = {
   'Rifiutata':          { color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   emoji: '❌', label: 'Rifiutata' },
   'Non mi piace':       { color: '#6D28D9', bg: 'rgba(109,40,217,0.15)',  emoji: '😕', label: 'Non mi piace' },
   'GHOSTED':            { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '👻', label: 'GHOSTED' },
-  "Archiviate": { emoji: '📁', color: '#6B7280' },
+  'Archiviate': {   color: '#6B7280',   bg: 'rgba(107,114,128,0.15)',   emoji: '📁',   label: 'Archiviate' },
 }
 
 export const PRIORITA_CONFIG = {
@@ -36,7 +36,7 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-export const STATUS_GROUP_ORDER = ['Assunta','Offerta ricevuta','Secondo colloquio','Colloquio','Prima call','In attesa risposta','Vista','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED']
+export const STATUS_GROUP_ORDER = ['Assunta','Offerta ricevuta','Secondo colloquio','Colloquio','Prima call','In attesa risposta','Vista','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED', 'Archiviate']
 
 // ─── SMART URL PARSER ────────────────────────────────────────────
 
