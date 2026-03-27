@@ -122,24 +122,17 @@ export function LevelBadge({ xp = 0, genere }) {
   const { t } = useTranslation()
   const lv = getLevel(xp)
   
-  // 1. Colleghiamo il nome "italiano" alla chiave del tuo JSON
-  const mapping = {
-    'Pro della Ricerca': 'esperto',
-    'Cacciatore di Offerte': 'cacciatore',
-    'Novizio*': 'novizio',
-    'Apprendista*': 'apprendista',
-    'Esploratore*': 'esploratore'
-  }
-
-  // 2. Cerchiamo la chiave nel mapping, se non c'è usiamo il nome originale
-  const key = mapping[lv.name] || lv.name
-  const rawLabel = t(`levels.${key}`, lv.name) 
+  // Cerchiamo la traduzione. Se il tuo JSON ha "novizio", t() la troverà.
+  const rawLabel = t(`levels.${lv.name}`, lv.name) 
   
-  const finalName = rawLabel.endsWith('*')
+  let name = rawLabel.endsWith('*')
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
        : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
        : rawLabel.replace('*', ''))
     : rawLabel
+
+  // Forza la prima lettera maiuscola
+  const finalName = name.charAt(0).toUpperCase() + name.slice(1)
 
   return (
     <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple text-white">
@@ -157,45 +150,48 @@ export function XpBar({ xp = 0, genere }) {
   const [showLog, setShowLog] = React.useState(false)
   
   const rawLabel = t(`levels.${lv.name}`, lv.name)
-  const displayName = rawLabel.endsWith('*') 
+  let name = rawLabel.endsWith('*') 
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
        : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
        : rawLabel.replace('*', ''))
     : rawLabel
 
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1)
+
   let log = []
   try { 
-    // Qui ho rimosso l'errore di riga 161 (niente più "as any")
     const key = window.XP_LOG_KEY || 'job_xp_log'
     log = JSON.parse(sessionStorage.getItem(key) || '[]') 
   } catch (e) {}
 
- return (
+  return (
     <div>
-      <div className="flex justify-between text-xs text-muted mb-1">
+      <div className="flex justify-between text-[10px] text-muted mb-1 uppercase font-bold tracking-wider">
         <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
-        <button onClick={() => setShowLog(v => !v)} className="text-purple-soft font-medium">
+        <span>{xp} {t('levels.total_xp')}</span>
+      </div>
+      
+      <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
+        <div className="h-full bg-purple rounded-full transition-all"
+          style={{ width: `${pct}%` }} />
+      </div>
+
+      <div className="flex justify-end">
+        <button onClick={() => setShowLog(v => !v)} className="text-[10px] text-purple-soft font-medium">
           {xp} / {next} XP {showLog ? '▴' : '▾'}
         </button>
       </div>
 
-      {/* 1. LA BARRA VIOLA */}
-      <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
-        <div className="h-full bg-purple rounded-full xp-fill transition-all"
-          style={{ width: `${pct}%` }} />
-      </div>
-
-      {/* 2. <--- INCOLLA QUI IL CODICE PER "XP TOTALI" ---> */}
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[10px] uppercase opacity-50 font-bold tracking-wider">
-           {xp} {t('levels.total_xp')}
-        </span>
-      </div>
-
-      {/* 3. IL LOG (se attivo) */}
       {showLog && (
-        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
-          {/* ... il resto del log ... */}
+        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border-t border-border pt-1">
+          {log.length === 0 ? (
+            <p className="text-xs text-disabled text-center py-1">No XP yet</p>
+          ) : log.map((e, i) => (
+            <div key={i} className="flex justify-between items-center text-xs py-0.5">
+              <span className="text-muted">{e.label}</span>
+              <span className="text-green font-semibold">+{e.amount} XP</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
