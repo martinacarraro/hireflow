@@ -122,10 +122,8 @@ export function LevelBadge({ xp = 0, genere }) {
   const { t } = useTranslation()
   const lv = getLevel(xp)
   
-  // 1. Cerchiamo la traduzione (es. "Novizio*")
   const rawLabel = t(`levels.${lv.name}`, lv.name) 
   
-  // 2. Gestiamo il genere (o/a) solo se c'è l'asterisco
   const finalName = rawLabel.endsWith('*')
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
        : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
@@ -156,6 +154,7 @@ export function XpBar({ xp = 0, genere }) {
 
   let log = []
   try { 
+    // Qui ho rimosso l'errore di riga 161 (niente più "as any")
     const key = window.XP_LOG_KEY || 'job_xp_log'
     log = JSON.parse(sessionStorage.getItem(key) || '[]') 
   } catch (e) {}
@@ -176,7 +175,7 @@ export function XpBar({ xp = 0, genere }) {
         <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
           {log.length === 0 ? (
             <p className="text-xs text-disabled text-center py-1">Nessun XP guadagnato ancora</p>
-          ) : log.map((e, i) => (
+          ) : log.map((e, i) => ( // Qui ho rimosso l'errore di riga 181 (niente più ": any")
             <div key={i} className="flex justify-between items-center text-xs py-0.5">
               <span className="text-muted">{e.label}</span>
               <span className="text-green font-semibold">+{e.amount} XP</span>
