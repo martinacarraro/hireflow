@@ -85,21 +85,28 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
-    { emoji: '📞', label: t('home.primaCall'),  stato: 'Prima call',         color: '#A855F7' },
-    { emoji: '🎙️', label: t('home.colloquio'),  stato: 'Colloquio',           color: '#22C55E' },
-    { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
-    { emoji: '⏳', label: t('home.attesa'),      stato: 'In attesa risposta', color: '#EAB308' },
-    { emoji: '📤', label: t('home.inviata'),     stato: 'Inviata',            color: '#3B82F6' },
-    { emoji: '👀', label: t('home.vista'),       stato: 'Vista',              color: '#F97316' },
-    { emoji: '❌', label: t('home.rifiutata'),   stato: 'Rifiutata',          color: '#EF4444' },
-    { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
-    { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
-    { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
-    { emoji: '📁', label: t('home.Archiviate'),  stato: 'Archiviate',         color: '#6B7280' }, // Aggiunta qui
-  ]
-    .map(s => ({ ...s, count: candidature.filter(c => c.stato === s.stato).length }))
-    // .filter(s => s.count > 0), // <--- COMMENTA O CANCELLA QUESTA RIGA
-  , [candidature, t])
+  { emoji: '📞', label: t('home.primaCall'),  stato: 'Prima call',         color: '#A855F7' },
+  { emoji: '🎙️', label: t('home.colloquio'),  stato: 'Colloquio',           color: '#22C55E' },
+  { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
+  { emoji: '⏳', label: t('home.attesa'),      stato: 'In attesa risposta', color: '#EAB308' },
+  { emoji: '📤', label: t('home.inviata'),     stato: 'Inviata',            color: '#3B82F6' },
+  { emoji: '👀', label: t('home.vista'),       stato: 'Vista',              color: '#F97316' },
+  { emoji: '❌', label: t('home.rifiutata'),   stato: 'Rifiutata',          color: '#EF4444' },
+  { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
+  { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
+  { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
+  { emoji: '📁', label: t('home.Archiviate'),  stato: 'Archiviate',         color: '#6B7280' },
+]
+  .map(s => {
+    // Conteggio speciale per le Archiviate se usi il campo boolean
+    const count = s.stato === 'Archiviate' 
+      ? candidature.filter(c => c.archiviata === true || c.stato === 'Archiviate').length
+      : candidature.filter(c => c.stato === s.stato && !c.archiviata).length;
+    
+    return { ...s, count };
+  })
+  .filter(s => s.count > 0), // <--- Questo nasconde quelle con 0
+[candidature, t]);
 
   const candidatureFiltrate = useMemo(() => {
     // 1. Prendiamo tutte le candidature (anche quelle archiviate)
