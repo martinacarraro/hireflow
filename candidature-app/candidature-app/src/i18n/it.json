@@ -387,10 +387,10 @@
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
     "levels": {
-      "novizio": "Novizio*",
-      "apprendista": "Apprendista*",
-      "esploratore": "Esploratore*",
-      "cacciatore": "Cacciatore* di Offerte",
+      "novizio": "Novizio",
+      "apprendista": "Apprendista",
+      "esploratore": "Esploratore",
+      "cacciatore": "Cacciatore di Offerte",
       "esperto": "Pro della Ricerca",
       "total_xp": "XP TOTALI"
     },
