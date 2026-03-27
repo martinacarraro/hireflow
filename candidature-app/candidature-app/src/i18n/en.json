@@ -334,6 +334,9 @@
     "tagline": "The job tracker that truly gets you."
   },
   "profile": {
+    "import_title": "IMPORT APPLICATIONS",
+  "import_description": "Have an Excel list? Download our template, fill it out and upload it to add everything at once.",
+  "lang_title": "LANGUAGE",
     "titolo": "Profile 👤",
     "notifiche": "Notifications 🔔",
     "segnaTutte": "Mark all as read",

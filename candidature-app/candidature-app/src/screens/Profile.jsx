@@ -127,12 +127,14 @@ export default function Profile() {
             })}
           </div>
         </div>
-
-        <div className="card">
-          <SectionLabel>📁 IMPORTA CANDIDATURE</SectionLabel>
-          <p className="text-[11px] text-muted mb-3 leading-relaxed">
-            {isIt ? 'Hai una lista Excel? Scarica il nostro template, compilalo e caricalo per aggiungere tutto in un colpo solo.' : 'Have an Excel list? Download our template, fill it out and upload it to add everything at once.'}
-          </p>
+<div className="card">
+  {/* Traduciamo il titolo della sezione */}
+  <SectionLabel>📁 {t('profile.import_title')}</SectionLabel>
+  
+  {/* Traduciamo la descrizione prelevandola dal JSON */}
+  <p className="text-[11px] text-muted mb-3 leading-relaxed">
+    {t('profile.import_description')}
+  </p>
           <div className="space-y-2">
             <button onClick={downloadTemplate} className="w-full py-2 bg-white/5 rounded-xl text-xs font-semibold border border-white/10">1. {isIt ? 'Scarica template Excel' : 'Download Excel template'}</button>
             <button onClick={() => fileRef.current?.click()} className="w-full py-2 bg-purple rounded-xl text-xs font-bold text-white">2. {isIt ? 'Carica il tuo file Excel' : 'Upload your Excel file'}</button>

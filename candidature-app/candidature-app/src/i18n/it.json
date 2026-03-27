@@ -334,6 +334,10 @@
     "tagline": "Il job tracker che ti capisce davvero."
   },
   "profile": {
+    "profile": {
+  "import_title": "IMPORTA CANDIDATURE",
+  "import_description": "Hai una lista Excel? Scarica il nostro template, compilalo e caricalo per aggiungere tutto in un colpo solo.",
+  "lang_title": "LINGUA",
     "titolo": "Profilo 👤",
     "notifiche": "Notifiche 🔔",
     "segnaTutte": "Segna tutte come lette",
@@ -490,4 +494,5 @@
     "secondcol": "Finalista",
     "pioneer": "Pioniere/a"
   }
+}
 }
