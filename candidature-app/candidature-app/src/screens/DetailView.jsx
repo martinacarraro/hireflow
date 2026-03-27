@@ -92,11 +92,18 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   }, [showAssuntaCelebration])
 
   const loadChecklist = async () => {
-    setLoadingChecklist(true)
-    const items = await getChecklist(c.id)
-    setChecklist(items)
-    setLoadingChecklist(false)
-  }
+  setLoadingChecklist(true)
+  const items = await getChecklist(c.id)
+  
+  // FILTRO ANTI-DUPLICATI:
+  // Filtriamo gli items basandoci sul testo del 'task' per evitare doppioni visivi
+  const uniqueItems = items.filter((item, index, self) =>
+    index === self.findIndex((t) => t.task === item.task)
+  )
+  
+  setChecklist(uniqueItems)
+  setLoadingChecklist(false)
+}
 
   const handleSave = async () => {
     setSaving(true)
