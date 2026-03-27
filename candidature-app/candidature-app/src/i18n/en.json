@@ -309,7 +309,9 @@
       "phone": "Phone",
       "video": "Video call",
       "onsite": "On-site"
+      
     },
+    
     "welfareOptions": {
       "Smart working": "Remote work",
       "Smart working parziale": "Hybrid remote",
@@ -329,6 +331,7 @@
       "PC aziendale": "Company laptop",
       "Budget formazione": "Training budget"
     }
+    
   },
   "splash": {
     "tagline": "The job tracker that truly gets you."
@@ -494,6 +497,18 @@
     "consistent": {
     "title": "Consistent",
     "desc": "3 consecutive weeks with at least 1 application."
-  }
+  },
+  "tuoLivello": "YOUR LEVEL ⭐",
+    "livelli": {
+      "Novizio*": "Novice*",
+      "Apprendista*": "Apprentice*",
+      "Esploratore*": "Explorer*",
+      "Cacciatore* di Offerte": "Offer Hunter*",
+      "Esperto* della ricerca": "Search Expert*",
+      "Pro della ricerca": "Search Pro",
+      "Master del Lavoro": "Job Master",
+      "Leggenda della ricerca": "Search Legend"
+    },
+    "ricalcolaXP": "🔄 Recalculate XP"
   }
 }
