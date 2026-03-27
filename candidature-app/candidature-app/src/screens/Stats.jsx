@@ -37,7 +37,7 @@ export default function Stats({ onOpenCandidatura }) {
     const byStato = (s) => candidature.filter(c => c.stato === s).length
     const colloqui = byStato('Prima call') + byStato('Colloquio') + byStato('In attesa risposta') + byStato('Secondo colloquio') + byStato('Non mi piace') + byStato('Rifiutata') + byStato('GHOSTED')
     const ghosted = byStato('GHOSTED')
-    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
+    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta', 'Archiviate']
     const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
     const offerte = byStato('Offerta ricevuta')
     const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0

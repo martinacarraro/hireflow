@@ -27,6 +27,7 @@ export const STATUS_CONFIG = {
   'Rifiutata':          { color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   emoji: '❌', label: 'Rifiutata' },
   'Non mi piace':       { color: '#6D28D9', bg: 'rgba(109,40,217,0.15)',  emoji: '😕', label: 'Non mi piace' },
   'GHOSTED':            { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '👻', label: 'GHOSTED' },
+  "Archiviate": { emoji: '📁', color: '#6B7280' },
 }
 
 export const PRIORITA_CONFIG = {
