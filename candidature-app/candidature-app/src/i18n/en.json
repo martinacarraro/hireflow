@@ -3,7 +3,7 @@
     "tagline": "The job tracker for job seekers, by job seekers.",
     "badge1": "🎁 Free forever",
     "badge2": "🔔 Clear deadlines",
-    "badge3": "👻 Track ghosts",
+    "badge3": "👻 Track ghosting",
     "ciao": "Hi! 👋",
     "creaAccount": "Create account 🚀",
     "accediDesc": "Log in to your tracker.",
@@ -66,8 +66,8 @@
     "rifiutata": "Rejected",
     "nonPiace": "Not interested",
     "ghostate": "Ghosted",
-    "spontanea": "Cold App",
-    "Archiviate": "Archived", 
+    "spontanea": "Cold outreach",
+    "Archiviate": "Archived",
     "cercaPlaceholder": "Search company, role, location...",
     "nessunaRisposta": "No response for {{giorni}} days",
     "responsoEntro": "Response expected in {{giorni}} {{label}}",
@@ -186,7 +186,7 @@
     "usaNomePersonalizzato": "Use \"{{nome}}\" as custom name",
     "stati": {
       "Inviata": "Applied",
-      "Spontanea": "Cold App",
+      "Spontanea": "Cold outreach",
       "Vista": "Viewed",
       "Prima call": "First call",
       "Colloquio": "Interview",
@@ -197,20 +197,21 @@
       "GHOSTED": "GHOSTED",
       "Offerta ricevuta": "Offer received"
     },
-   "fonti": {
-  "Sito aziendale": "Company site",
-  "Spontanea": "Cold Outreach",
-  "LinkedIn": "LinkedIn",
-  "Indeed": "Indeed",
-  "Referral": "Referral",
-  "Email": "Email",
-  "Altro": "Other"
-},
+    "fonti": {
+      "Sito aziendale": "Company site",
+      "Spontanea": "Cold Outreach",
+      "LinkedIn": "LinkedIn",
+      "Indeed": "Indeed",
+      "Referral": "Referral",
+      "Email": "Email",
+      "Altro": "Other"
+    }
+  },
   "detail": {
     "assuntaF": "YOU'RE HIRED!",
     "assuntoM": "YOU'RE HIRED!",
     "assuntoNB": "YOU'RE HIRED!",
-    "celebrazioneMsg": "every application, every ghosting, every wait — it was worth it. 💜",
+    "celebrazioneMsg": "Every application, every ghosting, every wait — it was worth it. 💜",
     "reviewTitolo": "One last favor?",
     "reviewDesc": "You found a job with the app — your feedback is gold to improve it for those who follow 🙏",
     "reviewUtilita": "Did the app help you?",
@@ -231,7 +232,7 @@
     "checklistPre": "Pre-interview checklist",
     "mieDomande": "My questions",
     "mieNote": "My notes",
-    "nomeReferente": "Referent name",
+    "nomeReferente": "Contact name",
     "scopriTragitto": "Check route on Google Maps",
     "respira": "Breathe.",
     "prontaF": "You are ready.",
@@ -496,5 +497,4 @@
     "secondcol": "Finalist",
     "pioneer": "Pioneer"
   }
-}
 }
