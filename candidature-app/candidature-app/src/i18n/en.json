@@ -57,6 +57,7 @@
     "selezionate": "selected",
     "tutte": "All",
     "archivia": "Archive",
+    "Archiviati": "Archived 📁", 
     "primaCall": "First call",
     "colloquio": "Interview",
     "secondoCol": "2nd Int.",
@@ -94,8 +95,7 @@
       "Offerta ricevuta": "Offer received",
       "Assunta": "Hired",
       "Assunto": "Hired",
-      "Assunt*": "Hired",
-      "Archiviati": "Archived 📁"
+      "Assunt*": "Hired"
     }
   },
   "stats": {
