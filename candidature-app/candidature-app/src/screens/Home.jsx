@@ -328,11 +328,7 @@ const candidatureFiltrate = useMemo(() => {
           ))}
         </div>
 
-        {filtroStato && (
-          <p className="text-xs text-muted mb-3">
-            {t('home.filtro')}: <span className="text-purple-soft font-semibold">{filtroStato}</span> — {candidatureFiltrate.length} {t('home.candidature')}
-          </p>
-        )}
+
 
         {STATUS_GROUP_ORDER.map(stato => {
           const items = grouped[stato]
