@@ -197,16 +197,15 @@
       "GHOSTED": "GHOSTED",
       "Offerta ricevuta": "Offer received"
     },
-    "fonti": {
-      "Sito aziendale": "Company site",
-      "Spontanea": "Cold Outreach",
-      "LinkedIn": "LinkedIn",
-      "Indeed": "Indeed",
-      "Referral": "Referral",
-      "Email": "Email",
-      "Altro": "Other",
-      "prioritaLabel": "PRIORITY"
-  },
+   "fonti": {
+  "Sito aziendale": "Company site",
+  "Spontanea": "Cold Outreach",
+  "LinkedIn": "LinkedIn",
+  "Indeed": "Indeed",
+  "Referral": "Referral",
+  "Email": "Email",
+  "Altro": "Other"
+},
   "detail": {
     "assuntaF": "YOU'RE HIRED!",
     "assuntoM": "YOU'RE HIRED!",

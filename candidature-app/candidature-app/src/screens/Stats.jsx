@@ -110,7 +110,7 @@ export default function Stats({ onOpenCandidatura }) {
   const kpis = [
     { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total,           color: '#60A5FA' },
     { emoji: '🎙️', label: t('stats.colloqui'),      value: stats.colloqui,        color: '#34D399' },
-    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`,     color: '#8B5CF6' },
+    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`,      color: '#8B5CF6' },
     { emoji: '⏱️', label: t('stats.mediaAttesa'),   value: `${stats.avgAttesa}${t('home.ggFa').replace(' ago','').replace(' fa','')}`, color: '#FBBF24' },
   ]
 
@@ -228,7 +228,8 @@ export default function Stats({ onOpenCandidatura }) {
                     .map(([fonte, data]) => (
                     <div key={fonte}>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-txt">{fonte}</span>
+                        {/* MODIFICA QUI: Traduciamo il nome della fonte */}
+                        <span className="text-txt">{t(`fonti.${fonte}`, fonte)}</span>
                         <span className="text-muted">{data.colloqui} {t('stats.colloquiLabel')} / {data.total} {t('stats.invLabel')}</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -307,7 +308,7 @@ export default function Stats({ onOpenCandidatura }) {
                             <button key={cand.id} onClick={() => onOpenCandidatura && onOpenCandidatura(cand)}
                               className="flex items-center justify-between w-full text-left py-1 active:opacity-70">
                               <span className="text-xs text-muted truncate flex-1">{cand.ruolo}</span>
-                              <span className="text-xs text-purple-soft ml-2">{cand.stato} →</span>
+                              <span className="text-xs text-purple-soft ml-2">{t(`home.statiLabel.${cand.stato}`, cand.stato)} →</span>
                             </button>
                           ))}
                         </div>

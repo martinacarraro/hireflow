@@ -197,12 +197,15 @@
       "GHOSTED": "GHOSTED",
       "Offerta ricevuta": "Offerta ricevuta"
     },
-    "fonti": {
-      "Sito aziendale": "Sito aziendale",
-      "Spontanea": "Spontanea",
-      "Altro": "Altro",
-      "prioritaLabel": "PRIORITÀ"
-    }
+   "fonti": {
+  "Sito aziendale": "Sito aziendale",
+  "Spontanea": "Spontanea",
+  "LinkedIn": "LinkedIn",
+  "Indeed": "Indeed",
+  "Referral": "Referral",
+  "Email": "Email",
+  "Altro": "Altro"
+}
   },
   "detail": {
     "assuntaF": "SEI STATA ASSUNTA!",
