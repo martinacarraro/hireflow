@@ -108,39 +108,55 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   .filter(s => s.count > 0), // <--- Questo nasconde quelle con 0
 [candidature, t]);
 
-  const candidatureFiltrate = useMemo(() => {
-    // 1. Prendiamo tutte le candidature (anche quelle archiviate)
-    let list = [...candidature] 
-    
-    if (filtroStato) list = list.filter(c => c.stato === filtroStato)
-    
+const candidatureFiltrate = useMemo(() => {
+    let list = [...candidature];
+
+    // Gestione dei filtri (le bolle in alto)
+    if (filtroStato === 'Archiviate') {
+      // Se clicco la bolla Archiviate, prendo sia chi ha lo stato testo che il boolean true
+      list = list.filter(c => c.archiviata === true || c.stato === 'Archiviate');
+    } 
+    else if (filtroStato) {
+      // Se clicco un altro stato, escludo comunque le archiviate
+      list = list.filter(c => c.stato === filtroStato && !c.archiviata);
+    } 
+    else {
+      // Se sono su "Tutti", nascondo le archiviate per non fare confusione
+      list = list.filter(c => !c.archiviata && c.stato !== 'Archiviate');
+    }
+
+    // Filtro per la barra di ricerca
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase()
+      const q = searchQuery.toLowerCase();
       list = list.filter(c =>
         c.azienda?.toLowerCase().includes(q) ||
         c.ruolo?.toLowerCase().includes(q) ||
         c.sede?.toLowerCase().includes(q)
-      )
+      );
     }
 
-    // 2. ORDINAMENTO: Mettiamo le archiviate SEMPRE in fondo
-    return list.sort((a, b) => {
-      if (a.archiviata && !b.archiviata) return 1;
-      if (!a.archiviata && b.archiviata) return -1;
-      // Se hanno lo stesso stato di archiviazione, ordina per data decrescente
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
-  }, [candidature, filtroStato, searchQuery])
+    // Ordina per data (le più recenti sopra)
+    return list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [candidature, filtroStato, searchQuery]);
 
   const grouped = useMemo(() => {
-    const groups = {}
+    const groups = {};
+    
+    // Se stiamo visualizzando le archiviate, creiamo un gruppo unico dedicato
+    if (filtroStato === 'Archiviate') {
+      if (candidatureFiltrate.length) {
+        groups['Archiviate'] = candidatureFiltrate;
+      }
+      return groups;
+    }
+
+    // Altrimenti raggruppiamo normalmente usando l'ordine definito in utils.js
     STATUS_GROUP_ORDER.forEach(s => {
-      const items = candidatureFiltrate.filter(c => c.stato === s)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      if (items.length) groups[s] = items
-    })
-    return groups
-  }, [candidatureFiltrate])
+      const items = candidatureFiltrate.filter(c => c.stato === s);
+      if (items.length) groups[s] = items;
+    });
+    return groups;
+  }, [candidatureFiltrate, filtroStato]);
 
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
