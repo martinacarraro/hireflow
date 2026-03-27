@@ -234,7 +234,7 @@
     "prontaF": "Sei prontissima.",
     "prontoM": "Sei prontissimo.",
     "prontoNB": "Sei prontissim*.",
-    "inBoccaLupo": "In bocca al lupo!",
+    "inBocca lupo": "In bocca al lupo!",
     "offertaRicevuta": "Offerta ricevuta!",
     "offertaDesc": "Meritata. Ora decidi con calma. 💜",
     "comeTiSenti": "Come ti senti riguardo a questa offerta?",
@@ -369,20 +369,30 @@
       "Ingegneria": "Ingegneria",
       "Altro": "Altro"
     },
-   "sourceAppOptions": {
-    "Instagram": "Instagram",
-    "TikTok": "TikTok",
-    "LinkedIn": "LinkedIn",
-    "Amici": "Amici/Passaparola",
-    "Google": "Google",
-    "Reddit": "Reddit",
-    "Altro": "Altro"
+    "sourceAppOptions": {
+      "Instagram": "Instagram",
+      "TikTok": "TikTok",
+      "LinkedIn": "LinkedIn",
+      "Amici": "Amici/Passaparola",
+      "Google": "Google",
+      "Reddit": "Reddit",
+      "Altro": "Altro"
     },
     "nonSpecificato": "Non specificato",
     "nonSpecificata": "Non specificata",
     "anniSuffix": "anni",
     "modificaInfo": "✏️ Modifica info",
     "tuoLivello": "IL TUO LIVELLO ⭐",
+    "livelli": {
+      "Novizio*": "Novizio*",
+      "Apprendista*": "Apprendista*",
+      "Esploratore*": "Esploratore*",
+      "Cacciatore* di Offerte": "Cacciatore* di Offerte",
+      "Esperto* della ricerca": "Esperto* della ricerca",
+      "Pro della ricerca": "Pro della ricerca",
+      "Master del Lavoro": "Master del Lavoro",
+      "Leggenda della ricerca": "Leggenda della ricerca"
+    },
     "ricalcolaXP": "🔄 Ricalcola XP",
     "calcoloInCorso": "⏳ Calcolo in corso...",
     "giorniDiFila": "giorni di fila",
@@ -443,7 +453,6 @@
     "notifichePush": "Notifiche push",
     "notifichePushDesc": "Colloqui, ghosting, streak"
   },
-  
   "tutorial": {
     "welcomeF": "Benvenuta!",
     "welcomeM": "Benvenuto!",
@@ -482,17 +491,5 @@
     "streak3": "Costante",
     "secondcol": "Finalista",
     "pioneer": "Pioniere/a"
-  },
-  "tuoLivello": "IL TUO LIVELLO ⭐",
-    "livelli": {
-      "Novizio*": "Novizio*",
-      "Apprendista*": "Apprendista*",
-      "Esploratore*": "Esploratore*",
-      "Cacciatore* di Offerte": "Cacciatore* di Offerte",
-      "Esperto* della ricerca": "Esperto* della ricerca",
-      "Pro della ricerca": "Pro della ricerca",
-      "Master del Lavoro": "Master del Lavoro",
-      "Leggenda della ricerca": "Leggenda della ricerca"
-    },
-    "ricalcolaXP": "🔄 Ricalcola XP"
+  }
 }
