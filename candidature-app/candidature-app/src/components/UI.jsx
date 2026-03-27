@@ -123,7 +123,7 @@ export function LevelBadge({ xp = 0, genere }) {
   const lv = getLevel(xp)
   
   // Cerchiamo la traduzione. Se il tuo JSON ha "novizio", t() la troverà.
-  const rawLabel = t(`levels.${lv.name}`, lv.name) 
+  const rawLabel = t(`profile.levels.${lv.name}`, lv.name)
   
   let name = rawLabel.endsWith('*')
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
@@ -149,7 +149,7 @@ export function XpBar({ xp = 0, genere }) {
   const next = lv.max === 99999 ? '∞' : lv.max
   const [showLog, setShowLog] = React.useState(false)
   
-  const rawLabel = t(`levels.${lv.name}`, lv.name)
+  const rawLabel = t(`profile.levels.${lv.name}`, lv.name)
   let name = rawLabel.endsWith('*') 
     ? (genere === 'f' ? rawLabel.slice(0, -1) + 'a' 
        : genere === 'm' ? rawLabel.slice(0, -1) + 'o' 
