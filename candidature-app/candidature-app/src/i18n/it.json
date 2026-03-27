@@ -35,6 +35,8 @@
     "erroreConnessione": "Errore di connessione — riprova."
   },
   "home": {
+    "statiLabel": {
+    "Archiviati": "Archiviati 📁",
     "notifiche": "Notifiche 🔔",
     "nessunaNotifica": "Nessuna notifica ancora",
     "nessunaCandidatura": "Nessuna candidatura ancora",
@@ -492,4 +494,5 @@
     "secondcol": "Finalista",
     "pioneer": "Pioniere/a"
   }
+}
 }

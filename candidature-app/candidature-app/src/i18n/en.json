@@ -35,6 +35,8 @@
     "erroreConnessione": "Connection error — please try again."
   },
   "home": {
+    "statiLabel": {
+    "Archiviati": "Archived 📁",
     "notifiche": "Notifications 🔔",
     "nessunaNotifica": "No notifications yet",
     "nessunaCandidatura": "No applications yet",
@@ -494,4 +496,5 @@
     "secondcol": "Finalist",
     "pioneer": "Pioneer"
   }
+}
 }
