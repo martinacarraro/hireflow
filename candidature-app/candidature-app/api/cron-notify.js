@@ -48,8 +48,11 @@ export default async function handler(req, res) {
   for (const profile of profiles) {
     if (!profile.push_subscription) continue
     
-    // Check lingua (default 'it')
-    const lang = profile.lingua === 'en' ? 'en' : 'it';
+    // --- LOG DI CONTROLLO (Vedi questi nei log di Vercel) ---
+    console.log(`Utente: ${profile.nome}, Lingua nel DB: ${profile.lingua}`);
+
+    // Se profile.lingua è null, undefined o diverso da 'en', usa 'it'
+    const lang = (profile.lingua && profile.lingua.toLowerCase() === 'en') ? 'en' : 'it';
 
     const { data: cands } = await supabase
       .from('candidature')
