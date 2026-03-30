@@ -668,8 +668,7 @@ const updateCandidatura = async (id, updates) => {
     setConfetti(true)
     setTimeout(() => setConfetti(false), 2000)
   }
-
-  return (
+return (
     <AppContext.Provider value={{
       candidature, profile, notifications, toast, confetti,
       loading, unreadCount, computeStats,
@@ -683,5 +682,6 @@ const updateCandidatura = async (id, updates) => {
       {children}
     </AppContext.Provider>
   )
+}
 
 export const useApp = () => useContext(AppContext)
