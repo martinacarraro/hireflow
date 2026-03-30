@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import i18n from '../lib/i18n'
 import { useAuth } from './AuthContext'
 import {
   XP_EVENTS, BADGES, DEFAULT_CHECKLIST, getLevel, randomInt,
@@ -30,8 +31,8 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const sentNotifs = useRef(new Set()) // dedup per sessione
 
-  // Lingua corrente (stessa key di i18n)
-  const getLang = () => (localStorage.getItem('lingua') === 'en' ? 'en' : 'it')
+  // Lingua corrente — usa i18n.language direttamente (mai stale)
+  const getLang = () => (i18n.language === 'en' ? 'en' : 'it')
 
   const loadProfile = useCallback(async () => {
     if (!user) return
