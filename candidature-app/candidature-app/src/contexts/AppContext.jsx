@@ -30,6 +30,9 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const sentNotifs = useRef(new Set()) // dedup per sessione
 
+  // Lingua corrente (stessa key di i18n)
+  const getLang = () => (localStorage.getItem('lingua') === 'en' ? 'en' : 'it')
+
   const loadProfile = useCallback(async () => {
     if (!user) return
     const { data } = await supabase
@@ -201,31 +204,56 @@ export function AppProvider({ children }) {
 
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
+        const _l = getLang()
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
         showToast('🎙️ Colloquio ottenuto! +15 XP 🎉', 'success'); triggerConfetti()
-        pushNotification('🎙️ Colloquio confermato!', `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜'`, id)
-        // Crea checklist solo se non esiste già
-const { data: existing } = await supabase
-  .from('checklist_items')
-  .select('id')
-  .eq('candidatura_id', id)
-  .limit(1)
-if (!existing || existing.length === 0) {
-  await createChecklist(id)
-}
+        pushNotification(
+          _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!',
+          _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`,
+          id
+        )
+        sendPushNow(
+          _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!',
+          _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`
+        )
+        // Crea checklist solo se non esiste (evita duplicati)
+        const { data: existingCl } = await supabase
+          .from('checklist_items').select('id').eq('candidatura_id', id).limit(1)
+        if (!existingCl || existingCl.length === 0) await createChecklist(id)
       } else if (updates.stato === 'Offerta ricevuta') {
+        const _l = getLang()
         await addXP(XP_EVENTS.OFFERTA)
         showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
         triggerConfetti()
-        pushNotification('🏆 OFFERTA DA ' + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
+        pushNotification(
+          _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!',
+          _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜",
+          id
+        )
+        sendPushNow(
+          _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!',
+          _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜"
+        )
       } else if (updates.stato === 'Assunta') {
+        const _l = getLang()
         await addXP(XP_EVENTS.OFFERTA)
         showToast(profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉', 'success')
         triggerConfetti()
-        pushNotification((profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀', id)
+        pushNotification(
+          _l === 'en' ? `🏆 HIRED BY ${(prev?.azienda||'').toUpperCase()}!!` : (profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!',
+          _l === 'en' ? "YOU REALLY MADE IT! 💜" : "CE L'HAI FATTA! 💜",
+          id
+        )
+        sendPushNow((profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
       } else if (updates.stato === 'GHOSTED') {
+        const _l = getLang()
         showToast(`👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
-        pushNotification('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`, id)
+        pushNotification(
+          '👻 GHOSTED',
+          _l === 'en' ? `${prev?.azienda} vanished into thin air. Keep going! 💜` : `${prev?.azienda} sparita nel nulla. Avanti! 💜`,
+          id
+        )
+        sendPushNow('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
       } else {
         showToast('✅ Salvato!', 'success')
       }
@@ -282,16 +310,8 @@ if (!existing || existing.length === 0) {
       .from('checklist_items').select('*')
       .eq('candidatura_id', candidaturaId)
       .order('ordine')
-    if (!data || data.length === 0) {
-      // Auto-create if missing
-      await createChecklist(candidaturaId)
-      const { data: data2 } = await supabase
-        .from('checklist_items').select('*')
-        .eq('candidatura_id', candidaturaId)
-        .order('ordine')
-      return data2 || []
-    }
-    return data
+    // Non auto-creare qui — lo fa updateCandidatura (evita duplicati)
+    return data || []
   }
 
   const toggleChecklistItem = async (itemId, fatto) => {
@@ -382,9 +402,11 @@ if (!existing || existing.length === 0) {
         newBadges.push(badge.id)
         const bName = profile?.genere === 'f' && badge.nameF ? badge.nameF : profile?.genere === 'm' && badge.nameM ? badge.nameM : badge.name
         const bDesc = profile?.genere === 'f' && badge.descF ? badge.descF : profile?.genere === 'm' && badge.descM ? badge.descM : badge.desc
-        showToast(`🎉 Badge sbloccato: ${bName}!`, 'success')
+        const _l = getLang()
+        showToast(_l === 'en' ? `🎉 Badge unlocked: ${bName}!` : `🎉 Badge sbloccato: ${bName}!`, 'success')
         triggerConfetti()
         pushNotification(`🏅 Badge: ${bName}!`, bDesc)
+      sendPushNow(`🏅 Badge: ${bName}!`, bDesc)
       }
     }
     if (newBadges.length) {
@@ -433,25 +455,29 @@ if (!existing || existing.length === 0) {
 
   // ── PUSH NOTIFICATIONS (con dedup) ────────────────────────────
 
+  // pushNotification = SOLO campanellino in-app, zero push server
+  // (checkScheduledNotifications gira ad ogni apertura app — non deve mandare push reali)
   const pushNotification = (title, body, candidaturaId = null) => {
     const key = `${title}::${body}`
-    if (sentNotifs.current.has(key)) return // dedup
+    if (sentNotifs.current.has(key)) return
     sentNotifs.current.add(key)
     const notif = { id: Date.now(), title, body, read: false, time: new Date().toISOString(), candidaturaId }
     setNotifications(prev => [notif, ...prev.slice(0, 49)])
-    // Un solo canale: server Web Push → SW → showNotification
-    // (funziona sia con app aperta che chiusa, zero duplicati)
-    if (user) {
-      supabase.from('user_profiles').select('push_subscription').eq('id', user.id).single()
-        .then(({ data }) => {
-          if (!data?.push_subscription) return
-          fetch('/api/send-push', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscription: data.push_subscription, title, body, url: '/' })
-          }).catch(() => {})
+  }
+
+  // sendPushNow = notifica push immediata via server
+  // usata SOLO per eventi importanti: colloquio confermato, offerta, assunta, badge
+  const sendPushNow = (title, body) => {
+    if (!user) return
+    supabase.from('user_profiles').select('push_subscription').eq('id', user.id).single()
+      .then(({ data }) => {
+        if (!data?.push_subscription) return
+        fetch('/api/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: data.push_subscription, title, body, url: '/' })
         }).catch(() => {})
-    }
+      }).catch(() => {})
   }
 
   const checkScheduledNotifications = useCallback(() => {
@@ -461,31 +487,56 @@ if (!existing || existing.length === 0) {
       const days = daysSince(c.data_invio)
 
       // Giorno prima del colloquio
+      const _lang = getLang()
       if (c.data_colloquio && isTomorrow(c.data_colloquio) && ['Colloquio','Secondo colloquio','Call conoscitiva'].includes(c.stato)) {
-        pushNotification(`⏰ Domani: ${c.azienda}!`, `Tutto pronto? Controlla la checklist. 🐺✨`, c.id)
+        pushNotification(
+          _lang === 'en' ? `Tomorrow: ${c.azienda}!` : `Domani: ${c.azienda}!`,
+          _lang === 'en' ? `All set? Check the checklist.` : `Tutto pronto? Controlla la checklist.`,
+          c.id
+        )
       }
       // Giorno del colloquio
       if (c.data_colloquio && isToday(c.data_colloquio) && ['Colloquio','Secondo colloquio','Call conoscitiva'].includes(c.stato)) {
-        pushNotification(`🌅 Oggi: ${c.azienda} ${c.ora_colloquio || ''}`, `Forza! Respira e mostrati al meglio. 💜`, c.id)
+        pushNotification(
+          _lang === 'en' ? `Today: ${c.azienda} ${c.ora_colloquio || ''}` : `Oggi: ${c.azienda} ${c.ora_colloquio || ''}`,
+          _lang === 'en' ? `Go! Breathe and show your best self. 💜` : `Forza! Respira e mostrati al meglio. 💜`,
+          c.id
+        )
       }
       // Giorno dopo (feeling non aggiornato)
       if (c.data_colloquio && isYesterday(c.data_colloquio) && !c.feeling_aggiornato) {
-        pushNotification(`☕ Com'è andato con ${c.azienda}?`, `Aggiorna lo stato e scrivi le impressioni! 📝`, c.id)
+        pushNotification(
+          _lang === 'en' ? `How did it go with ${c.azienda}?` : `Com'è andato con ${c.azienda}?`,
+          _lang === 'en' ? `Update the status while it's fresh! 📝` : `Aggiorna lo stato e scrivi le impressioni! 📝`,
+          c.id
+        )
       }
       // 7 giorni in attesa
       if (c.stato === 'In attesa' && days >= 7 && days < 14 && !c.notifica_7gg_inviata) {
-        pushNotification(`⏳ Notizie da ${c.azienda}?`, `Passata una settimana. Controlla la mail! 👀`, c.id)
+        pushNotification(
+          _lang === 'en' ? `Any news from ${c.azienda}?` : `Notizie da ${c.azienda}?`,
+          _lang === 'en' ? `A week has passed. Check your inbox! 👀` : `Passata una settimana. Controlla la mail! 👀`,
+          c.id
+        )
         supabase.from('candidature').update({ notifica_7gg_inviata: true }).eq('id', c.id)
       }
       // 14 giorni in attesa
       if (c.stato === 'In attesa' && days >= 14 && !c.notifica_14gg_inviata) {
-        pushNotification(`📧 2 settimane senza risposta da ${c.azienda}`, `Considera un follow-up. 💪`, c.id)
+        pushNotification(
+          _lang === 'en' ? `2 weeks with no reply from ${c.azienda}` : `2 settimane senza risposta da ${c.azienda}`,
+          _lang === 'en' ? `Consider a polite follow-up. 💪` : `Considera un follow-up. 💪`,
+          c.id
+        )
         supabase.from('candidature').update({ notifica_14gg_inviata: true }).eq('id', c.id)
       }
       // Auto-GHOSTED a 60 giorni (2 mesi)
       if (['Inviata','Spontanea','In attesa risposta'].includes(c.stato) && days >= 60) {
         updateCandidatura(c.id, { stato: 'GHOSTED' })
-        pushNotification(`👻 ${c.azienda} → GHOSTED`, `2 mesi di silenzio. Archiviata automaticamente. Avanti! 💜`, c.id)
+        pushNotification(
+          `👻 ${c.azienda} → GHOSTED`,
+          _lang === 'en' ? `2 months of silence. Auto-archived. Keep going! 💜` : `2 mesi di silenzio. Archiviata automaticamente. Avanti! 💜`,
+          c.id
+        )
       }
       // Promemoria personalizzato
       if (c.reminder_date) {
@@ -493,7 +544,11 @@ if (!existing || existing.length === 0) {
         const remDay = new Date(c.reminder_date); remDay.setHours(0,0,0,0)
         const key = `reminder_done_${c.id}_${c.reminder_date}`
         if (remDay.getTime() === today.getTime() && !localStorage.getItem(key)) {
-          pushNotification(`⏰ Promemoria: ${c.azienda}`, c.reminder_note || 'Hai un promemoria per oggi!', c.id)
+          pushNotification(
+            _lang === 'en' ? `Reminder: ${c.azienda}` : `Promemoria: ${c.azienda}`,
+            c.reminder_note || (_lang === 'en' ? 'You have a reminder for today!' : 'Hai un promemoria per oggi!'),
+            c.id
+          )
           localStorage.setItem(key, '1')
         }
       }
@@ -504,13 +559,14 @@ if (!existing || existing.length === 0) {
       const lastActive = new Date(profile.ultimo_accesso)
       const diffDays = Math.floor((new Date() - lastActive) / (1000 * 60 * 60 * 24))
       const inactiveKey = `inactivity_notif_${profile.ultimo_accesso}`
+      const _lang = getLang()
       if (diffDays >= 7 && !localStorage.getItem(inactiveKey)) {
         const activeCount = candidature.filter(c => ['Colloquio','Prima call','In attesa risposta'].includes(c.stato)).length
         pushNotification(
-          '👋 Bentornat* nella ricerca!',
-          activeCount > 0
-            ? `Hai ${activeCount} candidature attive che aspettano aggiornamenti. 💪`
-            : 'È ora di aggiungere nuove candidature. Non mollare! 💜'
+          _lang === 'en' ? '👋 Welcome back to the hunt!' : '👋 Bentornat* nella ricerca!',
+          _lang === 'en'
+            ? (activeCount > 0 ? `You have ${activeCount} active applications waiting for updates. 💪` : "Time to add new applications. Don't give up! 💜")
+            : (activeCount > 0 ? `Hai ${activeCount} candidature attive che aspettano aggiornamenti. 💪` : 'È ora di aggiungere nuove candidature. Non mollare! 💜')
         )
         localStorage.setItem(inactiveKey, '1')
       }
@@ -582,7 +638,7 @@ if (!existing || existing.length === 0) {
       addCandidatura, addBulkCandidature, updateCandidatura, migrateGuestToAccount, deleteCandidatura,
       getChecklist, toggleChecklistItem,
       addXP, removeXP, recalcXP, updateProfile, markOnboarded, refreshMotto,
-      pushNotification, requestNotificationPermission,
+      pushNotification, sendPushNow, requestNotificationPermission,
       markAllNotificationsRead,
       showToast, triggerConfetti, checkBadges,
     }}>
