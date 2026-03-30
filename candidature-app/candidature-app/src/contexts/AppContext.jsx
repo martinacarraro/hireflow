@@ -100,45 +100,73 @@ export function AppProvider({ children }) {
 
   const addCandidatura = async (data) => {
     const isFirst = candidature.length === 0
+    const _l = getLang() // <-- Recupera la lingua
+
     if (isGuest) {
       const row = { ...data, id: Date.now().toString(), user_id: 'guest', created_at: new Date().toISOString() }
       setCandidature(prev => [row, ...prev])
       const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
-      showToast(`Aggiunta! 🚀 +${xp} XP`, 'success')
+      
+      // Messaggio tradotto per Guest
+      const guestMsg = _l === 'en' ? `Added! 🚀 +${xp} XP` : `Aggiunta! 🚀 +${xp} XP`
+      showToast(guestMsg, 'success')
+      
       if (isFirst) triggerConfetti()
       return row
     }
+
     const { data: row, error } = await supabase
       .from('candidature')
       .insert({ ...data, user_id: user.id })
       .select().single()
-    if (error) { showToast('❌ Qualcosa è andato storto — riprova!', 'error'); return null }
+
+    if (error) { 
+      const errMsg = _l === 'en' ? '❌ Something went wrong — try again!' : '❌ Qualcosa è andato storto — riprova!'
+      showToast(errMsg, 'error')
+      return null 
+    }
+
     setCandidature(prev => [row, ...prev])
     const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
     try { await addXP(xp) } catch(e) { console.error('addXP error:', e) }
-    showToast(`🎉 Candidatura aggiunta! +${xp} XP`, 'success')
+    
+    // Messaggio tradotto per Utente registrato
+    const successMsg = _l === 'en' ? `🎉 Application added! +${xp} XP` : `🎉 Candidatura aggiunta! +${xp} XP`
+    showToast(successMsg, 'success')
+    
     triggerConfetti()
     try { await checkBadges() } catch(e) { console.error('checkBadges error:', e) }
     return row
   }
 
   const addBulkCandidature = async (rows) => {
-    // Only send fields that exist in the DB schema
+    const _l = getLang() // <-- Recupera la lingua
     const ALLOWED = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta','domande_fatte','domande_mie','feeling_aggiornato','contatto_hr','data_inizio']
+    
     const toInsert = rows.map(r => {
       const clean = { user_id: user.id }
       ALLOWED.forEach(k => { if (r[k] !== undefined && r[k] !== null && r[k] !== '') clean[k] = r[k] })
       return clean
     })
+
     const { data, error } = await supabase
       .from('candidature').insert(toInsert).select()
+
     if (error) {
       console.error('Bulk insert error:', error)
-      showToast('❌ ' + (error.message || 'Errore importazione.'), 'error')
+      const bulkErrMsg = _l === 'en' ? '❌ Import error.' : '❌ Errore importazione.'
+      showToast(bulkErrMsg, 'error')
       return false
     }
+
     setCandidature(prev => [...(data || []), ...prev])
-    showToast(`🎉 ${data.length} candidature importate!`, 'success')
+    
+    // Messaggio tradotto per Bulk Import
+    const bulkSuccessMsg = _l === 'en' 
+      ? `🎉 ${data.length} applications imported!` 
+      : `🎉 ${data.length} candidature importate!`
+    showToast(bulkSuccessMsg, 'success')
+    
     triggerConfetti()
     await checkBadges()
     return true
@@ -235,31 +263,46 @@ export function AppProvider({ children }) {
           _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!',
           _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜"
         )
-      } else if (updates.stato === 'Assunta') {
+      } } else if (updates.stato === 'Assunta') {
         const _l = getLang()
         await addXP(XP_EVENTS.OFFERTA)
-        showToast(profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉', 'success')
+        
+        // Toast tradotto
+        const toastAssunta = _l === 'en' 
+          ? '🏆 YOU GOT THE JOB! 🎉🎉' 
+          : (profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉')
+        showToast(toastAssunta, 'success')
+        
         triggerConfetti()
-        pushNotification(
-          _l === 'en' ? `🏆 HIRED BY ${(prev?.azienda||'').toUpperCase()}!!` : (profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!',
-          _l === 'en' ? "YOU REALLY MADE IT! 💜" : "CE L'HAI FATTA! 💜",
-          id
-        )
-        sendPushNow((profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!', 'CE L\'HAI FATTA! 💜🚀')
+
+        // Titolo notifica tradotto
+        const pushTitle = _l === 'en' 
+          ? `🏆 HIRED BY ${(prev?.azienda||'').toUpperCase()}!!` 
+          : (profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!'
+        
+        const pushBody = _l === 'en' ? "YOU REALLY MADE IT! 💜" : "CE L'HAI FATTA! 💜"
+
+        pushNotification(pushTitle, pushBody, id)
+        sendPushNow(pushTitle, pushBody)
+
       } else if (updates.stato === 'GHOSTED') {
         const _l = getLang()
-        showToast(`👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
+        showToast(_l === 'en' ? `👻 ${prev?.azienda} → GHOSTED. Next!` : `👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
+        
         pushNotification(
           '👻 GHOSTED',
           _l === 'en' ? `${prev?.azienda} vanished into thin air. Keep going! 💜` : `${prev?.azienda} sparita nel nulla. Avanti! 💜`,
           id
         )
-        sendPushNow('👻 GHOSTED', `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
+        sendPushNow('👻 GHOSTED', _l === 'en' ? `${prev?.azienda} vanished into thin air. Keep going! 💜` : `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
+      
       } else {
-        showToast('✅ Salvato!', 'success')
+        const _l = getLang()
+        showToast(_l === 'en' ? '✅ Saved!' : '✅ Salvato!', 'success')
       }
       await checkBadges()
     }
+
     if (updates.feeling && !prev?.feeling_aggiornato) {
       await addXP(XP_EVENTS.FEELING_ADDED)
     }
@@ -269,20 +312,22 @@ export function AppProvider({ children }) {
   }
 
   const deleteCandidatura = async (id) => {
+    const _l = getLang()
     const cand = candidature.find(c => c.id === id)
     await supabase.from('candidature').delete().eq('id', id)
+    
     setCandidature(cs => {
       const updated = cs.filter(c => c.id !== id)
       setTimeout(() => recheckBadgesAfterDelete(updated), 100)
       return updated
     })
-    // Sottrai XP guadagnati con questa candidatura
+
     if (cand) {
       const lost = xpForCandidatura(cand)
       await removeXP(lost)
-      showToast(`🗑️ Eliminata. -${lost} XP`, 'info')
+      showToast(_l === 'en' ? `🗑️ Deleted. -${lost} XP` : `🗑️ Eliminata. -${lost} XP`, 'info')
     } else {
-      showToast('🗑️ Eliminata.', 'info')
+      showToast(_l === 'en' ? '🗑️ Deleted.' : '🗑️ Eliminata.', 'info')
     }
   }
 
@@ -656,6 +701,5 @@ export function AppProvider({ children }) {
       {children}
     </AppContext.Provider>
   )
-}
 
 export const useApp = () => useContext(AppContext)
