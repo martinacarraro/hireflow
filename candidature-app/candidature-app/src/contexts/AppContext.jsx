@@ -208,9 +208,10 @@ export function AppProvider({ children }) {
     })
   }
 
-  const updateCandidatura = async (id, updates) => {
+const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id)
-    // Preserve data_colloquio e ora_colloquio — non cancellarli MAI se già presenti nel DB
+    const _l = getLang()
+
     if (prev?.data_colloquio && !updates.data_colloquio) {
       updates = { ...updates, data_colloquio: prev.data_colloquio }
     }
@@ -220,84 +221,67 @@ export function AppProvider({ children }) {
     if (prev?.data_secondo_colloquio && !updates.data_secondo_colloquio) {
       updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
     }
-    // Filter to only DB fields
+
     const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta','offerta_feeling','domande_fatte','domande_mie','feeling_aggiornato','contatto_hr','data_inizio']
     const clean = {}
     ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
-    // welfare deve essere sempre un array (JSONB)
+    
     if ('welfare' in clean && !Array.isArray(clean.welfare)) clean.welfare = []
+
     const { data: row, error } = await supabase
       .from('candidature').update(clean).eq('id', id).select().single()
-    if (error) { console.error('Supabase update error:', error.message, error.details, error.hint, JSON.stringify(clean)); showToast('❌ ' + (error.message || 'Errore sconosciuto'), 'error'); return }
+
+    if (error) { 
+      showToast(_l === 'en' ? '❌ Update failed' : '❌ Errore aggiornamento', 'error')
+      return 
+    }
+
     setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
-        const _l = getLang()
         await addXP(XP_EVENTS.GOT_COLLOQUIO)
-        showToast('🎙️ Colloquio ottenuto! +15 XP 🎉', 'success'); triggerConfetti()
-        pushNotification(
-          _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!',
-          _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`,
-          id
-        )
-        sendPushNow(
-          _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!',
-          _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`
-        )
-        // Crea checklist solo se non esiste (evita duplicati)
-        const { data: existingCl } = await supabase
-          .from('checklist_items').select('id').eq('candidatura_id', id).limit(1)
+        showToast(_l === 'en' ? '🎙️ Interview obtained! +15 XP' : '🎙️ Colloquio ottenuto! +15 XP', 'success')
+        triggerConfetti()
+        
+        const pTitle = _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!'
+        const pBody = _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`
+        
+        pushNotification(pTitle, pBody, id)
+        sendPushNow(pTitle, pBody)
+        
+        const { data: existingCl } = await supabase.from('checklist_items').select('id').eq('candidatura_id', id).limit(1)
         if (!existingCl || existingCl.length === 0) await createChecklist(id)
+
       } else if (updates.stato === 'Offerta ricevuta') {
-        const _l = getLang()
         await addXP(XP_EVENTS.OFFERTA)
-        showToast('🏆 OFFERTA RICEVUTA! +50 XP 🎉', 'success')
+        showToast(_l === 'en' ? '🏆 OFFER RECEIVED! +50 XP' : '🏆 OFFERTA RICEVUTA! +50 XP', 'success')
         triggerConfetti()
-        pushNotification(
-          _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!',
-          _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜",
-          id
-        )
-        sendPushNow(
-          _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!',
-          _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜"
-        )
-      } } else if (updates.stato === 'Assunta') {
-        const _l = getLang()
-        await addXP(XP_EVENTS.OFFERTA)
         
-        // Toast tradotto
-        const toastAssunta = _l === 'en' 
-          ? '🏆 YOU GOT THE JOB! 🎉🎉' 
-          : (profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : profile?.genere === 'm' ? '🏆 SEI STATO ASSUNTO! 🎉🎉' : '🏆 SEI STAT* ASSUNT*! 🎉🎉')
+        const oTitle = _l === 'en' ? `🏆 OFFER FROM ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 OFFERTA DA ' + prev?.azienda + '!!'
+        const oBody = _l === 'en' ? "YOU MADE IT! 💜" : "CE L'HAI FATTA! 💜"
+        
+        pushNotification(oTitle, oBody, id)
+        sendPushNow(oTitle, oBody)
+
+      } else if (updates.stato === 'Assunta') {
+        await addXP(XP_EVENTS.OFFERTA)
+        const toastAssunta = _l === 'en' ? '🏆 YOU GOT THE JOB! 🎉🎉' : (profile?.genere === 'f' ? '🏆 SEI STATA ASSUNTA! 🎉🎉' : '🏆 SEI STATO ASSUNTO! 🎉🎉')
         showToast(toastAssunta, 'success')
-        
         triggerConfetti()
-
-        // Titolo notifica tradotto
-        const pushTitle = _l === 'en' 
-          ? `🏆 HIRED BY ${(prev?.azienda||'').toUpperCase()}!!` 
-          : (profile?.genere === 'm' ? '🏆 ASSUNTO DA ' : profile?.genere === 'f' ? '🏆 ASSUNTA DA ' : '🏆 ASSUNT* DA ') + prev?.azienda + '!!'
         
-        const pushBody = _l === 'en' ? "YOU REALLY MADE IT! 💜" : "CE L'HAI FATTA! 💜"
-
-        pushNotification(pushTitle, pushBody, id)
-        sendPushNow(pushTitle, pushBody)
+        const aTitle = _l === 'en' ? `🏆 HIRED BY ${(prev?.azienda||'').toUpperCase()}!!` : '🏆 ASSUNT*!!'
+        const aBody = _l === 'en' ? "YOU REALLY MADE IT! 💜" : "CE L'HAI FATTA! 💜"
+        
+        pushNotification(aTitle, aBody, id)
+        sendPushNow(aTitle, aBody)
 
       } else if (updates.stato === 'GHOSTED') {
-        const _l = getLang()
         showToast(_l === 'en' ? `👻 ${prev?.azienda} → GHOSTED. Next!` : `👻 ${prev?.azienda} → GHOSTED. Prossima!`, 'info')
+        pushNotification('👻 GHOSTED', _l === 'en' ? 'Keep going! 💜' : 'Avanti! 💜', id)
+        sendPushNow('👻 GHOSTED', _l === 'en' ? 'Keep going! 💜' : 'Avanti! 💜')
         
-        pushNotification(
-          '👻 GHOSTED',
-          _l === 'en' ? `${prev?.azienda} vanished into thin air. Keep going! 💜` : `${prev?.azienda} sparita nel nulla. Avanti! 💜`,
-          id
-        )
-        sendPushNow('👻 GHOSTED', _l === 'en' ? `${prev?.azienda} vanished into thin air. Keep going! 💜` : `${prev?.azienda} sparita nel nulla. Avanti! 💜`)
-      
       } else {
-        const _l = getLang()
         showToast(_l === 'en' ? '✅ Saved!' : '✅ Salvato!', 'success')
       }
       await checkBadges()
@@ -315,13 +299,11 @@ export function AppProvider({ children }) {
     const _l = getLang()
     const cand = candidature.find(c => c.id === id)
     await supabase.from('candidature').delete().eq('id', id)
-    
     setCandidature(cs => {
       const updated = cs.filter(c => c.id !== id)
       setTimeout(() => recheckBadgesAfterDelete(updated), 100)
       return updated
     })
-
     if (cand) {
       const lost = xpForCandidatura(cand)
       await removeXP(lost)
