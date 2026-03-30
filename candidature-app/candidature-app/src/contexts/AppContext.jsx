@@ -398,16 +398,26 @@ export function AppProvider({ children }) {
     const earned = (profile.badge_lista || '').split(',').filter(Boolean)
     const stats = computeStats()
     const newBadges = []
+    
+    // Recuperiamo la lingua corrente per le notifiche
+    const _l = getLang()
+
     for (const badge of BADGES) {
       if (!earned.includes(badge.id) && badge.check(stats)) {
         newBadges.push(badge.id)
-        const bName = profile?.genere === 'f' && badge.nameF ? badge.nameF : profile?.genere === 'm' && badge.nameM ? badge.nameM : badge.name
-        const bDesc = profile?.genere === 'f' && badge.descF ? badge.descF : profile?.genere === 'm' && badge.descM ? badge.descM : badge.desc
-        const _l = getLang()
+        
+        // --- MODIFICA QUI: Usiamo i18n per tradurre nome e descrizione ---
+        const bName = i18n.t(`badges.${badge.id}`) 
+        // Se non hai una descrizione specifica nel JSON per ogni badge, 
+        // puoi continuare a usare badge.desc o aggiungere chiavi nel JSON
+        const bDesc = badge.desc 
+        
         showToast(_l === 'en' ? `🎉 Badge unlocked: ${bName}!` : `🎉 Badge sbloccato: ${bName}!`, 'success')
         triggerConfetti()
+        
+        // Notifica in-app e Push
         pushNotification(`🏅 Badge: ${bName}!`, bDesc)
-      sendPushNow(`🏅 Badge: ${bName}!`, bDesc)
+        sendPushNow(`🏅 Badge: ${bName}!`, bDesc)
       }
     }
     if (newBadges.length) {
