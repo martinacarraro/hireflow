@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import i18n from '../lib/i18n'
+import i18n from '../i18n'
 import { useAuth } from './AuthContext'
 import {
   XP_EVENTS, BADGES, DEFAULT_CHECKLIST, getLevel, randomInt,
