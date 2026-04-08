@@ -36,7 +36,8 @@ export default function Stats({ onOpenCandidatura }) {
     const total = candidature.length
     const byStato = (s) => candidature.filter(c => c.stato === s).length
 const colloqui = candidature.filter(c => 
-  !c.archiviata && // <-- AGGIUNGI QUESTO: conta solo se NON è archiviata
+  // Usa il punto interrogativo per sicurezza e controlla sia lo stato che l'archiviazione
+  !c?.archiviata && 
   ['Prima call', 'Colloquio', 'Secondo colloquio'].includes(c.stato)
 ).length
     const ghosted = byStato('GHOSTED')
