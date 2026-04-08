@@ -509,13 +509,26 @@ const computeStatsFrom = (list) => {
       else break
     }
 
-    const referral = (profile?.referral_count || 0)
+   // Fix per l'errore #300: assicuriamoci che referral sia solo un numero
+    const referralCount = Number(profile?.referral_count || 0)
 
     return { 
-      total, colloqui, ghosted, offerte, assunta, withNotes, 
-      withDates, countries, colloquiThisMonth, checklistComplete: 0, 
-      smartParsed: withLink, secondi, spontanee, todayCount, 
-      weekStreak, referral 
+      total, 
+      colloqui, // Questo ora userà il filtro che abbiamo corretto sopra
+      ghosted, 
+      offerte, 
+      assunta, 
+      withNotes, 
+      withDates, 
+      countries, 
+      colloquiThisMonth, 
+      checklistComplete: 0, 
+      smartParsed: withLink, 
+      secondi, 
+      spontanee, 
+      todayCount, 
+      weekStreak, 
+      referral: referralCount 
     }
   }
 
