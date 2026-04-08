@@ -213,7 +213,7 @@ const updateCandidatura = async (id, updates) => {
     const prev = candidature.find(c => c.id === id);
 
     try {
-      // 1. Database Update (se non Guest)
+      // 1. Aggiornamento DB
       if (!isGuest) {
         const { error } = await supabase
           .from('candidature')
@@ -222,7 +222,7 @@ const updateCandidatura = async (id, updates) => {
         if (error) throw error;
       }
 
-      // 2. Local State Update (SISTEMATO: rimosso 'row' e corretta la logica)
+      // 2. Aggiornamento Stato Locale (Corretto senza 'row')
       setCandidature(prevList => prevList.map(c => 
         c.id === id ? { ...c, ...updates } : c
       ));
@@ -264,7 +264,6 @@ const updateCandidatura = async (id, updates) => {
         await checkBadges();
       }
 
-      // Bonus XP Addizionali
       if (updates.feeling && !prev?.feeling_aggiornato) await addXP(XP_EVENTS.FEELING_ADDED);
       if (updates.note && updates.note.length > 10 && !prev?.note) await addXP(XP_EVENTS.NOTE_ADDED);
 
@@ -272,7 +271,7 @@ const updateCandidatura = async (id, updates) => {
       console.error('Update error:', err);
       showToast(_l === 'en' ? 'Error updating' : 'Errore aggiornamento', 'error');
     }
-  }; // <--- CHIUSURA CORRETTA DELLA FUNZIONE
+  }; // <--- QUESTA CHIUDE LA FUNZIONE
 
 
 
