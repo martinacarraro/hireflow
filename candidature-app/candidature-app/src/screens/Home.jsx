@@ -90,7 +90,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [showGuestModal, setShowGuestModal] = useState(false)
 
-  const stats = useMemo(() => [
+ const stats = useMemo(() => [
   { emoji: '📞', label: t('home.primaCall'),   stato: 'Prima call',         color: '#A855F7' },
   { emoji: '🎙️', label: t('home.colloquio'),   stato: 'Colloquio',           color: '#22C55E' },
   { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
@@ -101,10 +101,11 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
   { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
   { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
-  // Bolla Archivio: conta solo il boolean true
+  { emoji: '🏆', label: t('home.offerta'),     stato: 'Offerta ricevuta',   color: '#FFD700' },
   { emoji: '📁', label: t('home.Archiviate'),  stato: 'Archiviate',         color: '#6B7280' },
 ]
 .map(s => {
+  // Usiamo 'c' come variabile per il filtro, 'row' non esiste qui
   const count = s.stato === 'Archiviate' 
     ? candidature.filter(c => c.archiviata === true).length
     : candidature.filter(c => c.stato === s.stato && !c.archiviata).length;
@@ -196,12 +197,11 @@ const candidatureFiltrate = useMemo(() => {
 
   const handleBulkArchive = async () => {
   for (const id of selected) {
-    // ASSICURATI che qui ci sia 'id', non 'row.id' o 'cand.id'
-    await updateCandidatura(id, { archiviata: true }) 
+    await updateCandidatura(id, { archiviata: true }); // CAMBIA SOLO IL BOOLEAN
   }
-  setSelected(new Set())
-  setSelectMode(false)
-  setConfirmBulkArchive(false)
+  setSelected(new Set());
+  setSelectMode(false);
+  setConfirmBulkArchive(false);
 }
 
   const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()) }
