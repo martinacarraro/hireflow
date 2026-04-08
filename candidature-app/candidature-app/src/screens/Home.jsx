@@ -178,20 +178,25 @@ const candidatureFiltrate = useMemo(() => {
   const selectAll = () => setSelected(new Set(candidatureFiltrate.map(c => c.id)))
 
   const handleBulkDelete = async () => {
-    for (const id of selected) await deleteCandidatura(id)
-    setSelected(new Set())
-    setSelectMode(false)
-    setConfirmBulkDelete(false)
+  for (const id of selected) {
+    await deleteCandidatura(id)
   }
+  setSelected(new Set())
+  setSelectMode(false)
+  setConfirmBulkDelete(false)
+}
 
   const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
 
   const handleBulkArchive = async () => {
-    for (const id of selected) await updateCandidatura(id, { archiviata: true })
-    setSelected(new Set())
-    setSelectMode(false)
-    setConfirmBulkArchive(false)
+  for (const id of selected) {
+    // ASSICURATI che qui ci sia 'id', non 'row.id' o 'cand.id'
+    await updateCandidatura(id, { archiviata: true }) 
   }
+  setSelected(new Set())
+  setSelectMode(false)
+  setConfirmBulkArchive(false)
+}
 
   const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()) }
 
