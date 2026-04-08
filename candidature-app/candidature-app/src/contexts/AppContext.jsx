@@ -249,15 +249,19 @@ export function AppProvider({ children }) {
 
   // --- BADGES ---
 
-  const computeStatsFrom = (list) => {
-    if (!list.length) return { total: 0, colloqui: 0, ghosted: 0, offerte: 0, referral: profile?.referral_count || 0 }
+ const computeStatsFrom = (list) => {
+    if (!list || list.length === 0) return { total: 0, colloqui: 0, ghosted: 0, offerte: 0, referral: profile?.referral_count || 0 };
+
     return {
       total: list.length,
-      colloqui: list.filter(c => c.data_colloquio && !c.archiviata).length,
+      // Conta i colloqui fatti (anche se poi archiviati)
+      colloqui: list.filter(c => c.data_colloquio && c.data_colloquio !== '').length,
+      // Conta i ghosted totali
       ghosted: list.filter(c => c.stato === 'GHOSTED').length,
+      // Conta le offerte (indipendentemente se la card è in vista o in archivio)
       offerte: list.filter(c => c.stato === 'Offerta ricevuta' || c.stato === 'Assunta').length,
       referral: Number(profile?.referral_count || 0)
-    }
+    };
   }
 
   const computeStats = () => computeStatsFrom(candidature)

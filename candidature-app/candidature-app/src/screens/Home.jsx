@@ -54,6 +54,12 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
   const { user, isGuest } = useAuth()
   const { t, i18n } = useTranslation()
+
+  // --- AGGIUNGI QUESTA RIGA ---
+  // Filtriamo le candidature: mostriamo solo quelle NON archiviate
+  const candidatureAttive = candidature.filter(c => !c.archiviata)
+  // ----------------------------
+
   const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
   const scrollRef = useRef(null)
 
@@ -85,8 +91,8 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [showGuestModal, setShowGuestModal] = useState(false)
 
   const stats = useMemo(() => [
-  { emoji: '📞', label: t('home.primaCall'),  stato: 'Prima call',         color: '#A855F7' },
-  { emoji: '🎙️', label: t('home.colloquio'),  stato: 'Colloquio',           color: '#22C55E' },
+  { emoji: '📞', label: t('home.primaCall'),   stato: 'Prima call',         color: '#A855F7' },
+  { emoji: '🎙️', label: t('home.colloquio'),   stato: 'Colloquio',           color: '#22C55E' },
   { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
   { emoji: '⏳', label: t('home.attesa'),      stato: 'In attesa risposta', color: '#EAB308' },
   { emoji: '📤', label: t('home.inviata'),     stato: 'Inviata',            color: '#3B82F6' },
@@ -95,34 +101,32 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
   { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
   { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
+  // Bolla Archivio: conta solo il boolean true
   { emoji: '📁', label: t('home.Archiviate'),  stato: 'Archiviate',         color: '#6B7280' },
 ]
-  .map(s => {
-    // Conteggio speciale per le Archiviate se usi il campo boolean
-    const count = s.stato === 'Archiviate' 
-      ? candidature.filter(c => c.archiviata === true || c.stato === 'Archiviate').length
-      : candidature.filter(c => c.stato === s.stato && !c.archiviata).length;
-    
-    return { ...s, count };
-  })
-  .filter(s => s.count > 0), // <--- Questo nasconde quelle con 0
-[candidature, t]);
+.map(s => {
+  const count = s.stato === 'Archiviate' 
+    ? candidature.filter(c => c.archiviata === true).length
+    : candidature.filter(c => c.stato === s.stato && !c.archiviata).length;
+  
+  return { ...s, count };
+})
+.filter(s => s.count > 0), [candidature, t]);
 
 const candidatureFiltrate = useMemo(() => {
     let list = [...candidature];
 
-    // Gestione dei filtri (le bolle in alto)
     if (filtroStato === 'Archiviate') {
-      // Se clicco la bolla Archiviate, prendo sia chi ha lo stato testo che il boolean true
-      list = list.filter(c => c.archiviata === true || c.stato === 'Archiviate');
+      // Mostra solo le archiviate (indipendentemente dallo stato originale)
+      list = list.filter(c => c.archiviata === true);
     } 
     else if (filtroStato) {
-      // Se clicco un altro stato, escludo comunque le archiviate
+      // Filtra per lo stato scelto, escludendo le archiviate
       list = list.filter(c => c.stato === filtroStato && !c.archiviata);
     } 
     else {
-      // Se sono su "Tutti", nascondo le archiviate per non fare confusione
-      list = list.filter(c => !c.archiviata && c.stato !== 'Archiviate');
+      // Default: nasconde sempre le archiviate dalla vista principale
+      list = list.filter(c => !c.archiviata);
     }
 
     // Filtro per la barra di ricerca
@@ -338,8 +342,8 @@ const candidatureFiltrate = useMemo(() => {
 
 
         {STATUS_GROUP_ORDER.map(stato => {
-          const items = grouped[stato]
-          if (!items) return null
+  const items = grouped[stato]
+  if (!items) return null
           const cfg = STATUS_CONFIG[stato]
           const isCollapsed = collapsed[stato]
           return (
