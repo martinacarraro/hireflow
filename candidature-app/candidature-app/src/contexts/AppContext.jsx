@@ -464,10 +464,12 @@ const computeStatsFrom = (list) => {
     // 1. C'è una data di colloquio
     // 2. Lo stato è uno di quelli "attivi"
     // 3. LA CANDIDATURA NON È ARCHIVIATA
+// --- IL FILTRO CHE TI PORTERÀ A 11 ---
     const colloqui = list.filter(c => 
       c.data_colloquio && 
-      !c.archiviata && 
-      ['Colloquio', 'Secondo colloquio', 'Tecnico', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
+      c.data_colloquio !== '' &&
+      !c.archiviata &&
+      !['GHOSTED', 'Rifiutata', 'Non mi piace'].includes(c.stato)
     ).length
 
     const ghosted = list.filter(c => c.stato === 'GHOSTED').length
