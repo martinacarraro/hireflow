@@ -454,22 +454,21 @@ const updateCandidatura = async (id, updates) => {
   }
 
 const computeStatsFrom = (list) => {
-    // Protezione se la lista è vuota o nulla
+    // Se la lista è vuota, resettiamo tutto
     if (!list || list.length === 0) return { total: 0, colloqui: 0, ghosted: 0, offerte: 0, assunta: 0, withNotes: 0, withDates: 0, countries: 0, colloquiThisMonth: 0, checklistComplete: 0, smartParsed: 0, secondi: 0, spontanee: 0, todayCount: 0, weekStreak: 0, referral: 0 }
 
     const total = list.length
     
-    // --- CONTEGGIO COLLOQUI REALE ---
-    // Contiamo solo se:
-    // 1. C'è una data di colloquio
-    // 2. Lo stato è uno di quelli "attivi"
-    // 3. LA CANDIDATURA NON È ARCHIVIATA
-// --- IL FILTRO CHE TI PORTERÀ A 11 ---
+    // --- IL FIX PER I 11 COLLOQUI ---
+    // Contiamo solo se: 
+    // 1. C'è una data 
+    // 2. NON è archiviata 
+    // 3. Lo stato è uno di quelli "positivi" (escludiamo Ghosted e Rifiutate)
     const colloqui = list.filter(c => 
       c.data_colloquio && 
       c.data_colloquio !== '' &&
       !c.archiviata &&
-      !['GHOSTED', 'Rifiutata', 'Non mi piace'].includes(c.stato)
+      ['Colloquio', 'Secondo colloquio', 'Tecnico', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
     ).length
 
     const ghosted = list.filter(c => c.stato === 'GHOSTED').length
@@ -492,6 +491,7 @@ const computeStatsFrom = (list) => {
     const todayStr = new Date().toISOString().split('T')[0]
     const todayCount = list.filter(c => c.data_invio === todayStr).length
 
+    // Streak settimanale
     const byWeek = {}
     list.forEach(c => {
       const d = new Date(c.data_invio || c.created_at)
@@ -500,7 +500,6 @@ const computeStatsFrom = (list) => {
         byWeek[week] = true
       }
     })
-    
     const weeks = Object.keys(byWeek).map(Number).sort((a,b) => b-a)
     let weekStreak = 0
     const nowWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
@@ -509,26 +508,14 @@ const computeStatsFrom = (list) => {
       else break
     }
 
-   // Fix per l'errore #300: assicuriamoci che referral sia solo un numero
+    // --- FIX CRASH NOTIFICHE (ERRORE #300) ---
     const referralCount = Number(profile?.referral_count || 0)
 
     return { 
-      total, 
-      colloqui, // Questo ora userà il filtro che abbiamo corretto sopra
-      ghosted, 
-      offerte, 
-      assunta, 
-      withNotes, 
-      withDates, 
-      countries, 
-      colloquiThisMonth, 
-      checklistComplete: 0, 
-      smartParsed: withLink, 
-      secondi, 
-      spontanee, 
-      todayCount, 
-      weekStreak, 
-      referral: referralCount 
+      total, colloqui, ghosted, offerte, assunta, withNotes, 
+      withDates, countries, colloquiThisMonth, checklistComplete: 0, 
+      smartParsed: withLink, secondi, spontanee, todayCount, 
+      weekStreak, referral: referralCount 
     }
   }
 
