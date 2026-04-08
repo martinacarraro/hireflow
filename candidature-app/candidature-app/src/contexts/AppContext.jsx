@@ -209,19 +209,73 @@ export function AppProvider({ children }) {
   }
 
 const updateCandidatura = async (id, updates) => {
-  try {
-    const { error } = await supabase
-      .from('candidature')
-      .update(updates)
-      .eq('id', id);
+  const _l = getLang()
+  const prev = candidature.find(c => c.id === id)
 
-    if (error) throw error;
-    
-    setCandidature(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
-    showToast('Aggiornato!', 'success');
+  try {
+    // 1. Aggiornamento su Supabase (se non è Guest)
+    if (!isGuest) {
+      const { error } = await supabase
+        .from('candidature')
+        .update(updates)
+        .eq('id', id)
+      if (error) throw error
+    }
+
+    // 2. Aggiornamento STATO LOCALE (Fixato: ora usa 'c' correttamente)
+    setCandidature(prevList => prevList.map(c => 
+      c.id === id ? { ...c, ...updates } : c
+    ))
+
+    // 3. LOGICA PREMI E NOTIFICHE (XP e Confetti)
+    if (updates.stato && updates.stato !== prev?.stato) {
+      if (updates.stato === 'Colloquio') {
+        await addXP(XP_EVENTS.GOT_COLLOQUIO)
+        showToast(_l === 'en' ? '🎙️ Interview obtained! +15 XP' : '🎙️ Colloquio ottenuto! +15 XP', 'success')
+        triggerConfetti()
+        
+        const pTitle = _l === 'en' ? '🎙️ Interview confirmed!' : '🎙️ Colloquio confermato!'
+        const pBody = _l === 'en' ? `All set for ${prev?.azienda}? Checklist activated! 💜` : `Tutto pronto per ${prev?.azienda}? Checklist attivata! 💜`
+        
+        pushNotification(pTitle, pBody, id)
+        sendPushNow(pTitle, pBody)
+        
+        // Crea checklist se non esiste
+        if (!isGuest) {
+          const { data: existingCl } = await supabase.from('checklist_items').select('id').eq('candidatura_id', id).limit(1)
+          if (!existingCl || existingCl.length === 0) await createChecklist(id)
+        }
+
+      } else if (updates.stato === 'Offerta ricevuta') {
+        await addXP(XP_EVENTS.OFFERTA)
+        showToast(_l === 'en' ? '🏆 OFFER RECEIVED! +50 XP' : '🏆 OFFERTA RICEVUTA! +50 XP', 'success')
+        triggerConfetti()
+        pushNotification('🏆 OFFERTA!', 'Ce l\'hai fatta! 💜', id)
+
+      } else if (updates.stato === 'Assunta') {
+        await addXP(XP_EVENTS.OFFERTA)
+        const toastAssunta = _l === 'en' ? '🏆 YOU GOT THE JOB! 🎉' : '🏆 SEI STATO/A ASSUNTO/A! 🎉'
+        showToast(toastAssunta, 'success')
+        triggerConfetti()
+
+      } else if (updates.stato === 'GHOSTED') {
+        showToast(_l === 'en' ? `👻 ${prev?.azienda} → GHOSTED.` : `👻 ${prev?.azienda} → GHOSTED.`, 'info')
+      } else {
+        showToast(_l === 'en' ? '✅ Saved!' : '✅ Salvato!', 'success')
+      }
+      
+      await checkBadges()
+    }
+
+    // Altri bonus XP
+    if (updates.feeling && !prev?.feeling_aggiornato) await addXP(XP_EVENTS.FEELING_ADDED)
+    if (updates.note && updates.note.length > 10 && !prev?.note) await addXP(XP_EVENTS.NOTE_ADDED)
+
   } catch (err) {
-    showToast('Errore aggiornamento', 'error');
+    console.error('Update error:', err)
+    showToast(_l === 'en' ? 'Error updating' : 'Errore aggiornamento', 'error')
   }
+}
 
 
 setCandidature(cs => cs.map(c => c.id === id ? row : c))
