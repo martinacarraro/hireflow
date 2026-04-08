@@ -139,10 +139,10 @@ const candidatureFiltrate = useMemo(() => {
     return list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [candidature, filtroStato, searchQuery]);
 
-  const grouped = useMemo(() => {
+ const grouped = useMemo(() => {
     const groups = {};
     
-    // Gestione Archiviate
+    // Se stiamo visualizzando le archiviate, creiamo un gruppo unico dedicato
     if (filtroStato === 'Archiviate') {
       if (candidatureFiltrate.length > 0) {
         groups['Archiviate'] = candidatureFiltrate;
@@ -150,24 +150,16 @@ const candidatureFiltrate = useMemo(() => {
       return groups;
     }
 
-    // Raggruppamento standard
-    STATUS_GROUP_ORDER.forEach(s => {
-      const items = candidatureFiltrate.filter(c => c.stato === s);
-      if (items.length > 0) groups[s] = items;
-    });
-
-    return groups;
-  }, [candidatureFiltrate, filtroStato]); // <--- Controlla che qui ci sia });
-
-
     // Altrimenti raggruppiamo normalmente usando l'ordine definito in utils.js
     STATUS_GROUP_ORDER.forEach(s => {
       const items = candidatureFiltrate.filter(c => c.stato === s);
-      if (items.length) groups[s] = items;
+      if (items.length > 0) {
+        groups[s] = items;
+      }
     });
+
     return groups;
   }, [candidatureFiltrate, filtroStato]);
-
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
   const handleDuplicate = async (cand) => {
