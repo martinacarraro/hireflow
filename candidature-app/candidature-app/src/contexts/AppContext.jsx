@@ -453,32 +453,48 @@ const updateCandidatura = async (id, updates) => {
     }
   }
 
-  const computeStatsFrom = (list) => {
+ const computeStatsFrom = (list) => {
     const total = list.length
-    const colloqui = list.filter(c => ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED'].includes(c.stato) || c.data_colloquio).length
+    
+    // --- MODIFICA QUI: Filtro restrittivo per i colloqui ---
+    // Contiamo solo se c'è una DATA (segno che è stato fissato) 
+    // E lo stato non è uno di quelli "finali" negativi o iniziali
+    const colloqui = list.filter(c => 
+      c.data_colloquio && 
+      !['GHOSTED', 'Rifiutata', 'Non mi piace'].includes(c.stato)
+    ).length
+
     const ghosted = list.filter(c => c.stato === 'GHOSTED').length
     const offerte = list.filter(c => c.stato === 'Offerta ricevuta' || c.offerta_risposta === 'si').length
     const assunta = list.filter(c => c.stato === 'Assunta').length
     const withNotes = list.filter(c => c.note?.length > 5).length
     const withDates = list.filter(c => c.data_colloquio).length
     const countries = new Set(list.map(c => c.paese).filter(Boolean)).size
+    
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    
     const colloquiThisMonth = list.filter(c =>
       c.data_colloquio && new Date(c.data_colloquio) >= thisMonth
     ).length
+
     const withLink = list.filter(c => c.link_annuncio).length
     const secondi = list.filter(c => c.data_secondo_colloquio || c.stato === 'Secondo colloquio').length
     const spontanee = list.filter(c => c.stato === 'Spontanea' || c.fonte === 'Spontanea').length
+    
     const todayStr = new Date().toISOString().split('T')[0]
     const todayCount = list.filter(c => c.data_invio === todayStr).length
-    // week streak: count consecutive weeks with >= 1 candidatura
+
+    // week streak
     const byWeek = {}
     list.forEach(c => {
       const d = new Date(c.data_invio || c.created_at)
-      const week = Math.floor(d.getTime() / (7 * 24 * 60 * 60 * 1000))
-      byWeek[week] = true
+      if (!isNaN(d.getTime())) { // Verifica data valida
+        const week = Math.floor(d.getTime() / (7 * 24 * 60 * 60 * 1000))
+        byWeek[week] = true
+      }
     })
+    
     const weeks = Object.keys(byWeek).map(Number).sort((a,b) => b-a)
     let weekStreak = 0
     const nowWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
@@ -486,7 +502,15 @@ const updateCandidatura = async (id, updates) => {
       if (weeks[i] === nowWeek - i) weekStreak++
       else break
     }
-    const referral = (profile?.referral_count || 0); return { total, colloqui, ghosted, offerte, assunta, withNotes, withDates, countries, colloquiThisMonth, checklistComplete: 0, smartParsed: withLink, secondi, spontanee, todayCount, weekStreak, referral }
+
+    const referral = (profile?.referral_count || 0)
+
+    return { 
+      total, colloqui, ghosted, offerte, assunta, withNotes, 
+      withDates, countries, colloquiThisMonth, checklistComplete: 0, 
+      smartParsed: withLink, secondi, spontanee, todayCount, 
+      weekStreak, referral 
+    }
   }
 
   const computeStats = () => computeStatsFrom(candidature)
