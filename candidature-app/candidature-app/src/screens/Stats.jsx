@@ -33,103 +33,70 @@ export default function Stats({ onOpenCandidatura }) {
   )
 
 const stats = useMemo(() => {
-  // 1. IL TOTALE REALE (Tutte le voci nel database)
-  const total = candidature.length
+  // 1. IL TOTALE REALE (Tutte le voci nel database, nessuna esclusa)
+  const total = candidature.length || 0;
   
-  // Filtro di supporto solo per le sezioni che mostrano "cosa c'è di aperto adesso"
-  const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
-  
-  // Helper per contare stati specifici (usiamo l'array completo per statistiche globali)
-  const byStatoGlobale = (s) => candidature.filter(c => c.stato === s).length
+  // Helper per contare gli stati reali (ignoriamo 'Archiviate' se presente come stringa)
+  const byStatoGlobale = (s) => candidature.filter(c => c && c.stato === s).length;
 
   // 2. LOGICA COLLOQUI (Inclusiva: stato avanzato O data inserita)
   const colloqui = candidature.filter(c => {
+    if (!c) return false;
     const haData = c.data_colloquio || c.data_secondo_colloquio;
     const statoAvanzato = [
       'Prima call', 'Colloquio', 'Secondo colloquio', 
       'In attesa risposta', 'Offerta ricevuta', 'Assunta'
     ].includes(c.stato);
     return haData || statoAvanzato;
-  }).length
+  }).length;
 
-  // 3. KPI
-  const ghosted = byStatoGlobale('GHOSTED')
-  const offerte = candidature.filter(c => c.stato === 'Offerta ricevuta' || c.stato === 'Assunta').length
+  // 3. KPI PRINCIPALI
+  const ghosted = byStatoGlobale('GHOSTED');
+  const offerte = candidature.filter(c => c && (c.stato === 'Offerta ricevuta' || c.stato === 'Assunta')).length;
   
-  // Tasso di conversione: (Colloqui ottenuti / Totale inviate)
-  const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
+  // Tasso di conversione su base totale
+  const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0;
 
-  // 4. DISTRIBUZIONE STATI (Mostriamo la situazione globale)
-  const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
-  const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStatoGlobale(s) })).filter(s => s.count > 0)
+  // 4. DISTRIBUZIONE STATI (Escludiamo 'Archiviate' dalla visualizzazione dei progressi)
+  const STATI_REALI = ['Inviata', 'Spontanea', 'Vista', 'Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Rifiutata', 'Non mi piace', 'GHOSTED', 'Offerta ricevuta'];
+  const statoDistrib = STATI_REALI.map(s => ({
+    stato: s,
+    count: byStatoGlobale(s)
+  })).filter(s => s.count > 0);
 
-  // 5. MEDIA ATTESA (Solo su quelle attualmente "In attesa risposta")
-  const inAttesa = candidature.filter(c => c.stato === 'In attesa risposta')
+  // 5. MEDIA ATTESA
+  const inAttesa = candidature.filter(c => c && c.stato === 'In attesa risposta');
   const avgAttesa = inAttesa.length
-    ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
-    : 0
+    ? Math.round(inAttesa.reduce((s, c) => s + (daysSince(c.data_invio) || 0), 0) / inAttesa.length)
+    : 0;
 
   // 6. FONTI (Storico completo)
-  const fonteMap = {}
+  const fonteMap = {};
   candidature.forEach(c => {
-    if (c.fonte) {
-      if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
-      fonteMap[c.fonte].total++
+    if (c && c.fonte) {
+      if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 };
+      fonteMap[c.fonte].total++;
       if (c.data_colloquio || ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
         fonteMap[c.fonte].colloqui++
     }
-  })
+  });
 
-  // 7. GRAFICO SETTIMANALE (Conteggio globale per settimana)
-  const weeks = []
+  // 7. GRAFICO SETTIMANALE (Tutte)
+  const weeks = [];
   for (let i = 7; i >= 0; i--) {
-    const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
-    const end = new Date(); end.setDate(end.getDate() - i * 7)
-    start.setHours(0,0,0,0); end.setHours(23,59,59,999)
+    const start = new Date(); start.setDate(start.getDate() - i * 7 - 6);
+    const end = new Date(); end.setDate(end.getDate() - i * 7);
+    start.setHours(0,0,0,0); end.setHours(23,59,59,999);
     const count = candidature.filter(c => {
-      const d = new Date(c.data_invio || c.created_at)
-      return d >= start && d <= end
-    }).length
-    weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
+      if (!c) return false;
+      const d = new Date(c.data_invio || c.created_at);
+      return d >= start && d <= end;
+    }).length;
+    weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i });
   }
 
-  // 8. LISTE DI SUPPORTO
-  const ghostedList = candidature
-    .filter(c => c.stato === 'GHOSTED')
-    .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
-    .sort((a, b) => b.giorni - a.giorni)
-
-  const sentimentMap = {}
-  const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
-  candidature.forEach(c => {
-    if (!c.feeling || !FEELING_SCORES[c.feeling]) return
-    const d = new Date(c.data_invio || c.created_at)
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-    if (!sentimentMap[key]) sentimentMap[key] = { total: 0, sum: 0 }
-    sentimentMap[key].total++
-    sentimentMap[key].sum += FEELING_SCORES[c.feeling]
-  })
-  const sentimentByMonth = Object.entries(sentimentMap)
-    .sort((a,b) => a[0].localeCompare(b[0]))
-    .slice(-6)
-    .map(([key, val]) => ({
-      label: key.slice(5) + '/' + key.slice(2,4),
-      avg: Math.round((val.sum / val.total) * 10) / 10
-    }))
-
-  const aziendaMap = {}
-  candidature.forEach(c => {
-    if (!c.azienda) return
-    if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
-    if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
-      aziendaMap[c.azienda].count++
-      aziendaMap[c.azienda].cands.push(c)
-    }
-  })
-  const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1].count-a[1].count).slice(0,3)
-
-  return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende, statoDistrib }
-}, [candidature])
+  return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, statoDistrib };
+}, [candidature]);
 
   const kpis = [
     { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total,           color: '#60A5FA' },
