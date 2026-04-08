@@ -274,7 +274,6 @@ const updateCandidatura = async (id, updates) => {
   };
 
 
-setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
