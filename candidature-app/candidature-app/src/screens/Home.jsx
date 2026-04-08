@@ -141,7 +141,24 @@ const candidatureFiltrate = useMemo(() => {
 
   const grouped = useMemo(() => {
     const groups = {};
-    
+    // 1. Gestione speciale per le Archiviate
+  if (filtroStato === 'Archiviate') {
+    if (candidatureFiltrate.length) {
+      groups['Archiviate'] = candidatureFiltrate;
+    }
+    return groups;
+  }
+
+  // 2. QUI VA IL CODICE: Raggruppamento per gli stati normali
+  STATUS_GROUP_ORDER.forEach(s => {
+    const items = candidatureFiltrate.filter(c => c.stato === s);
+    if (items.length) {
+      groups[s] = items;
+    }
+  });
+
+  return groups;
+}, [candidatureFiltrate, filtroStato]); // Assicurati che queste dipendenze siano presenti
     // Se stiamo visualizzando le archiviate, creiamo un gruppo unico dedicato
     if (filtroStato === 'Archiviate') {
       if (candidatureFiltrate.length) {
