@@ -33,14 +33,16 @@ export default function Stats({ onOpenCandidatura }) {
   )
 
 const stats = useMemo(() => {
-  // 1. Definiamo subito le liste base
-  const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
-  const total = attive.length
+  // 1. IL TOTALE REALE (Tutte le voci nel database)
+  const total = candidature.length
   
-  // Helper per contare stati specifici nelle attive
-  const byStato = (s) => attive.filter(c => c.stato === s).length
+  // Filtro di supporto solo per le sezioni che mostrano "cosa c'è di aperto adesso"
+  const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
+  
+  // Helper per contare stati specifici (usiamo l'array completo per statistiche globali)
+  const byStatoGlobale = (s) => candidature.filter(c => c.stato === s).length
 
-  // 2. LOGICA COLLOQUI (Storica & Inclusiva)
+  // 2. LOGICA COLLOQUI (Inclusiva: stato avanzato O data inserita)
   const colloqui = candidature.filter(c => {
     const haData = c.data_colloquio || c.data_secondo_colloquio;
     const statoAvanzato = [
@@ -50,50 +52,49 @@ const stats = useMemo(() => {
     return haData || statoAvanzato;
   }).length
 
-  // 3. KPI e TASSO (Usiamo il totale storico per la conversione reale)
-  const ghosted = byStato('GHOSTED')
+  // 3. KPI
+  const ghosted = byStatoGlobale('GHOSTED')
   const offerte = candidature.filter(c => c.stato === 'Offerta ricevuta' || c.stato === 'Assunta').length
   
-  // Tasso basato su quante volte hai ottenuto un contatto rispetto a tutto ciò che hai inviato
-  const tasso = candidature.length > 0 ? Math.round((colloqui / candidature.length) * 100) : 0
+  // Tasso di conversione: (Colloqui ottenuti / Totale inviate)
+  const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
 
-  // 4. DISTRIBUZIONE STATI (Solo attive per il grafico a barre)
+  // 4. DISTRIBUZIONE STATI (Mostriamo la situazione globale)
   const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
-  const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
+  const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStatoGlobale(s) })).filter(s => s.count > 0)
 
-  // 5. MEDIA ATTESA (Solo su quelle in attesa ora)
-  const inAttesa = attive.filter(c => c.stato === 'In attesa risposta')
+  // 5. MEDIA ATTESA (Solo su quelle attualmente "In attesa risposta")
+  const inAttesa = candidature.filter(c => c.stato === 'In attesa risposta')
   const avgAttesa = inAttesa.length
     ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
     : 0
 
-  // 6. FONTI (Include tutto lo storico per capire cosa funziona meglio)
+  // 6. FONTI (Storico completo)
   const fonteMap = {}
   candidature.forEach(c => {
     if (c.fonte) {
       if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
       fonteMap[c.fonte].total++
-      // Verifichiamo se questa specifica candidatura ha portato a un colloquio
       if (c.data_colloquio || ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
         fonteMap[c.fonte].colloqui++
     }
   })
 
-  // 7. GRAFICO SETTIMANALE (Solo attive)
+  // 7. GRAFICO SETTIMANALE (Conteggio globale per settimana)
   const weeks = []
   for (let i = 7; i >= 0; i--) {
     const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
     const end = new Date(); end.setDate(end.getDate() - i * 7)
     start.setHours(0,0,0,0); end.setHours(23,59,59,999)
-    const count = attive.filter(c => {
+    const count = candidature.filter(c => {
       const d = new Date(c.data_invio || c.created_at)
       return d >= start && d <= end
     }).length
     weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
   }
 
-  // 8. ALTRI DATI (Ghosted e Sentiment)
-  const ghostedList = attive
+  // 8. LISTE DI SUPPORTO
+  const ghostedList = candidature
     .filter(c => c.stato === 'GHOSTED')
     .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
     .sort((a, b) => b.giorni - a.giorni)
@@ -117,7 +118,7 @@ const stats = useMemo(() => {
     }))
 
   const aziendaMap = {}
-  attive.forEach(c => {
+  candidature.forEach(c => {
     if (!c.azienda) return
     if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
     if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
