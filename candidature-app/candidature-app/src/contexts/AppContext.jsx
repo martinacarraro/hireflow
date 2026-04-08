@@ -464,10 +464,10 @@ const computeStatsFrom = (list) => {
     // 1. C'è una data 
     // 2. NON è archiviata 
     // 3. Lo stato è uno di quelli "positivi" (escludiamo Ghosted e Rifiutate)
-    const colloqui = list.filter(c => 
+   const colloqui = list.filter(c => 
       c.data_colloquio && 
       c.data_colloquio !== '' &&
-      !c.archiviata &&
+      c.stato !== 'Archiviate' && // Esclude chi ha lo stato "Archiviate"
       ['Colloquio', 'Secondo colloquio', 'Tecnico', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
     ).length
 
