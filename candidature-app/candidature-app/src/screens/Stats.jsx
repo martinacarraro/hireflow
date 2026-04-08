@@ -32,99 +32,103 @@ export default function Stats({ onOpenCandidatura }) {
     </div>
   )
 
-  const stats = useMemo(() => {
-    // 1. Filtriamo subito per lavorare solo su candidature NON archiviate
-    const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
-    
-    const total = attive.length
-    
-    // Funzione interna aggiornata per usare solo le attive
-    const byStato = (s) => attive.filter(c => c.stato === s).length
+const stats = useMemo(() => {
+  // 1. Definiamo subito le liste base
+  const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
+  const total = attive.length
+  
+  // Helper per contare stati specifici nelle attive
+  const byStato = (s) => attive.filter(c => c.stato === s).length
 
-    // Calcolo colloqui: contiamo chi ha raggiunto uno stato avanzato tra le attive
-    const colloqui = attive.filter(c => 
-      ['Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
-    ).length
+  // 2. LOGICA COLLOQUI (Storica & Inclusiva)
+  const colloqui = candidature.filter(c => {
+    const haData = c.data_colloquio || c.data_secondo_colloquio;
+    const statoAvanzato = [
+      'Prima call', 'Colloquio', 'Secondo colloquio', 
+      'In attesa risposta', 'Offerta ricevuta', 'Assunta'
+    ].includes(c.stato);
+    return haData || statoAvanzato;
+  }).length
 
-    const ghosted = byStato('GHOSTED')
-    const offerte = byStato('Offerta ricevuta')
-    
-    // Tasso di risposta basato sulle attive
-    const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
+  // 3. KPI e TASSO (Usiamo il totale storico per la conversione reale)
+  const ghosted = byStato('GHOSTED')
+  const offerte = candidature.filter(c => c.stato === 'Offerta ricevuta' || c.stato === 'Assunta').length
+  
+  // Tasso basato su quante volte hai ottenuto un contatto rispetto a tutto ciò che hai inviato
+  const tasso = candidature.length > 0 ? Math.round((colloqui / candidature.length) * 100) : 0
 
-    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
-    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
+  // 4. DISTRIBUZIONE STATI (Solo attive per il grafico a barre)
+  const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
+  const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
 
-    const inAttesa = attive.filter(c => c.stato === 'In attesa risposta')
-    const avgAttesa = inAttesa.length
-      ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
-      : 0
+  // 5. MEDIA ATTESA (Solo su quelle in attesa ora)
+  const inAttesa = attive.filter(c => c.stato === 'In attesa risposta')
+  const avgAttesa = inAttesa.length
+    ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
+    : 0
 
-    // Fonti: qui ha senso includere anche le archiviate per avere uno storico reale dell'efficacia
-    const fonteMap = {}
-    candidature.forEach(c => {
-      if (c.fonte) {
-        if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
-        fonteMap[c.fonte].total++
-        if (['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
-          fonteMap[c.fonte].colloqui++
-      }
-    })
-
-    // Grafico settimanale (solo attive)
-    const weeks = []
-    for (let i = 7; i >= 0; i--) {
-      const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
-      const end = new Date(); end.setDate(end.getDate() - i * 7)
-      start.setHours(0,0,0,0); end.setHours(23,59,59,999)
-      const count = attive.filter(c => {
-        const d = new Date(c.data_invio || c.created_at)
-        return d >= start && d <= end
-      }).length
-      weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
+  // 6. FONTI (Include tutto lo storico per capire cosa funziona meglio)
+  const fonteMap = {}
+  candidature.forEach(c => {
+    if (c.fonte) {
+      if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
+      fonteMap[c.fonte].total++
+      // Verifichiamo se questa specifica candidatura ha portato a un colloquio
+      if (c.data_colloquio || ['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
+        fonteMap[c.fonte].colloqui++
     }
+  })
 
-    // Ghosted List (solo attive)
-    const ghostedList = attive
-      .filter(c => c.stato === 'GHOSTED')
-      .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
-      .sort((a, b) => b.giorni - a.giorni)
-
-    // Sentiment (Storico totale, include archiviate)
-    const sentimentMap = {}
-    const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
-    candidature.forEach(c => {
-      if (!c.feeling) return
-      const score = FEELING_SCORES[c.feeling]
-      if (!score) return
+  // 7. GRAFICO SETTIMANALE (Solo attive)
+  const weeks = []
+  for (let i = 7; i >= 0; i--) {
+    const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
+    const end = new Date(); end.setDate(end.getDate() - i * 7)
+    start.setHours(0,0,0,0); end.setHours(23,59,59,999)
+    const count = attive.filter(c => {
       const d = new Date(c.data_invio || c.created_at)
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-      if (!sentimentMap[key]) sentimentMap[key] = { total: 0, sum: 0 }
-      sentimentMap[key].total++
-      sentimentMap[key].sum += score
-    })
-    const sentimentByMonth = Object.entries(sentimentMap)
-      .sort((a,b) => a[0].localeCompare(b[0]))
-      .slice(-6)
-      .map(([key, val]) => ({
-        label: key.slice(5) + '/' + key.slice(2,4),
-        avg: Math.round((val.sum / val.total) * 10) / 10
-      }))
+      return d >= start && d <= end
+    }).length
+    weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
+  }
 
-    // Top Aziende (solo attive)
-    const aziendaMap = {}
-    attive.forEach(c => {
-      if (!c.azienda) return
-      if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
-      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
-        aziendaMap[c.azienda].count++
-        aziendaMap[c.azienda].cands.push(c)
-      }
-    })
-    const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1].count-a[1].count).slice(0,3)
+  // 8. ALTRI DATI (Ghosted e Sentiment)
+  const ghostedList = attive
+    .filter(c => c.stato === 'GHOSTED')
+    .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
+    .sort((a, b) => b.giorni - a.giorni)
 
-    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende, statoDistrib }
-  }, [candidature])
+  const sentimentMap = {}
+  const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
+  candidature.forEach(c => {
+    if (!c.feeling || !FEELING_SCORES[c.feeling]) return
+    const d = new Date(c.data_invio || c.created_at)
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+    if (!sentimentMap[key]) sentimentMap[key] = { total: 0, sum: 0 }
+    sentimentMap[key].total++
+    sentimentMap[key].sum += FEELING_SCORES[c.feeling]
+  })
+  const sentimentByMonth = Object.entries(sentimentMap)
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .slice(-6)
+    .map(([key, val]) => ({
+      label: key.slice(5) + '/' + key.slice(2,4),
+      avg: Math.round((val.sum / val.total) * 10) / 10
+    }))
+
+  const aziendaMap = {}
+  attive.forEach(c => {
+    if (!c.azienda) return
+    if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
+    if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
+      aziendaMap[c.azienda].count++
+      aziendaMap[c.azienda].cands.push(c)
+    }
+  })
+  const topAziende = Object.entries(aziendaMap).sort((a,b) => b[1].count-a[1].count).slice(0,3)
+
+  return { total, colloqui, ghosted, offerte, tasso, avgAttesa, fonteMap, weeks, ghostedList, sentimentByMonth, topAziende, statoDistrib }
+}, [candidature])
 
   const kpis = [
     { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total,           color: '#60A5FA' },
