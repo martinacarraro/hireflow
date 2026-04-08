@@ -33,50 +33,64 @@ export default function Stats({ onOpenCandidatura }) {
   )
 
   const stats = useMemo(() => {
-    const total = candidature.length
-    const byStato = (s) => candidature.filter(c => c.stato === s).length
-const colloqui = candidature.filter(c => 
-  // Usa il punto interrogativo per sicurezza e controlla sia lo stato che l'archiviazione
-  !c?.archiviata && 
-  ['Prima call', 'Colloquio', 'Secondo colloquio'].includes(c.stato)
-).length
+    // 1. Filtriamo subito per lavorare solo su candidature NON archiviate
+    const attive = candidature.filter(c => !c.archiviata && c.stato !== 'Archiviate')
+    
+    const total = attive.length
+    
+    // Funzione interna aggiornata per usare solo le attive
+    const byStato = (s) => attive.filter(c => c.stato === s).length
+
+    // Calcolo colloqui: contiamo chi ha raggiunto uno stato avanzato tra le attive
+    const colloqui = attive.filter(c => 
+      ['Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
+    ).length
+
     const ghosted = byStato('GHOSTED')
-    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta', 'Archiviate']
-    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
     const offerte = byStato('Offerta ricevuta')
+    
+    // Tasso di risposta basato sulle attive
     const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
-    const inAttesa = candidature.filter(c => c.stato === 'In attesa risposta')
+
+    const STATI_ORDER = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Rifiutata','GHOSTED','Offerta ricevuta']
+    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
+
+    const inAttesa = attive.filter(c => c.stato === 'In attesa risposta')
     const avgAttesa = inAttesa.length
       ? Math.round(inAttesa.reduce((s, c) => s + daysSince(c.data_invio), 0) / inAttesa.length)
       : 0
 
+    // Fonti: qui ha senso includere anche le archiviate per avere uno storico reale dell'efficacia
     const fonteMap = {}
     candidature.forEach(c => {
       if (c.fonte) {
         if (!fonteMap[c.fonte]) fonteMap[c.fonte] = { total: 0, colloqui: 0 }
         fonteMap[c.fonte].total++
-        if (['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta'].includes(c.stato))
+        if (['Prima call','Colloquio','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato))
           fonteMap[c.fonte].colloqui++
       }
     })
 
+    // Grafico settimanale (solo attive)
     const weeks = []
     for (let i = 7; i >= 0; i--) {
       const start = new Date(); start.setDate(start.getDate() - i * 7 - 6)
       const end = new Date(); end.setDate(end.getDate() - i * 7)
       start.setHours(0,0,0,0); end.setHours(23,59,59,999)
-      const count = candidature.filter(c => {
+      const count = attive.filter(c => {
         const d = new Date(c.data_invio || c.created_at)
         return d >= start && d <= end
       }).length
       weeks.push({ label: i === 0 ? 'W0' : `W-${i}`, count, i })
     }
 
-    const ghostedList = candidature
+    // Ghosted List (solo attive)
+    const ghostedList = attive
       .filter(c => c.stato === 'GHOSTED')
       .map(c => ({ ...c, giorni: daysSince(c.data_invio) }))
       .sort((a, b) => b.giorni - a.giorni)
 
+    // Sentiment (Storico totale, include archiviate)
     const sentimentMap = {}
     const FEELING_SCORES = { '😍': 5, '😊': 4, '😐': 3, '😟': 2, '😭': 1 }
     candidature.forEach(c => {
@@ -97,11 +111,12 @@ const colloqui = candidature.filter(c =>
         avg: Math.round((val.sum / val.total) * 10) / 10
       }))
 
+    // Top Aziende (solo attive)
     const aziendaMap = {}
-    candidature.forEach(c => {
+    attive.forEach(c => {
       if (!c.azienda) return
       if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
-      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta','Assunta'].includes(c.stato)) {
+      if (['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
         aziendaMap[c.azienda].count++
         aziendaMap[c.azienda].cands.push(c)
       }
