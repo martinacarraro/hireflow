@@ -209,34 +209,22 @@ export function AppProvider({ children }) {
   }
 
 const updateCandidatura = async (id, updates) => {
-    const prev = candidature.find(c => c.id === id)
-    const _l = getLang()
+  try {
+    const { error } = await supabase
+      .from('candidature')
+      .update(updates)
+      .eq('id', id);
 
-    if (prev?.data_colloquio && !updates.data_colloquio) {
-      updates = { ...updates, data_colloquio: prev.data_colloquio }
-    }
-    if (prev?.ora_colloquio && !updates.ora_colloquio) {
-      updates = { ...updates, ora_colloquio: prev.ora_colloquio }
-    }
-    if (prev?.data_secondo_colloquio && !updates.data_secondo_colloquio) {
-      updates = { ...updates, data_secondo_colloquio: prev.data_secondo_colloquio }
-    }
-
-    const ALLOWED_UPDATE = ['azienda','ruolo','stato','data_invio','data_colloquio','sede','paese','fonte','priorita','stipendio_min','stipendio_max','note','link_annuncio','ora_colloquio','tipo_colloquio','feeling','telefono_azienda','data_scadenza_responso','azienda_domain','contatto_nome','contatto_email','contatto_hr','email_hr','telefono_hr','linkedin_hr','data_secondo_colloquio','ora_secondo_colloquio','archiviata','welfare','welfare_note','reminder_date','reminder_time','reminder_note','offerta_ral','offerta_scadenza','offerta_note','offerta_risposta','offerta_feeling','domande_fatte','domande_mie','feeling_aggiornato','contatto_hr','data_inizio']
-    const clean = {}
-    ALLOWED_UPDATE.forEach(k => { if (updates[k] !== undefined) clean[k] = updates[k] })
+    if (error) throw error;
     
-    if ('welfare' in clean && !Array.isArray(clean.welfare)) clean.welfare = []
+    setCandidature(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    showToast('Aggiornato!', 'success');
+  } catch (err) {
+    showToast('Errore aggiornamento', 'error');
+  }
 
-    const { data: row, error } = await supabase
-      .from('candidature').update(clean).eq('id', id).select().single()
 
-    if (error) { 
-      showToast(_l === 'en' ? '❌ Update failed' : '❌ Errore aggiornamento', 'error')
-      return 
-    }
-
-    setCandidature(cs => cs.map(c => c.id === id ? row : c))
+setCandidature(cs => cs.map(c => c.id === id ? row : c))
 
     if (updates.stato && updates.stato !== prev?.stato) {
       if (updates.stato === 'Colloquio') {
@@ -465,11 +453,11 @@ const computeStatsFrom = (list) => {
     // 2. NON è archiviata 
     // 3. Lo stato è uno di quelli "positivi" (escludiamo Ghosted e Rifiutate)
    const colloqui = list.filter(c => 
-      c.data_colloquio && 
-      c.data_colloquio !== '' &&
-      c.stato !== 'Archiviate' && // Esclude chi ha lo stato "Archiviate"
-      ['Colloquio', 'Secondo colloquio', 'Tecnico', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
-    ).length
+  c.data_colloquio && 
+  c.data_colloquio !== '' && 
+  c.archiviata !== true && // <--- Qui controlla la colonna booleana, non lo stato!
+  !['GHOSTED', 'Rifiutata'].includes(c.stato)
+).length
 
     const ghosted = list.filter(c => c.stato === 'GHOSTED').length
     const offerte = list.filter(c => c.stato === 'Offerta ricevuta' || c.offerta_risposta === 'si').length
@@ -709,10 +697,10 @@ return (
       pushNotification, sendPushNow, requestNotificationPermission,
       markAllNotificationsRead,
       showToast, triggerConfetti, checkBadges,
-    }}>
+      }}>
       {children}
     </AppContext.Provider>
-  )
-}
+  );
+}; // Questa chiude l'AppProvider iniziato a riga 12
 
-export const useApp = () => useContext(AppContext)
+export const useApp = () => useContext(AppContext);
