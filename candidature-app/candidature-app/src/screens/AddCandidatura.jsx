@@ -142,9 +142,13 @@ export default function AddCandidatura({ onBack, onDone }) {
         </Field>
 
         <Field label={t('add.stato')}>
-          <ChoicePicker value={form.stato} options={STATI}
-  onChange={v => set('stato', v)} colorFn={statusColor}
-  labelFn={v => t(`add.stati.${v}`, v)} />
+          <ChoicePicker 
+  value={form.stato} 
+  options={STATI.filter(s => s !== 'Archiviate')} 
+  onChange={v => set('stato', v)} 
+  colorFn={statusColor}
+  labelFn={v => t(`add.stati.${v}`, v)} 
+/>
         </Field>
 
         <Field label={t('add.dataCandidatura')}>
