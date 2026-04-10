@@ -34,6 +34,71 @@
     "errorePassword": "Password must be at least 6 characters.",
     "erroreConnessione": "Connection error — please try again."
   },
+  "onboarding": {
+    "salta": "Skip →",
+    "avanti": "Next →",
+    "iniziamo": "Let's start! 🚀",
+    "slideCount": "{{current}} of {{total}}",
+    "slide1": {
+      "title": "\"We'll let you know.\"",
+      "body": "They all say it. But you'll keep track of who actually meant it — and who just vanished."
+    },
+    "slide2": {
+      "title": "Every interview, every reply",
+      "body": "Calendar, notifications, and deadlines. Always know who still owes you an answer and for how long."
+    },
+    "slide3": {
+      "title": "Ghosting detected.",
+      "body": "If a company goes silent for 60 days, we'll know. We archive it automatically so you can move on."
+    },
+    "slide4": {
+      "title": "Job hunting is a race.",
+      "body": "Every application earns XP. Every interview unlocks badges. The offer is the final boss — and this time, you'll win. 🎉"
+    },
+    "slide5": {
+      "title": "Already have applications?",
+      "body": "No problem — download our Excel template from the Profile, fill it in, and upload it. The app populates itself! 🚀"
+    },
+    "step1": {
+      "title": "What's your name?",
+      "subtitle": "We'll call you this in the app",
+      "placeholder": "Your name"
+    },
+    "step2": {
+      "title": "You are:",
+      "subtitle": "Used only to personalize app messages 🤍"
+    },
+    "step3": {
+      "title": "How old are you?",
+      "subtitle": "Helps us understand our users 📊",
+      "erroreEta": "⚠️ You must be at least 16 to use this app."
+    },
+    "step4": {
+      "title": "Target sector?",
+      "placeholder": "Type your sector..."
+    },
+    "step5": {
+      "title": "How did you find us?",
+      "placeholder": "Where did you find us?"
+    },
+    "step6": {
+      "title": "Where do you live?",
+      "subtitle": "Used to calculate distances for interviews 🗺️"
+    },
+    "step7": {
+      "title": "Enable notifications?",
+      "body": "We'll alert you for interviews and reminders. No spam. 💜",
+      "btnSi": "🔔 Yes, enable notifications",
+      "btnNo": "No thanks, later",
+      "loading": "⏳ Just a moment..."
+    }
+  },
+  "rating": {
+    "domanda": "How are you liking it?",
+    "sottotitolo": "Your opinion helps us improve! ⭐",
+    "invia": "Send rating",
+    "grazie": "Thanks for your feedback! 💜"
+  },
   "home": {
     "notifiche": "Notifications 🔔",
     "nessunaNotifica": "No notifications yet",
@@ -67,7 +132,6 @@
     "nonPiace": "Not interested",
     "ghostate": "Ghosted",
     "spontanea": "Cold outreach",
-    "Archiviate": "Archived",
     "cercaPlaceholder": "Search company, role, location...",
     "nessunaRisposta": "No response for {{giorni}} days",
     "responsoEntro": "Response expected in {{giorni}} {{label}}",
@@ -331,7 +395,7 @@
       "Settimana corta": "Short week",
       "Telefono aziendale": "Company phone",
       "PC aziendale": "Company PC",
-      "Budget formazione": "Training budget"
+      "Budget formation": "Training budget"
     }
   },
   "splash": {

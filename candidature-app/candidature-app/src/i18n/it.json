@@ -34,6 +34,55 @@
     "errorePassword": "La password deve avere almeno 6 caratteri.",
     "erroreConnessione": "Errore di connessione — riprova."
   },
+  "onboarding": {
+    "salta": "Salta →",
+    "avanti": "Avanti →",
+    "iniziamo": "Iniziamo! 🚀",
+    "slideCount": "{{current}} di {{total}}",
+    "slide1": {
+      "title": "\"Le faremo sapere.\"",
+      "body": "Lo dicono tutti. Ma tu tieni traccia di chi lo ha detto davvero — e di chi invece è sparito nel nulla."
+    },
+    "slide2": {
+      "title": "Ogni colloquio, ogni risposta",
+      "body": "Calendario, notifiche e scadenze. Sai sempre chi ti deve ancora rispondere e da quanti giorni."
+    },
+    "slide3": {
+      "title": "Ghosting rilevato.",
+      "body": "Se un'azienda sparisce per 60 giorni, lo sappiamo. Archiviamo in automatico e tu vai avanti."
+    },
+    "slide4": {
+      "title": "La ricerca è una gara.",
+      "body": "Ogni candidatura vale XP. Ogni colloquio sblocca badge. L'offerta è il boss finale — e stavolta ce la fai. 🎉"
+    },
+    "slide5": {
+      "title": "Hai già candidature?",
+      "body": "Nessun problema — scarica il nostro template Excel dal Profilo, compilalo e caricalo. L'app si popola da sola! 🚀"
+    },
+    "step1": {
+      "title": "Come ti chiami?",
+      "subtitle": "Ti chiameremo così nell'app",
+      "placeholder": "Il tuo nome"
+    },
+    "step2": { "title": "Sei:", "subtitle": "Serve solo per personalizzare i messaggi dell'app 🤍" },
+    "step3": { "title": "Quanti anni hai?", "subtitle": "Ci aiuta a capire chi usa l'app 📊", "erroreEta": "⚠️ Devi avere almeno 16 anni per usare l'app." },
+    "step4": { "title": "In che settore cerchi?", "placeholder": "Scrivi il tuo settore..." },
+    "step5": { "title": "Come ci hai trovato?", "placeholder": "Dove ci hai trovato?" },
+    "step6": { "title": "Dove vivi?", "subtitle": "Lo usiamo per calcolare la distanza dai luoghi dei colloqui 🗺️" },
+    "step7": { 
+        "title": "Vuoi ricevere notifiche?", 
+        "body": "Ti avvisiamo per colloqui e promemoria. Niente spam. 💜",
+        "btnSi": "🔔 Sì, attiva le notifiche",
+        "btnNo": "No grazie, dopo",
+        "loading": "⏳ Un attimo..."
+    }
+  },
+  "rating": {
+    "domanda": "Come ti trovi?",
+    "sottotitolo": "La tua opinione ci aiuta a migliorare! ⭐",
+    "invia": "Invia valutazione",
+    "grazie": "Grazie per il tuo feedback! 💜"
+  },
   "home": {
     "notifiche": "Notifiche 🔔",
     "nessunaNotifica": "Ancora nessuna notifica",
@@ -67,7 +116,6 @@
     "nonPiace": "Non mi piace",
     "ghostate": "Ghostate",
     "spontanea": "Spontanea",
-    "Archiviate": "Archiviate",
     "cercaPlaceholder": "Cerca azienda, ruolo, luogo...",
     "nessunaRisposta": "Nessuna risposta da {{giorni}} giorni",
     "responsoEntro": "Responso previsto tra {{giorni}} {{label}}",
