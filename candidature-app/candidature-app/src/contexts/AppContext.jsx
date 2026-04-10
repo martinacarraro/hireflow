@@ -63,6 +63,13 @@ export function AppProvider({ children }) {
     setProfile(null);
     setNotifications([]);
   }
+  useEffect(() => {
+  if (!user && !isGuest) {
+    setCandidature([]); // Svuota le candidature
+    setProfile(null);   // Svuota badge e XP
+    setNotifications([]);
+  }
+}, [user, isGuest]);
 }, [user, isGuest]);
   useEffect(() => {
     if (isGuest) {
