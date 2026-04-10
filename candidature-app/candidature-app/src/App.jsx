@@ -14,15 +14,16 @@ import Profile from './screens/Profile'
 import Calendar from './screens/Calendar'
 import Tutorial from './components/Tutorial'
 import LanguageSelector from './components/LanguageSelector'
+import { useTranslation } from 'react-i18next'
+
 export default function App() {
   const { user, loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
+  const { t } = useTranslation() // Hook usato correttamente nel componente principale
+  
   const [showSplash, setShowSplash] = useState(true)
-  const [linguaScelta, setLinguaScelta] = useState(
-  !!localStorage.getItem('lingua')
-)
+  const [linguaScelta, setLinguaScelta] = useState(!!localStorage.getItem('lingua'))
   const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
-    // Only show if never seen AND not already logged in (user in localStorage = had session before)
     const hasSeen = localStorage.getItem('lfs_seen_intro')
     const hadSession = localStorage.getItem('lfs_had_session')
     return !hasSeen && !hadSession
@@ -33,7 +34,7 @@ export default function App() {
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [showReviewPopup, setShowReviewPopup] = useState(false)
-  const [showTutorial, setShowTutorial] = useState(false) // initialized after profile loads
+  const [showTutorial, setShowTutorial] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
   const [resetDone, setResetDone] = useState(false)
@@ -47,14 +48,12 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    // Detect password reset link from Supabase
     const hash = window.location.hash
     if (hash.includes('type=recovery') || hash.includes('type=signup')) {
       setShowResetPassword(true)
     }
   }, [])
 
-  // Once user is logged in, mark so intro never shows again
   useEffect(() => {
     if (user) {
       localStorage.setItem('lfs_seen_intro', '1')
@@ -66,17 +65,15 @@ export default function App() {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault()
-      e.returnValue = 'Vuoi davvero uscire da Le faremo sapere?'
+      e.returnValue = 'Vuoi davvero uscire?'
       return e.returnValue
     }
-    // Push a dummy state so Android back button triggers popstate instead of closing
     window.history.pushState({ lfs: true }, '')
-    const handlePopState = (e) => {
-      const confirmed = window.confirm('Vuoi davvero uscire da Le faremo sapere?')
+    const handlePopState = () => {
+      const confirmed = window.confirm('Vuoi davvero uscire?')
       if (confirmed) {
         window.history.go(-1)
       } else {
-        // Re-push so back button works again next time
         window.history.pushState({ lfs: true }, '')
       }
     }
@@ -88,21 +85,17 @@ export default function App() {
     }
   }, [])
 
-  // Trigger tutorial for new users — per-user key so each new account sees it
   useEffect(() => {
     if (!user && !isGuest) return
     if (loading || dataLoading) return
     if (user) {
-      // Logged-in: use per-user key only
       const key = `lfs_tutorial_done_${user.id}`
       if (!localStorage.getItem(key)) setShowTutorial(true)
     } else {
-      // Guest: use global key
       if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
     }
   }, [user, isGuest, loading, dataLoading])
 
-  // Mostra popup recensione dopo 5 giorni di utilizzo (una volta sola)
   useEffect(() => {
     if (!user) return
     const reviewKey = `lfs_review_shown_${user.id}`
@@ -110,63 +103,38 @@ export default function App() {
     const registered = new Date(user.created_at)
     const daysSince = Math.floor((new Date() - registered) / (1000 * 60 * 60 * 24))
     if (daysSince >= 5) {
-      // Piccolo delay per non sparare subito all'apertura
-      const t = setTimeout(() => setShowReviewPopup(true), 3000)
-      return () => clearTimeout(t)
+      const timeout = setTimeout(() => setShowReviewPopup(true), 3000)
+      return () => clearTimeout(timeout)
     }
   }, [user])
 
-  if (showSplash || loading) {
-    return <Splash onDone={() => setShowSplash(false)} />
-  }
-if (!linguaScelta) {
-  return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
-}
-  if (showFirstOnboarding) {
-    return (
-      <FirstTimeIntro onDone={() => {
-        localStorage.setItem('lfs_seen_intro', '1')
-        setShowFirstOnboarding(false)
-      }} onSkip={() => {
-        localStorage.setItem('lfs_seen_intro', '1')
-        setShowFirstOnboarding(false)
-      }} />
-    )
-  }
+  if (showSplash || loading) return <Splash onDone={() => setShowSplash(false)} />
+  if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
+  if (showFirstOnboarding) return <FirstTimeIntro onDone={() => setShowFirstOnboarding(false)} />
 
   if (showResetPassword) return (
     <div className="h-full flex flex-col items-center justify-center px-6" style={{ background: '#0E0E1A' }}>
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm text-center">
         {resetDone ? (
-          <div className="text-center">
+          <>
             <p className="text-5xl mb-4">✅</p>
             <h2 className="text-xl font-bold text-white mb-2">Password aggiornata!</h2>
-            <p className="text-sm text-gray-400 mb-6">Riapri l'app e accedi con la tua nuova password.</p>
-            <p className="text-xs text-gray-500">Puoi chiudere questa pagina 👻</p>
-          </div>
+            <p className="text-sm text-gray-400">Riapri l'app e accedi.</p>
+          </>
         ) : (
           <>
-            <p className="text-5xl mb-4 text-center">🔑</p>
-            <h2 className="text-xl font-bold text-white mb-2 text-center">Nuova password</h2>
-            <p className="text-sm text-gray-400 mb-6 text-center">Inserisci la tua nuova password.</p>
-            <input type="password" placeholder="Nuova password (min. 6 caratteri)"
+            <p className="text-5xl mb-4">🔑</p>
+            <h2 className="text-xl font-bold text-white mb-2">Nuova password</h2>
+            <input type="password" placeholder="Min. 6 caratteri"
               className="input-field w-full mb-3"
               value={newPassword} onChange={e => setNewPassword(e.target.value)} autoFocus />
             <button onClick={async () => {
-              if (newPassword.length < 6) return
               setResetLoading(true)
               const { error } = await supabase.auth.updateUser({ password: newPassword })
               setResetLoading(false)
-              if (error) {
-                alert('Errore: ' + error.message)
-              } else {
-                setResetDone(true)
-              }
-            }} disabled={resetLoading || newPassword.length < 6}
-              className="btn-primary w-full py-3"
-              style={{ opacity: newPassword.length >= 6 ? 1 : 0.4 }}>
-              {resetLoading ? '⏳ Salvataggio...' : '✅ Salva nuova password'}
-            </button>
+              if (error) alert(error.message)
+              else setResetDone(true)
+            }} className="btn-primary w-full py-3">{resetLoading ? '⏳...' : '✅ Salva'}</button>
           </>
         )}
       </div>
@@ -175,181 +143,67 @@ if (!linguaScelta) {
 
   if (!user && !isGuest) return <Login />
 
-  // Onboarding: per-user key so each new account sees it
   const onboardingKey = user ? `lfs_onboarding_done_${user.id}` : null
   const hasSeenOnboarding = (onboardingKey && !!localStorage.getItem(onboardingKey)) || profile?.seen_onboarding === true
   if (user && !dataLoading && profile && !hasSeenOnboarding) return (
-    <Onboarding onDone={() => {
-      if (onboardingKey) localStorage.setItem(onboardingKey, '1')
-    }} />
+    <Onboarding onDone={() => onboardingKey && localStorage.setItem(onboardingKey, '1')} />
   )
 
-  if (view?.type === 'detail') {
-    return (
-      <div className="h-full flex flex-col">
-        <DetailView candidatura={view.data} onBack={() => setView(null)} onUpdate={() => {}} restoreScroll={true} />
-        <Toast toast={toast} />
-        <Confetti active={confetti} />
-      </div>
-    )
-  }
-
-  if (view?.type === 'add') {
-    return (
-      <div className="h-full flex flex-col">
-        <AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} />
-        <Toast toast={toast} />
-        <Confetti active={confetti} />
-      </div>
-    )
-  }
-
-  const handleTabChange = (t) => {
-    if (t === 'add') { setView({ type: 'add' }); return }
-    if (t === tab && t === 'home') {
-      setScrollToTopTrigger(n => n + 1)
-      return
-    }
-    setTab(t)
-  }
+  if (view?.type === 'detail') return <DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} />
+  if (view?.type === 'add') return <AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} />
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
-        {tab === 'home'     && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
+        {tab === 'home' && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
         {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
-        {tab === 'stats'    && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
-        {tab === 'profile'  && <Profile />}
+        {tab === 'stats' && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
+        {tab === 'profile' && <Profile />}
       </div>
-      <TabBar active={tab} onChange={handleTabChange} unread={unreadCount} />
-      {showTutorial && (
-        <Tutorial onDone={() => {
-          const key = user ? `lfs_tutorial_done_${user.id}` : 'lfs_tutorial_done'
-          localStorage.setItem(key, '1')
-          setShowTutorial(false)
-        }} />
-      )}
+      <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} />
+      {showTutorial && <Tutorial onDone={() => setShowTutorial(false)} />}
       <Toast toast={toast} />
       <Confetti active={confetti} />
       {showReviewPopup && (
-  <ReviewPopup 
-    user={user} 
-    profile={profile} 
-    onClose={() => {
-      localStorage.setItem(`lfs_review_shown_${user.id}`, '1');
-      setShowReviewPopup(false);
-    }} 
-  />
-)}
+        <ReviewPopup 
+          user={user} 
+          profile={profile} 
+          t={t} 
+          onClose={() => {
+            localStorage.setItem(`lfs_review_shown_${user.id}`, '1')
+            setShowReviewPopup(false)
+          }} 
+        />
+      )}
     </div>
   )
 }
 
-// ─── FIRST-TIME INTRO (shown before login, once ever) ────────────────────────
-function FirstTimeIntro({ onDone, onSkip }) {
+function FirstTimeIntro({ onDone }) {
   const [slide, setSlide] = useState(0)
-
   const SLIDES = [
-    {
-      bg: 'linear-gradient(160deg, #7B2FFF 0%, #FF2D8B 100%)',
-      icon: (
-        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
-          <circle cx="60" cy="60" r="60" fill="rgba(255,255,255,0.12)"/>
-          <path d="M60 20C60 20 40 42 40 58a20 20 0 0040 0C80 42 60 20 60 20z" fill="white" opacity="0.9"/>
-          <circle cx="60" cy="58" r="7" fill="#7B2FFF"/>
-          <path d="M48 80l-6 10M72 80l6 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-          <circle cx="42" cy="34" r="4" fill="white" opacity="0.5"/>
-          <circle cx="80" cy="28" r="6" fill="white" opacity="0.3"/>
-        </svg>
-      ),
-      title: '"Le faremo sapere."',
-      subtitle: 'E tu tieni il conto.',
-      body: 'Quante volte hai mandato un CV e non hai più sentito nulla? Questa app esiste per questo — tenere traccia di ogni candidatura, ogni colloquio, ogni silenzio.',
-    },
-    {
-      bg: 'linear-gradient(160deg, #1a0a3a 0%, #2d1060 100%)',
-      icon: (
-        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
-          <circle cx="60" cy="60" r="60" fill="rgba(123,47,255,0.2)"/>
-          <rect x="20" y="30" width="80" height="60" rx="8" fill="white" opacity="0.1" stroke="white" strokeWidth="1.5"/>
-          <rect x="20" y="30" width="80" height="18" rx="8" fill="#7B2FFF" opacity="0.8"/>
-          <circle cx="38" cy="72" r="8" fill="#22C55E" opacity="0.9"/>
-          <circle cx="60" cy="72" r="8" fill="#FBBF24" opacity="0.9"/>
-          <circle cx="82" cy="72" r="8" fill="#EF4444" opacity="0.9"/>
-          <path d="M34 72l3 3 6-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      title: 'Tutto sotto controllo',
-      subtitle: 'Gratis per sempre. Scadenze chiare.',
-      body: 'Ogni candidatura ha il suo stato — Inviata, Colloquio, In attesa, Ghostata. Il calendario ti mostra tutti i tuoi colloqui. Niente si perde.',
-    },
-    {
-      bg: 'linear-gradient(160deg, #0a1a2a 0%, #0a2a1a 100%)',
-      icon: (
-        <svg viewBox="0 0 120 120" fill="none" className="w-32 h-32 mx-auto mb-6">
-          <circle cx="60" cy="60" r="60" fill="rgba(34,197,94,0.15)"/>
-          <polygon points="60,25 70,50 97,50 75,66 83,91 60,75 37,91 45,66 23,50 50,50" fill="#FBBF24" opacity="0.9"/>
-          <circle cx="60" cy="60" r="12" fill="white" opacity="0.2"/>
-        </svg>
-      ),
-      title: 'Guadagna badge, scala livelli',
-      subtitle: 'La ricerca è una gara — vincila.',
-      body: 'Ogni candidatura vale XP. Sblocchi badge reali da condividere su LinkedIn. Mantieni lo streak settimanale. Il ghosting fa meno male se hai punti. 🏆',
-    },
+    { title: '"Le faremo sapere."', subtitle: 'E tu tieni il conto.', body: 'Tieni traccia di ogni candidatura e colloquio.' },
+    { title: 'Tutto sotto controllo', subtitle: 'Gratis per sempre.', body: 'Inviata, Colloquio, Ghostata. Niente si perde.' },
+    { title: 'Guadagna badge', subtitle: 'La ricerca è una gara.', body: 'Sblocca badge e mantieni lo streak. 🏆' }
   ]
-
-  const s = SLIDES[slide]
   const isLast = slide === SLIDES.length - 1
-
   return (
-    <div className="screen flex flex-col" style={{ background: s.bg, transition: 'background 0.4s ease' }}>
-      {/* Skip */}
-      <div className="flex justify-end px-5 pt-safe pt-4">
-        <button onClick={onSkip || onDone} className="text-white/50 text-sm active:scale-95 transition-transform">
-          Salta →
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-        {s.icon}
-        <h1 className="text-3xl font-black text-white mb-2 leading-tight">{s.title}</h1>
-        <p className="text-lg font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>{s.subtitle}</p>
-        <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{s.body}</p>
-      </div>
-
-      {/* Dots + CTA */}
-      <div className="px-8 pb-safe pb-10">
-        <div className="flex justify-center gap-2 mb-8">
-          {SLIDES.map((_, i) => (
-            <div key={i} className="rounded-full transition-all duration-300"
-              style={{ width: i === slide ? 24 : 8, height: 8, background: i === slide ? 'white' : 'rgba(255,255,255,0.3)' }} />
-          ))}
-        </div>
-        <button
-          onClick={isLast ? onDone : () => setSlide(s => s + 1)}
-          className="w-full py-4 rounded-2xl font-bold text-base active:scale-95 transition-all"
-          style={{ background: 'white', color: '#7B2FFF' }}>
-          {isLast ? '🚀 Inizia a tracciare' : 'Avanti →'}
-        </button>
-      </div>
+    <div className="screen flex flex-col p-10 text-center justify-center bg-slate-900 text-white">
+      <h1 className="text-3xl font-black mb-2">{SLIDES[slide].title}</h1>
+      <p className="mb-4 opacity-70">{SLIDES[slide].subtitle}</p>
+      <p className="text-sm opacity-50 mb-10">{SLIDES[slide].body}</p>
+      <button onClick={isLast ? onDone : () => setSlide(s => s + 1)} className="btn-primary py-4 rounded-2xl">
+        {isLast ? '🚀 Inizia' : 'Avanti'}
+      </button>
     </div>
   )
 }
 
-// ─── REVIEW POPUP — appare dopo 5 giorni, una volta sola ─────────────────────
-function ReviewPopup({ user, profile, onClose }) {
-  // Sposta l'hook qui, all'inizio della funzione
-  const { t } = useApp(); 
-  const [step, setStep] = useState(0);
-  const [rating, setRating] = useState(null);
-  const [text, setText] = useState('');
-  const [sending, setSending] = useState(false);
-  
-  // Importiamo t per le traduzioni
-  const { t } = useApp() // Oppure useTranslation() se preferisci
-
-  const nome = profile?.nome ? `, ${profile.nome}` : ''
+function ReviewPopup({ user, profile, onClose, t }) {
+  const [step, setStep] = useState(0)
+  const [rating, setRating] = useState(null)
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
   const stars = [1, 2, 3, 4, 5]
 
   const handleSubmit = async () => {
@@ -364,8 +218,7 @@ function ReviewPopup({ user, profile, onClose }) {
           stelle: rating,
           testo: text,
           utente: user?.id,
-          nome: profile?.nome || '—',
-          genere: profile?.genere || '—',
+          nome: profile?.nome || '—'
         })
       })
     } catch(e) {}
@@ -375,65 +228,32 @@ function ReviewPopup({ user, profile, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6"
-      style={{ background: 'rgba(10,10,26,0.85)' }}
-      onClick={onClose}>
-      <div className="w-full max-w-sm rounded-3xl overflow-hidden"
-        style={{ background: '#13131F', border: '1px solid rgba(123,47,255,0.3)' }}
-        onClick={e => e.stopPropagation()}>
-
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6 bg-black/80" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-3xl p-6 bg-gray-900 border border-purple-500/30" onClick={e => e.stopPropagation()}>
         {step === 0 ? (
-          <div className="p-6 space-y-5">
-            <div className="text-center space-y-1">
-              <div className="text-4xl mb-2">👻</div>
-              {/* Usa la chiave 'rating.domanda' dal tuo JSON */}
-              <h2 className="text-lg font-bold text-txt">{t('rating.domanda')}{nome}?</h2>
-              <p className="text-xs text-muted leading-relaxed">
-                {t('rating.sottotitolo')}
-              </p>
-            </div>
-
-            <div className="flex justify-center gap-3">
+          <div className="space-y-5 text-center">
+            <div className="text-4xl">👻</div>
+            <h2 className="text-lg font-bold text-white">{t('rating.domanda')}, {profile?.nome || 'Ospite'}?</h2>
+            <p className="text-xs text-gray-400">{t('rating.sottotitolo')}</p>
+            <div className="flex justify-center gap-2">
               {stars.map(s => (
-                <button key={s} onClick={() => setRating(s)}
-                  className="text-4xl transition-all active:scale-110"
-                  style={{ opacity: rating && s > rating ? 0.35 : 1,
-                           filter: rating && s <= rating ? 'drop-shadow(0 0 6px #FBBF24)' : 'none' }}>
+                <button key={s} onClick={() => setRating(s)} className="text-3xl">
                   {s <= (rating || 0) ? '⭐' : '☆'}
                 </button>
               ))}
             </div>
-
-            {rating && (
-              <textarea
-                className="input-field text-sm w-full"
-                rows={3}
-                placeholder={rating >= 4 ? "..." : "..."} // Puoi tradurre anche questi se vuoi
-                value={text}
-                onChange={e => setText(e.target.value)}
-                autoFocus
-              />
-            )}
-
+            {rating && <textarea className="input-field w-full text-sm" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder="..." />}
             <div className="flex gap-3">
-              <button onClick={onClose}
-                className="flex-1 py-3 rounded-2xl text-sm text-muted border border-border">
-                {/* Aggiungi 'rating.later' nel JSON o usa una stringa tradotta */}
-                {t('common.later') || 'Later'} 
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!rating || sending}
-                className="flex-1 py-3 rounded-2xl text-sm font-bold text-white"
-                style={{ background: rating ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.1)' }}>
-                {sending ? '...' : `✉️ ${t('rating.invia')}`}
+              <button onClick={onClose} className="flex-1 py-3 text-gray-400">Dopo</button>
+              <button onClick={handleSubmit} disabled={!rating || sending} className="flex-1 py-3 btn-primary rounded-xl">
+                {sending ? '...' : t('rating.invia')}
               </button>
             </div>
           </div>
         ) : (
           <div className="p-8 text-center space-y-3">
             <div className="text-5xl">💜</div>
-            <h3 className="text-lg font-bold text-txt">{t('rating.grazie')}</h3>
+            <h3 className="text-lg font-bold text-white">{t('rating.grazie')}</h3>
           </div>
         )}
       </div>
