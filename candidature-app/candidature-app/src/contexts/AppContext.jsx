@@ -55,44 +55,45 @@ export function AppProvider({ children }) {
       .order('created_at', { ascending: false })
     setCandidature(data || [])
   }, [user])
-/ --- BLOCCO 1: Reset totale al Logout ---
-useEffect(() => {
-  if (!user && !isGuest) {
-    setCandidature([]);
-    setProfile(null);
-    setNotifications([]);
-  }
-}, [user, isGuest]);
 
-// --- BLOCCO 2: Caricamento Dati (User o Guest) ---
-useEffect(() => {
-  if (user) {
-    Promise.all([loadProfile(), loadCandidature()]).then(() => {
+  // --- BLOCCO 1: Reset totale al Logout ---
+  useEffect(() => {
+    if (!user && !isGuest) {
+      setCandidature([]);
+      setProfile(null);
+      setNotifications([]);
+    }
+  }, [user, isGuest]);
+
+  // --- BLOCCO 2: Caricamento Dati (User o Guest) ---
+  useEffect(() => {
+    if (user) {
+      Promise.all([loadProfile(), loadCandidature()]).then(() => {
+        setLoading(false);
+        checkScheduledNotifications();
+        updateStreak();
+      });
+    } else if (isGuest) {
+      const guestCand = localStorage.getItem('lfs_guest_candidature');
+      const guestProf = localStorage.getItem('lfs_guest_profile');
+      
+      setCandidature(guestCand ? JSON.parse(guestCand) : []);
+      setProfile(guestProf ? JSON.parse(guestProf) : { 
+        id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false 
+      });
       setLoading(false);
-      checkScheduledNotifications();
-      updateStreak();
-    });
-  } else if (isGuest) {
-    const guestCand = localStorage.getItem('lfs_guest_candidature');
-    const guestProf = localStorage.getItem('lfs_guest_profile');
-    
-    setCandidature(guestCand ? JSON.parse(guestCand) : []);
-    setProfile(guestProf ? JSON.parse(guestProf) : { 
-      id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false 
-    });
-    setLoading(false);
-  } else {
-    setLoading(false);
-  }
-}, [user, isGuest, loadProfile, loadCandidature]);
+    } else {
+      setLoading(false);
+    }
+  }, [user, isGuest, loadProfile, loadCandidature]);
 
-// --- BLOCCO 3: Salvataggio automatico solo se Guest ---
-useEffect(() => {
-  if (isGuest) {
-    localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature));
-    if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile));
-  }
-}, [candidature, profile, isGuest]);
+  // --- BLOCCO 3: Salvataggio automatico solo se Guest ---
+  useEffect(() => {
+    if (isGuest) {
+      localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature));
+      if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile));
+    }
+  }, [candidature, profile, isGuest]);
 
   // --- CRUD CANDIDATURE ---
 
