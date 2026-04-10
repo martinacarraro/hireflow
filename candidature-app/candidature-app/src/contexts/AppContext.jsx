@@ -67,13 +67,21 @@ export function AppProvider({ children }) {
 
   // --- BLOCCO 2: Caricamento Dati (User o Guest) ---
   useEffect(() => {
+    // 1. Forza la lingua salvata PRIMA di caricare i dati
+    const savedLang = localStorage.getItem('lfs_lang') || 'it';
+    if (i18n.language !== savedLang) {
+      i18n.changeLanguage(savedLang);
+    }
+
     if (user) {
+      // Caricamento Supabase...
       Promise.all([loadProfile(), loadCandidature()]).then(() => {
         setLoading(false);
         checkScheduledNotifications();
         updateStreak();
       });
     } else if (isGuest) {
+      // Caricamento Guest...
       const guestCand = localStorage.getItem('lfs_guest_candidature');
       const guestProf = localStorage.getItem('lfs_guest_profile');
       

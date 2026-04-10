@@ -333,10 +333,13 @@ function FirstTimeIntro({ onDone, onSkip }) {
 
 // ─── REVIEW POPUP — appare dopo 5 giorni, una volta sola ─────────────────────
 function ReviewPopup({ user, profile, onClose }) {
-  const [step, setStep] = useState(0)        // 0 = domanda principale, 1 = grazie
-  const [rating, setRating] = useState(null) // 1-5 stelle
+  const [step, setStep] = useState(0)
+  const [rating, setRating] = useState(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  
+  // Importiamo t per le traduzioni
+  const { t } = useApp() // Oppure useTranslation() se preferisci
 
   const nome = profile?.nome ? `, ${profile.nome}` : ''
   const stars = [1, 2, 3, 4, 5]
@@ -373,16 +376,15 @@ function ReviewPopup({ user, profile, onClose }) {
 
         {step === 0 ? (
           <div className="p-6 space-y-5">
-            {/* Header */}
             <div className="text-center space-y-1">
               <div className="text-4xl mb-2">👻</div>
-              <h2 className="text-lg font-bold text-txt">Come ti trovi{nome}?</h2>
+              {/* Usa la chiave 'rating.domanda' dal tuo JSON */}
+              <h2 className="text-lg font-bold text-txt">{t('rating.domanda')}{nome}?</h2>
               <p className="text-xs text-muted leading-relaxed">
-                Usi l'app da qualche giorno — la tua opinione conta davvero per migliorarla 💜
+                {t('rating.sottotitolo')}
               </p>
             </div>
 
-            {/* Stelle */}
             <div className="flex justify-center gap-3">
               {stars.map(s => (
                 <button key={s} onClick={() => setRating(s)}
@@ -394,43 +396,36 @@ function ReviewPopup({ user, profile, onClose }) {
               ))}
             </div>
 
-            {/* Testo opzionale */}
             {rating && (
               <textarea
                 className="input-field text-sm w-full"
                 rows={3}
-                placeholder={rating >= 4
-                  ? 'Cosa ti piace di più? (opzionale)'
-                  : 'Cosa possiamo migliorare? (opzionale)'}
+                placeholder={rating >= 4 ? "..." : "..."} // Puoi tradurre anche questi se vuoi
                 value={text}
                 onChange={e => setText(e.target.value)}
                 autoFocus
               />
             )}
 
-            {/* Bottoni */}
             <div className="flex gap-3">
               <button onClick={onClose}
-                className="flex-1 py-3 rounded-2xl text-sm text-muted border border-border active:scale-95 transition-all">
-                Dopo
+                className="flex-1 py-3 rounded-2xl text-sm text-muted border border-border">
+                {/* Aggiungi 'rating.later' nel JSON o usa una stringa tradotta */}
+                {t('common.later') || 'Later'} 
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!rating || sending}
-                className="flex-1 py-3 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
-                style={{
-                  background: rating ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.1)',
-                  opacity: rating ? 1 : 0.5
-                }}>
-                {sending ? '...' : '✉️ Invia'}
+                className="flex-1 py-3 rounded-2xl text-sm font-bold text-white"
+                style={{ background: rating ? 'linear-gradient(135deg, #7B2FFF, #FF2D8B)' : 'rgba(255,255,255,0.1)' }}>
+                {sending ? '...' : `✉️ ${t('rating.invia')}`}
               </button>
             </div>
           </div>
         ) : (
           <div className="p-8 text-center space-y-3">
             <div className="text-5xl">💜</div>
-            <h3 className="text-lg font-bold text-txt">Grazie mille!</h3>
-            <p className="text-sm text-muted">Il tuo feedback ci aiuta a migliorare ogni giorno.</p>
+            <h3 className="text-lg font-bold text-txt">{t('rating.grazie')}</h3>
           </div>
         )}
       </div>
