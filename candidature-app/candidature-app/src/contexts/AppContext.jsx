@@ -55,55 +55,45 @@ export function AppProvider({ children }) {
       .order('created_at', { ascending: false })
     setCandidature(data || [])
   }, [user])
+/ --- BLOCCO 1: Reset totale al Logout ---
 useEffect(() => {
-    if (!user && !isGuest) {
-      setCandidature([]);
-      setProfile(null);
-      setNotifications([]);
-    }
-  }, [user, isGuest]);
+  if (!user && !isGuest) {
+    setCandidature([]);
+    setProfile(null);
+    setNotifications([]);
+  }
+}, [user, isGuest]);
 
-  // --- 2. CARICAMENTO DATI (USER O GUEST) ---
-  useEffect(() => {
-    if (user) {
-      // Caricamento per utente loggato da Supabase
-      Promise.all([loadProfile(), loadCandidature()]).then(() => {
-        setLoading(false);
-        checkScheduledNotifications();
-        updateStreak();
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          requestNotificationPermission();
-        }
-      });
-    } else if (isGuest) {
-      // Caricamento per Guest da localStorage
-      const guestCand = localStorage.getItem('lfs_guest_candidature');
-      const guestProf = localStorage.getItem('lfs_guest_profile');
-
-      setCandidature(guestCand ? JSON.parse(guestCand) : []);
-      
-      if (guestProf) {
-        setProfile(JSON.parse(guestProf));
-      } else {
-        const newGuest = { id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false, genere: null, motto_index: 0 };
-        setProfile(newGuest);
-        localStorage.setItem('lfs_guest_profile', JSON.stringify(newGuest));
-      }
+// --- BLOCCO 2: Caricamento Dati (User o Guest) ---
+useEffect(() => {
+  if (user) {
+    Promise.all([loadProfile(), loadCandidature()]).then(() => {
       setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [user, isGuest, loadProfile, loadCandidature]);
+      checkScheduledNotifications();
+      updateStreak();
+    });
+  } else if (isGuest) {
+    const guestCand = localStorage.getItem('lfs_guest_candidature');
+    const guestProf = localStorage.getItem('lfs_guest_profile');
+    
+    setCandidature(guestCand ? JSON.parse(guestCand) : []);
+    setProfile(guestProf ? JSON.parse(guestProf) : { 
+      id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false 
+    });
+    setLoading(false);
+  } else {
+    setLoading(false);
+  }
+}, [user, isGuest, loadProfile, loadCandidature]);
 
-  // --- 3. SALVATAGGIO AUTOMATICO SOLO PER GUEST ---
-  useEffect(() => {
-    if (isGuest) {
-      localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature));
-      if (profile) {
-        localStorage.setItem('lfs_guest_profile', JSON.stringify(profile));
-      }
-    }
-  }, [candidature, profile, isGuest]);
+// --- BLOCCO 3: Salvataggio automatico solo se Guest ---
+useEffect(() => {
+  if (isGuest) {
+    localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature));
+    if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile));
+  }
+}, [candidature, profile, isGuest]);
+
   // --- CRUD CANDIDATURE ---
 
   const addCandidatura = async (data) => {

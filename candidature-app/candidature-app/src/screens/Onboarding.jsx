@@ -91,7 +91,7 @@ export default function Onboarding({ onDone }) {
           ) : (
             <>
               <button onClick={() => setSlide(s => s + 1)} className="btn-primary w-full text-base py-4">{t('onboarding.avanti')}</button>
-              <p className="text-center text-xs text-disabled">{t('onboarding.slideCount', {current: s + 1, total: 5})}</p>
+              <p className="...">{t('onboarding.slideCount', {current: s + 1, total: 5})}</p>
             </>
           )}
         </div>
