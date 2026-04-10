@@ -97,6 +97,19 @@ export function AppProvider({ children }) {
       setLoading(false)
     }
   }, [user, isGuest, loadProfile, loadCandidature])
+  useEffect(() => {
+  if (!user && isGuest) {
+    // Quando entri come ospite, assicurati che i dati vecchi siano spariti
+    // prima di caricare quelli (eventuali) dal localStorage del guest
+    const guestCand = localStorage.getItem('lfs_guest_candidature');
+    const guestProf = localStorage.getItem('lfs_guest_profile');
+
+    setCandidature(guestCand ? JSON.parse(guestCand) : []);
+    setProfile(guestProf ? JSON.parse(guestProf) : { 
+      id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false 
+    });
+  }
+}, [user, isGuest]);
 
   // --- CRUD CANDIDATURE ---
 
