@@ -231,10 +231,16 @@ if (!linguaScelta) {
       )}
       <Toast toast={toast} />
       <Confetti active={confetti} />
-      {showReviewPopup && <ReviewPopup user={user} profile={profile} onClose={() => {
-        localStorage.setItem(`lfs_review_shown_${user.id}`, '1')
-        setShowReviewPopup(false)
-      }} />}
+      {showReviewPopup && (
+  <ReviewPopup 
+    user={user} 
+    profile={profile} 
+    onClose={() => {
+      localStorage.setItem(`lfs_review_shown_${user.id}`, '1');
+      setShowReviewPopup(false);
+    }} 
+  />
+)}
     </div>
   )
 }
