@@ -57,6 +57,14 @@ export function AppProvider({ children }) {
   }, [user])
 
   useEffect(() => {
+  if (!user && !isGuest) {
+    // Se non c'è né un utente né un ospite (es. post-logout), resetta tutto
+    setCandidature([]);
+    setProfile(null);
+    setNotifications([]);
+  }
+}, [user, isGuest]);
+  useEffect(() => {
     if (isGuest) {
       localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature))
     }
