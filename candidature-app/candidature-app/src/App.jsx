@@ -333,10 +333,12 @@ function FirstTimeIntro({ onDone, onSkip }) {
 
 // ─── REVIEW POPUP — appare dopo 5 giorni, una volta sola ─────────────────────
 function ReviewPopup({ user, profile, onClose }) {
-  const [step, setStep] = useState(0)
-  const [rating, setRating] = useState(null)
-  const [text, setText] = useState('')
-  const [sending, setSending] = useState(false)
+  // Sposta l'hook qui, all'inizio della funzione
+  const { t } = useApp(); 
+  const [step, setStep] = useState(0);
+  const [rating, setRating] = useState(null);
+  const [text, setText] = useState('');
+  const [sending, setSending] = useState(false);
   
   // Importiamo t per le traduzioni
   const { t } = useApp() // Oppure useTranslation() se preferisci
