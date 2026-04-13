@@ -36,7 +36,6 @@ export default function Onboarding({ onDone }) {
   const [fonte, setFonte] = useState('')
   const [fonteCustom, setFonteCustom] = useState('')
   const [citta, setCitta] = useState('')
-  const [notifDone, setNotifDone] = useState(false)
 
   const SLIDES = [
     { emoji: '📬', title: t('onboarding.slide1.title'), body: t('onboarding.slide1.body') },
@@ -77,7 +76,7 @@ export default function Onboarding({ onDone }) {
               <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-6 bg-purple' : 'w-1.5 bg-border'}`} />
             ))}
           </div>
-          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">{t('onboarding.salta')} </button>
+          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">{t('onboarding.salta')}</button>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="w-48 h-48 rounded-full mb-2" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }} />
@@ -100,17 +99,17 @@ export default function Onboarding({ onDone }) {
   }
 
   if (step === 1) return (
-    <StepWrapper title="Come ti chiami?" emoji="👋" step={1} total={7}
+    <StepWrapper title={t('onboarding.step1.title')} emoji="👋" step={1} total={7}
       onNext={() => setStep(2)} canNext={nome.trim().length > 0} nextLabel={t('onboarding.avanti')}>
       <input className="input-field text-lg text-center font-semibold"
-        placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
+        placeholder={t('onboarding.step1.placeholder')} value={nome} onChange={e => setNome(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && nome.trim() && setStep(2)} />
-      <p className="text-xs text-muted text-center mt-2">Ti chiameremo così nell'app 💜</p>
+      <p className="text-xs text-muted text-center mt-2">{t('onboarding.step1.subtitle')}</p>
     </StepWrapper>
   )
 
   if (step === 2) return (
-    <StepWrapper title="Sei:" emoji="🌈" step={2} total={7}
+    <StepWrapper title={t('onboarding.step2.title')} emoji="🌈" step={2} total={7}
       onNext={() => setStep(3)} canNext={genere !== ''}
       onSkip={() => { setGenere('x'); setStep(3) }} nextLabel={t('onboarding.avanti')}>
       <div className="grid grid-cols-2 gap-3">
@@ -124,7 +123,7 @@ export default function Onboarding({ onDone }) {
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
+      <p className="text-[10px] text-muted text-center mt-3">{t('onboarding.step2.subtitle')}</p>
     </StepWrapper>
   )
 
@@ -132,7 +131,7 @@ export default function Onboarding({ onDone }) {
     const etaNum = parseInt(eta)
     const etaInvalid = eta !== '' && (isNaN(etaNum) || etaNum < 16 || etaNum > 100)
     return (
-      <StepWrapper title="Quanti anni hai?" emoji="🎂" step={3} total={7}
+      <StepWrapper title={t('onboarding.step3.title')} emoji="🎂" step={3} total={7}
         onNext={() => setStep(4)} canNext={!etaInvalid}
         onSkip={() => setStep(4)} nextLabel={t('onboarding.avanti')}>
         <input className="input-field text-lg text-center font-semibold"
@@ -140,15 +139,15 @@ export default function Onboarding({ onDone }) {
           value={eta} onChange={e => setEta(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !etaInvalid && setStep(4)} />
         {etaInvalid && etaNum < 16 && (
-          <p className="text-red-500 text-xs text-center mt-2">⚠️ Devi avere almeno 16 anni per usare l'app.</p>
+          <p className="text-red-500 text-xs text-center mt-2">{t('onboarding.step3.erroreEta')}</p>
         )}
-        {!etaInvalid && <p className="text-xs text-muted text-center mt-2">Ci aiuta a capire chi usa l'app 📊</p>}
+        {!etaInvalid && <p className="text-xs text-muted text-center mt-2">{t('onboarding.step3.subtitle')}</p>}
       </StepWrapper>
     )
   }
 
   if (step === 4) return (
-    <StepWrapper title="In che settore cerchi?" emoji="💼" step={4} total={7}
+    <StepWrapper title={t('onboarding.step4.title')} emoji="💼" step={4} total={7}
       onNext={() => setStep(5)} canNext={settore !== ''}
       onSkip={() => { setSettore('Altro'); setStep(5) }} nextLabel={t('onboarding.avanti')}>
       <div className="flex flex-wrap gap-2 justify-center">
@@ -161,14 +160,14 @@ export default function Onboarding({ onDone }) {
         ))}
       </div>
       {settore === 'Altro' && (
-        <input className="input-field text-sm mt-3 w-full" placeholder="Scrivi il tuo settore..."
+        <input className="input-field text-sm mt-3 w-full" placeholder={t('onboarding.step4.placeholder')}
           value={settoreCustom} onChange={e => setSettoreCustom(e.target.value)} autoFocus />
       )}
     </StepWrapper>
   )
 
   if (step === 5) return (
-    <StepWrapper title="Come ci hai trovato?" emoji="🔍" step={5} total={7}
+    <StepWrapper title={t('onboarding.step5.title')} emoji="🔍" step={5} total={7}
       onNext={() => setStep(6)} canNext={fonte !== ''}
       onSkip={() => setStep(6)} nextLabel={t('onboarding.avanti')}>
       <div className="grid grid-cols-2 gap-3">
@@ -181,14 +180,14 @@ export default function Onboarding({ onDone }) {
         ))}
       </div>
       {fonte === 'Altro' && (
-        <input className="input-field text-sm mt-3 w-full" placeholder="Dove ci hai trovato?"
+        <input className="input-field text-sm mt-3 w-full" placeholder={t('onboarding.step5.placeholder')}
           value={fonteCustom} onChange={e => setFonteCustom(e.target.value)} autoFocus />
       )}
     </StepWrapper>
   )
 
   if (step === 6) return (
-    <StepWrapper title="Dove vivi?" emoji="📍" step={6} total={7}
+    <StepWrapper title={t('onboarding.step6.title')} emoji="📍" step={6} total={7}
       onNext={() => setStep(7)} canNext={true}
       onSkip={() => setStep(7)} nextLabel={t('onboarding.avanti')}>
       <input className="input-field text-base text-center"
@@ -196,7 +195,7 @@ export default function Onboarding({ onDone }) {
         value={citta} onChange={e => setCitta(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && setStep(7)} />
       <p className="text-xs text-muted text-center mt-3 leading-relaxed">
-        📍 Lo usiamo per calcolare la distanza dai luoghi dei colloqui — così sai subito se conviene andare di persona o chiedere il remote. 🗺️
+        {t('onboarding.step6.subtitle')}
       </p>
     </StepWrapper>
   )
@@ -205,23 +204,20 @@ export default function Onboarding({ onDone }) {
     <div className="screen purple-glow-bg">
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div className="text-7xl mb-6">🔔</div>
-        <h2 className="text-2xl font-bold text-txt mb-3">Vuoi ricevere notifiche?</h2>
-        <p className="text-base text-muted leading-relaxed mb-8">
-          Ti avvisiamo quando si avvicina un colloquio, quando hai promemoria impostati e quando un'azienda non risponde da troppo tempo. Niente spam, solo cose utili. 💜
-        </p>
+        <h2 className="text-2xl font-bold text-txt mb-3">{t('onboarding.step7.title')}</h2>
+        <p className="text-base text-muted leading-relaxed mb-8">{t('onboarding.step7.body')}</p>
         <button onClick={async () => {
           setLoading(true)
           await requestNotificationPermission()
-          setNotifDone(true)
           await finish()
         }} disabled={loading} className="btn-primary w-full py-4 text-base mb-3">
-          {loading ? '⏳ Un attimo...' : '🔔 Sì, attiva le notifiche'}
+          {loading ? t('onboarding.step7.loading') : t('onboarding.step7.btnSi')}
         </button>
         <button onClick={async () => {
           setLoading(true)
           await finish()
         }} disabled={loading} className="text-sm text-muted py-2 active:text-txt">
-          No grazie, le attiverò dopo
+          {t('onboarding.step7.btnNo')}
         </button>
       </div>
     </div>
@@ -231,7 +227,7 @@ export default function Onboarding({ onDone }) {
 }
 
 function StepWrapper({ title, emoji, step, total, children, onNext, canNext, onSkip, nextLabel, loading }) {
-  const { t } = useTranslation() // Aggiunto per tradurre i testi nel wrapper
+  const { t } = useTranslation()
 
   return (
     <div className="screen purple-glow-bg">
@@ -254,7 +250,7 @@ function StepWrapper({ title, emoji, step, total, children, onNext, canNext, onS
         <button onClick={onNext} disabled={!canNext || loading}
           className="btn-primary w-full py-4 text-base transition-opacity"
           style={{ opacity: canNext && !loading ? 1 : 0.4 }}>
-          {loading ? '⏳ Un attimo...' : nextLabel}
+          {loading ? t('onboarding.step7.loading') : nextLabel}
         </button>
       </div>
     </div>
