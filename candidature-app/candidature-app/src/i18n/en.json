@@ -122,6 +122,7 @@
     "selezionate": "selected",
     "tutte": "All",
     "archivia": "Archive",
+    "Archiviate": "Archived",
     "primaCall": "First call",
     "colloquio": "Interview",
     "secondoCol": "2nd Int.",
@@ -559,6 +560,6 @@
     "linked": "Link Master",
     "streak3": "Consistent",
     "secondcol": "Finalist",
-    "pioneer": "Pioneer"
+    "pioneer": "Pioniere"
   }
 }
