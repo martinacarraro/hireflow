@@ -79,7 +79,8 @@ export default function Profile() {
         </button>
       </div>
 
-      <div className="flex-1 scrollable px-4 pb-8 space-y-4">
+     <div className="flex-1 scrollable px-4 pb-8 space-y-4">
+        {/* CARD PROFILO */}
         <div className="card flex items-center gap-4">
           {foto ? <img src={foto} className="w-16 h-16 rounded-full ring-2 ring-purple object-cover" /> : <div className="w-16 h-16 rounded-full bg-purple flex items-center justify-center text-white text-2xl font-bold">{nome.charAt(0).toUpperCase()}</div>}
           <div className="flex-1 min-w-0">
@@ -95,6 +96,7 @@ export default function Profile() {
           </div>
         </div>
 
+        {/* CARD LIVELLO (Singola) */}
         <div className="card">
           <SectionLabel>{isIt ? 'LIVELLO' : 'LEVEL'}</SectionLabel>
           <XpBar xp={xp} genere={profile?.genere} />
@@ -107,6 +109,27 @@ export default function Profile() {
           </div>
         </div>
 
+        {/* SEZIONE CAFFÈ */}
+        <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-purple-soft uppercase tracking-widest mb-0.5">
+              {isIt ? "Ti piace l'app?" : "Enjoying the app?"}
+            </p>
+            <p className="text-sm font-bold text-txt">
+              {isIt ? 'Offrimi un caffè' : 'Buy me a coffee'}
+            </p>
+          </div>
+          <a 
+            href="https://ko-fi.com/lefaremosapere" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-purple text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-lg shadow-purple/20"
+          >
+            ☕ {isIt ? 'Sostieni' : 'Support'}
+          </a>
+        </div>
+
+        {/* CARD BADGE */}
         <div className="card">
           <SectionLabel>{isIt ? 'I TUOI BADGE' : 'YOUR BADGES'}</SectionLabel>
           <div className="grid grid-cols-4 gap-2 mt-3">

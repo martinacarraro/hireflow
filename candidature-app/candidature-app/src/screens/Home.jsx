@@ -437,21 +437,7 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
       ) : (
         <>
           <div>
-            {/* Tasto Caffè posizionato sopra il nome */}
-            <div className="mb-1.5">
-              <a 
-                href="https://ko-fi.com/lefaremosapere" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 bg-white/5 hover:bg-white/10 py-1 px-2.5 rounded-full transition-all border border-white/10 group"
-              >
-                <span className="text-[10px] group-hover:scale-110 transition-transform">☕</span>
-                <span className="text-[9px] font-bold text-purple-soft uppercase tracking-wider">
-                  {t('profile.caffe')}
-                </span>
-              </a>
-            </div>
-
+            {/* Rimosso il tasto caffè da qui */}
             <h1 className="text-lg font-bold text-txt">{greet}</h1>
             {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} genere={profile.genere} /></div>}
           </div>
