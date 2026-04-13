@@ -77,7 +77,7 @@ export default function Onboarding({ onDone }) {
               <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-6 bg-purple' : 'w-1.5 bg-border'}`} />
             ))}
           </div>
-          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">{t('onboarding.salta')} →</button>
+          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">{t('onboarding.salta')} </button>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="w-48 h-48 rounded-full mb-2" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }} />
