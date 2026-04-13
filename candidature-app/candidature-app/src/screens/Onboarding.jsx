@@ -77,7 +77,7 @@ export default function Onboarding({ onDone }) {
               <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-6 bg-purple' : 'w-1.5 bg-border'}`} />
             ))}
           </div>
-          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">t('onboarding.salta') →</button>
+          <button onClick={() => setStep(1)} className="text-sm text-muted active:text-txt">{t('onboarding.salta')} →</button>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="w-48 h-48 rounded-full mb-2" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }} />
@@ -87,11 +87,11 @@ export default function Onboarding({ onDone }) {
         </div>
         <div className="px-6 pb-10 space-y-3">
           {isLast ? (
-            <button onClick={() => setStep(1)} className="btn-primary w-full text-base py-4">t('onboarding.iniziamo')</button>
+            <button onClick={() => setStep(1)} className="btn-primary w-full text-base py-4">{t('onboarding.iniziamo')}</button>
           ) : (
             <>
               <button onClick={() => setSlide(s => s + 1)} className="btn-primary w-full text-base py-4">{t('onboarding.avanti')}</button>
-              <p className="...">{t('onboarding.slideCount', {current: s + 1, total: 5})}</p>
+              <p className="text-xs text-center text-muted">{t('onboarding.slideCount', {current: slide + 1, total: 5})}</p>
             </>
           )}
         </div>
@@ -101,26 +101,28 @@ export default function Onboarding({ onDone }) {
 
   if (step === 1) return (
     <StepWrapper title="Come ti chiami?" emoji="👋" step={1} total={7}
-      onNext={() => setStep(2)} canNext={nome.trim().length > 0} nextLabel="t('onboarding.avanti')">
+      onNext={() => setStep(2)} canNext={nome.trim().length > 0} nextLabel={t('onboarding.avanti')}>
       <input className="input-field text-lg text-center font-semibold"
         placeholder="Il tuo nome" value={nome} onChange={e => setNome(e.target.value)}
         autoFocus onKeyDown={e => e.key === 'Enter' && nome.trim() && setStep(2)} />
       <p className="text-xs text-muted text-center mt-2">Ti chiameremo così nell'app 💜</p>
-
     </StepWrapper>
   )
 
   if (step === 2) return (
     <StepWrapper title="Sei:" emoji="🌈" step={2} total={7}
       onNext={() => setStep(3)} canNext={genere !== ''}
-      onSkip={() => { setGenere('x'); setStep(3) }} nextLabel="t('onboarding.avanti')">
+      onSkip={() => { setGenere('x'); setStep(3) }} nextLabel={t('onboarding.avanti')}>
       <div className="grid grid-cols-2 gap-3">
        {GENERI.map(g => (
-  <button key={g.value} /* ... */>
-    <span className="text-2xl">{g.emoji}</span>
-    <span>{t(`onboarding.generi.${g.value}`, g.label)}</span>
-  </button>
-))}
+          <button key={g.value} 
+            onClick={() => setGenere(g.value)}
+            className={`py-4 rounded-2xl text-sm font-semibold border transition-all active:scale-95 flex flex-col items-center gap-2
+              ${genere === g.value ? 'border-purple bg-purple/20 text-purple-soft' : 'border-border text-muted bg-surface'}`}>
+            <span className="text-3xl">{g.emoji}</span>
+            <span>{t(`onboarding.generi.${g.value}`, g.label)}</span>
+          </button>
+        ))}
       </div>
       <p className="text-[10px] text-muted text-center mt-3">Serve solo per personalizzare i messaggi dell'app 🤍</p>
     </StepWrapper>
@@ -132,13 +134,13 @@ export default function Onboarding({ onDone }) {
     return (
       <StepWrapper title="Quanti anni hai?" emoji="🎂" step={3} total={7}
         onNext={() => setStep(4)} canNext={!etaInvalid}
-        onSkip={() => setStep(4)} nextLabel="t('onboarding.avanti')">
+        onSkip={() => setStep(4)} nextLabel={t('onboarding.avanti')}>
         <input className="input-field text-lg text-center font-semibold"
           placeholder="Es: 26" type="number" min="16" max="100"
           value={eta} onChange={e => setEta(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !etaInvalid && setStep(4)} />
         {etaInvalid && etaNum < 16 && (
-          <p className="text-red text-xs text-center mt-2">⚠️ Devi avere almeno 16 anni per usare l'app.</p>
+          <p className="text-red-500 text-xs text-center mt-2">⚠️ Devi avere almeno 16 anni per usare l'app.</p>
         )}
         {!etaInvalid && <p className="text-xs text-muted text-center mt-2">Ci aiuta a capire chi usa l'app 📊</p>}
       </StepWrapper>
@@ -148,7 +150,7 @@ export default function Onboarding({ onDone }) {
   if (step === 4) return (
     <StepWrapper title="In che settore cerchi?" emoji="💼" step={4} total={7}
       onNext={() => setStep(5)} canNext={settore !== ''}
-      onSkip={() => { setSettore('Altro'); setStep(5) }} nextLabel="t('onboarding.avanti')">
+      onSkip={() => { setSettore('Altro'); setStep(5) }} nextLabel={t('onboarding.avanti')}>
       <div className="flex flex-wrap gap-2 justify-center">
         {SETTORI.map(s => (
           <button key={s} onClick={() => setSettore(s)}
@@ -159,7 +161,7 @@ export default function Onboarding({ onDone }) {
         ))}
       </div>
       {settore === 'Altro' && (
-        <input className="input-field text-sm mt-3" placeholder="Scrivi il tuo settore..."
+        <input className="input-field text-sm mt-3 w-full" placeholder="Scrivi il tuo settore..."
           value={settoreCustom} onChange={e => setSettoreCustom(e.target.value)} autoFocus />
       )}
     </StepWrapper>
@@ -168,7 +170,7 @@ export default function Onboarding({ onDone }) {
   if (step === 5) return (
     <StepWrapper title="Come ci hai trovato?" emoji="🔍" step={5} total={7}
       onNext={() => setStep(6)} canNext={fonte !== ''}
-      onSkip={() => setStep(6)} nextLabel="t('onboarding.avanti')">
+      onSkip={() => setStep(6)} nextLabel={t('onboarding.avanti')}>
       <div className="grid grid-cols-2 gap-3">
         {FONTI.map(f => (
           <button key={f} onClick={() => setFonte(f)}
@@ -179,7 +181,7 @@ export default function Onboarding({ onDone }) {
         ))}
       </div>
       {fonte === 'Altro' && (
-        <input className="input-field text-sm mt-3" placeholder="Dove ci hai trovato?"
+        <input className="input-field text-sm mt-3 w-full" placeholder="Dove ci hai trovato?"
           value={fonteCustom} onChange={e => setFonteCustom(e.target.value)} autoFocus />
       )}
     </StepWrapper>
@@ -188,7 +190,7 @@ export default function Onboarding({ onDone }) {
   if (step === 6) return (
     <StepWrapper title="Dove vivi?" emoji="📍" step={6} total={7}
       onNext={() => setStep(7)} canNext={true}
-      onSkip={() => setStep(7)} nextLabel="t('onboarding.avanti')">
+      onSkip={() => setStep(7)} nextLabel={t('onboarding.avanti')}>
       <input className="input-field text-base text-center"
         placeholder="Es: Milano, Roma, Torino..."
         value={citta} onChange={e => setCitta(e.target.value)}
@@ -229,6 +231,8 @@ export default function Onboarding({ onDone }) {
 }
 
 function StepWrapper({ title, emoji, step, total, children, onNext, canNext, onSkip, nextLabel, loading }) {
+  const { t } = useTranslation() // Aggiunto per tradurre i testi nel wrapper
+
   return (
     <div className="screen purple-glow-bg">
       <div className="flex items-center gap-2 px-5 pt-safe pt-4">
@@ -237,7 +241,7 @@ function StepWrapper({ title, emoji, step, total, children, onNext, canNext, onS
             <div key={i} className={`h-1.5 rounded-full flex-1 transition-all duration-300 ${i < step ? 'bg-purple' : 'bg-border'}`} />
           ))}
         </div>
-        {onSkip && <button onClick={onSkip} className="text-xs text-muted ml-2 active:text-txt">t('onboarding.salta')</button>}
+        {onSkip && <button onClick={onSkip} className="text-xs text-muted ml-2 active:text-txt">{t('onboarding.salta')}</button>}
       </div>
       <div className="flex-1 flex flex-col px-6 pt-8">
         <div className="text-center mb-8">

@@ -146,7 +146,9 @@ export default function App() {
   const onboardingKey = user ? `lfs_onboarding_done_${user.id}` : null
   const hasSeenOnboarding = (onboardingKey && !!localStorage.getItem(onboardingKey)) || profile?.seen_onboarding === true
   if (user && !dataLoading && profile && !hasSeenOnboarding) return (
-    <Onboarding onDone={() => onboardingKey && localStorage.setItem(onboardingKey, '1')} />
+    <Onboarding 
+    t={t} 
+    onDone={() => onboardingKey && localStorage.setItem(onboardingKey, '1')} />
   )
 
   if (view?.type === 'detail') return <DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} />
