@@ -393,7 +393,9 @@ export const BADGES = [
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
 
-// --- MOTIVATIONAL PHRASES ---
+// ... (tutta la parte iniziale degli stati e parser url rimane uguale)
+
+// ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
 
 export const MOTTOS_MATTINO = [
   'Buona giornata. Ogni candidatura inviata oggi è un passo avanti. 🌅',
@@ -472,13 +474,13 @@ export function getMotto(lang = 'it') {
 
 export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
 
+// ─── UTILS & HELPERS ───────────────────────────────────────────
+
 export function randomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-// --- COSTANTI E FUNZIONI MANCANTI ---
 
 export const DEFAULT_CHECKLIST = [
   { id: '1', text: 'Rileggere l\'annuncio e i requisiti', completed: false },
@@ -487,9 +489,3 @@ export const DEFAULT_CHECKLIST = [
   { id: '4', text: 'Preparare almeno due domande da fare', completed: false },
   { id: '5', text: 'Controllare connessione/microfono o indirizzo', completed: false },
 ];
-
-export function randomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
