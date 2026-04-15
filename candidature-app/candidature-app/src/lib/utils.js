@@ -393,6 +393,8 @@ export const BADGES = [
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
 
+// --- MOTIVATIONAL PHRASES ---
+
 export const MOTTOS_MATTINO = [
   'Buona giornata. Ogni candidatura inviata oggi è un passo avanti. 🌅',
   'Il mattino ha l\'oro in bocca — e tu hai il CV pronto. 💛',
@@ -424,7 +426,7 @@ export const MOTTOS_SERA = [
 ]
 
 export const MOTTOS_MATTINO_EN = [
-  'Good morning. Every application sent today is a step forward. 🌅',
+  'Good morning. Every application you send today is a step forward. 🌅',
   'The early bird catches the worm — and you have your CV ready. 💛',
   'A new day, new opportunities not to be missed. 🚀',
   'Start the day with a goal: one more application. 🎯',
@@ -469,125 +471,3 @@ export function getMotto(lang = 'it') {
 }
 
 export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
-
-// ─── LOADING TIPS ────────────────────────────────────────────────
-
-export const LOADING_TIPS = [
-  { cat: '🎙️ Colloquio', text: "Arrivare 5 minuti prima (non 20) dimostra organizzazione, non ansia." },
-  { cat: '🎙️ Colloquio', text: "La domanda 'Hai domande per noi?' NON è retorica. Preparane almeno 2." },
-  { cat: '🎙️ Colloquio', text: "Parla dei risultati con numeri: 'Ho aumentato X del 30%' batte 'Lavoravo su X'." },
-  { cat: '🎙️ Colloquio', text: "Se non capisci una domanda, chiedi di ripeterla. È attenzione, non ignoranza." },
-  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come qualcuno che sa il fatto suo." },
-  { cat: '🎙️ Colloquio', text: "Dopo il colloquio, manda una mail di ringraziamento entro 24h. Pochi lo fanno. Quei pochi si ricordano." },
-  { cat: '🎙️ Colloquio', text: "Sul salario: cerca la media su LinkedIn o Glassdoor prima di rispondere. Non sparare alla cieca." },
-  { cat: '📄 CV',         text: "Il CV perfetto è su una pagina (se hai meno di 10 anni di esperienza). Meno è più." },
-  { cat: '📄 CV',         text: "Personalizza ogni CV. Copia le parole chiave dall'annuncio — gli ATS ti ringraziano." },
-  { cat: '📄 CV',         text: "Candidati anche se non hai il 100% dei requisiti. Le aziende scrivono la lista dei sogni." },
-  { cat: '📄 CV',         text: "LinkedIn con 'Open to work' visibile solo ai recruiter = candidature che arrivano da sole." },
-  { cat: '📄 CV',         text: "Gap nel CV? Non nasconderlo. Preparati a raccontarlo in modo positivo." },
-  { cat: '💜 Mindset',   text: "La ricerca di lavoro è un funnel. Più candidature mandi, più colloqui ottieni. È matematica." },
-  { cat: '💜 Mindset',   text: "Un no non è un giudizio su di te. È solo un mismatch. Spesso nemmeno quello." },
-  { cat: '💜 Mindset',   text: "Il ghosting è una scortesia aziendale, non una tua mancanza. Punto." },
-  { cat: '💜 Mindset',   text: "La media di risposta è sotto il 10%. Se ottieni più del 5%, stai già vincendo." },
-  { cat: '💜 Mindset',   text: "Trattare la ricerca di lavoro come un lavoro vero (ore fisse, pause) la rende meno stressante." },
-  { cat: '💜 Mindset',   text: "Parlare della tua ricerca con amici e familiari aiuta. Il 70% dei lavori si trova tramite network." },
-  { cat: '🏆 Offerta',   text: "Hai ricevuto un'offerta? Puoi negoziare. L'85% delle aziende si aspetta una controfferta." },
-  { cat: '🏆 Offerta',   text: "Prima di firmare, leggi il contratto completo. È normale, è professionale, è il tuo diritto." },
-  { cat: '🏆 Offerta',   text: "Confronta il pacchetto totale: RAL, benefit, ferie, smart working. Lo stipendio è solo una parte." },
-  { cat: '🚀 Pro tip',   text: "Tenere traccia delle candidature (come fai qui!) riduce l'ansia del 'chissà quante ne ho mandate'." },
-  { cat: '🚀 Pro tip',   text: "Stai usando questa app? Sei già più organizzat* del 90% delle persone in cerca di lavoro." },
-  { cat: '🚀 Pro tip',   text: "Candidarsi alle 9-11 di mattina aumenta le chance di essere visti. I recruiter iniziano la giornata freschi." },
-  { cat: '🚀 Pro tip',   text: "Un messaggio diretto al recruiter su LinkedIn dopo la candidatura può fare la differenza." },
-]
-export const LOADING_TIPS_EN = [
-  { cat: '🎙️ Interview', text: "Arrive 5 minutes early (not 20) — it shows organization, not anxiety." },
-  { cat: '🎙️ Interview', text: "The question 'Do you have any questions for us?' is NOT rhetorical. Prepare at least 2." },
-  { cat: '🎙️ Interview', text: "Talk about results with numbers: 'I increased X by 30%' beats 'I worked on X'." },
-  { cat: '🎙️ Interview', text: "If you don't understand a question, ask them to repeat it. It shows attention, not ignorance." },
-  { cat: '🎙️ Interview', text: "End of interview: always ask 'What are the next steps?' It positions you as someone who means business." },
-  { cat: '🎙️ Interview', text: "After the interview, send a thank-you email within 24h. Few people do it. Those few are remembered." },
-  { cat: '🎙️ Interview', text: "On salary: research the average on LinkedIn or Glassdoor before answering. Don't shoot in the dark." },
-  { cat: '📄 CV',        text: "The perfect CV fits one page (if you have less than 10 years of experience). Less is more." },
-  { cat: '📄 CV',        text: "Customize every CV. Copy keywords from the job posting — ATS systems will thank you." },
-  { cat: '📄 CV',        text: "Apply even if you don't meet 100% of the requirements. Companies write their wish list." },
-  { cat: '📄 CV',        text: "LinkedIn with 'Open to work' visible only to recruiters = applications that come to you." },
-  { cat: '📄 CV',        text: "Gap in your CV? Don't hide it. Prepare to tell it in a positive way." },
-  { cat: '💜 Mindset',  text: "Job searching is a funnel. The more you apply, the more interviews you get. It's math." },
-  { cat: '💜 Mindset',  text: "A rejection is not a judgment on you. It's just a mismatch. Often not even that." },
-  { cat: '💜 Mindset',  text: "Ghosting is a company's rudeness, not your fault. Period." },
-  { cat: '💜 Mindset',  text: "The average response rate is under 10%. If you get more than 5%, you're already winning." },
-  { cat: '💜 Mindset',  text: "Treating job searching like a real job (fixed hours, breaks) makes it less stressful." },
-  { cat: '💜 Mindset',  text: "Talk about your search with friends and family. 70% of jobs are found through networking." },
-  { cat: '🏆 Offer',    text: "Got an offer? You can negotiate. 85% of companies expect a counteroffer." },
-  { cat: '🏆 Offer',    text: "Before signing, read the full contract. It's normal, professional, and your right." },
-  { cat: '🏆 Offer',    text: "Compare the full package: salary, benefits, holidays, remote work. Pay is just one part." },
-  { cat: '🚀 Pro tip',  text: "Tracking your applications (like you're doing here!) reduces the anxiety of 'how many did I send?'." },
-  { cat: '🚀 Pro tip',  text: "Using this app? You're already more organized than 90% of job seekers out there." },
-  { cat: '🚀 Pro tip',  text: "Applying between 9-11am increases your chances of being seen. Recruiters start fresh." },
-  { cat: '🚀 Pro tip',  text: "A direct message to the recruiter on LinkedIn after applying can make all the difference." },
-]
-
-// ─── CHECKLIST DEFAULT TASKS ─────────────────────────────────────
-
-export const DEFAULT_CHECKLIST = [
-  "📱 Conferma la data e l'orario via mail",
-  "🔍 Studia il sito e i valori aziendali",
-  "💼 Rileggi CV e lettera di presentazione",
-  "❓ Prepara 3 domande da fare a loro",
-  "👗 Prepara l'outfit (anche per video!)",
-  "📍 Controlla come arrivare / testa il link Zoom",
-  "😴 Dormi bene la sera prima",
-  "⏰ Sveglia con 30 minuti di margine",
-]
-
-// ─── MISC ─────────────────────────────────────────────────────────
-
-export function getInitial(name = '') {
-  return name.trim().charAt(0).toUpperCase() || '?'
-}
-
-export function getGreeting(name = '', lang = 'it') {
-  const h = new Date().getHours()
-  if (lang === 'en') {
-    if (h >= 5 && h < 12)  return `Good morning ${name} ☀️`
-    if (h >= 12 && h < 18) return `Hello ${name} 👋`
-    return `Good evening ${name} 🌙`
-  }
-  if (h >= 5 && h < 12)  return `Buongiorno ${name} ☀️`
-  if (h >= 12 && h < 18) return `Ciao ${name} 👋`
-  return `Buonasera ${name} 🌙`
-}
-export const MOTTOS_MATTINO_EN = [
-  'Good morning. Every application you send today is a step forward. 🌅',
-  'The early bird catches the worm — and you have your CV ready. 💛',
-  'A new day, new opportunities not to be missed. 🚀',
-  'Start the day with one goal: one more application. 🎯',
-  'The job market never sleeps — and neither do you. Go! ☀️',
-  'Every morning is a new chapter. Write it well. ✍️',
-]
-
-export const MOTTOS_POMERIGGIO_EN = [
-  'You are building something, one application at a time. 🧱',
-  '"We\'ll let you know." — And you keep count. 📬',
-  'Every no brings you closer to the right yes. ✨',
-  'Don\'t wait for them to get back to you — follow up. 📞',
-  'Organisation is half the battle. The other half is you. 💜',
-  'Your next job already exists. You\'re finding it. 💡',
-  'Every interview is practice for the right one. 🎙️',
-  '"We\'ll review your profile." — Meanwhile, you move on. 🚀',
-]
-
-export const MOTTOS_SERA_EN = [
-  'Good day. Tomorrow we start again, stronger than today. 🌙',
-  'Company silence is never the final word. 🤐',
-  'Hold on. The market doesn\'t know what it\'s missing yet. 💪',
-  'Every day that passes you\'re closer to the right answer. 🌟',
-  'Rest. Those who job hunt with heart and mind deserve a break too. 💜',
-  'Job hunting is a marathon, not a sprint. Great pace today. 🏃',
-  'Ghosted? It happens to the best. Keep going. 👻',
-]
-
-
-export function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
