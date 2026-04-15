@@ -208,18 +208,22 @@ export default function Profile() {
     {isIt ? '🗑️ ELIMINA ACCOUNT' : '🗑️ DELETE ACCOUNT'}
   </button>
 
-  <div className="flex justify-center mt-3">
-    <a
-      href="https://lefaremosapere.vercel.app/privacy.html"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-[11px] text-white/50 hover:text-white/80"
-    >
-      Privacy Policy
-    </a>
-  </div>
+  <div className="flex justify-center gap-4 mt-3">
+  <a
+    href="https://lefaremosapere.vercel.app/privacy.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-[11px] text-white/50 hover:text-white/80"
+  >
+    Privacy
+  </a>
+
+  <a
+    href="https://lefaremosapere.vercel.app/terms.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-[11px] text-white/50 hover:text-white/80"
+  >
+    Termini
+  </a>
 </div>
-      </div>
-    </div>
-  )
-}
