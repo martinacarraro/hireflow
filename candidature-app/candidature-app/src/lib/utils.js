@@ -414,7 +414,7 @@ export const MOTTOS_POMERIGGIO = [
 ]
 
 export const MOTTOS_SERA = [
-  'Bella giornata. Domani si ricomincia, più forti di oggi. 🌙',
+  'Brava giornata. Domani si ricomincia, più forti di oggi. 🌙',
   'Il silenzio delle aziende non è mai la parola fine. 🤐',
   'Resisti. Il mercato non sa ancora cosa si perde. 💪',
   'Ogni giorno che passa sei più vicin* alla risposta giusta. 🌟',
@@ -453,25 +453,21 @@ export const MOTTOS_SERA_EN = [
   'Ghosted? It happens to the best of us. Keep going. 👻',
 ]
 
-// Ritorna la frase giusta in base all'ora — cambia ogni giorno
 export function getMotto(lang = 'it') {
   const h = new Date().getHours()
   const day = new Date().getDate()
   
-  // Se la lingua è inglese
   if (lang === 'en') {
     if (h >= 5 && h < 12) return MOTTOS_MATTINO_EN[day % MOTTOS_MATTINO_EN.length]
     if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO_EN[day % MOTTOS_POMERIGGIO_EN.length]
     return MOTTOS_SERA_EN[day % MOTTOS_SERA_EN.length]
   }
   
-  // Default Italiano
   if (h >= 5 && h < 12) return MOTTOS_MATTINO[day % MOTTOS_MATTINO.length]
   if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO[day % MOTTOS_POMERIGGIO.length]
   return MOTTOS_SERA[day % MOTTOS_SERA.length]
 }
 
-// Keep for backward compat
 export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
 
 // ─── LOADING TIPS ────────────────────────────────────────────────
