@@ -423,6 +423,26 @@ export const MOTTOS_SERA = [
   'Ghostat*? Capita ai migliori. Vai avant*. 👻',
 ]
 
+export const MOTTOS_MATTINO_EN = [
+  'Have a great day. Every application sent today is a step forward. 🌅',
+  'The early bird catches the worm — and you have your CV ready. 💛',
+  'A new day, new opportunities not to be missed. 🚀',
+  'Start the day with a goal: one more application. 🎯',
+];
+
+export const MOTTOS_POMERIGGIO_EN = [
+  'You are building something, application by application. 🧱',
+  'Every "no" brings you closer to the right "yes". ✨',
+  'Organization is half the battle. You are the other half. 💜',
+  'Your next job already exists. You are finding it. 💡',
+];
+
+export const MOTTOS_SERA_EN = [
+  'Great day. Tomorrow we start again, stronger than today. 🌙',
+  'Rest. Those who look for work with head and heart deserve a break. 💜',
+  'Ghosted? It happens to the best. Keep moving forward. 👻',
+];
+
 // Ritorna la frase giusta in base all'ora — cambia ogni giorno
 export function getMotto(lang = 'it') {
   const h = new Date().getHours()
@@ -517,16 +537,20 @@ export function getInitial(name = '') {
 }
 
 export function getGreeting(name = '', lang = 'it') {
-  const h = new Date().getHours()
+  const h = new Date().getHours();
+  const cleanName = name ? ` ${name}` : '';
+
   if (lang === 'en') {
-    if (h >= 5 && h < 12)  return `Good morning ${name} ☀️`
-    if (h >= 12 && h < 18) return `Hello ${name} 👋`
-    return `Good evening ${name} 🌙`
+    if (h >= 5 && h < 12) return `Good morning${cleanName} 🌞`;
+    if (h >= 12 && h < 18) return `Hello${cleanName} 👋`;
+    return `Good evening${cleanName} 🌙`;
   }
-  if (h >= 5 && h < 12)  return `Buongiorno ${name} ☀️`
-  if (h >= 12 && h < 18) return `Ciao ${name} 👋`
-  return `Buonasera ${name} 🌙`
+  
+  if (h >= 5 && h < 12) return `Buongiorno${cleanName} 🌞`;
+  if (h >= 12 && h < 18) return `Ciao${cleanName} 👋`;
+  return `Buonasera${cleanName} 🌙`;
 }
+
 export const MOTTOS_MATTINO_EN = [
   'Good morning. Every application you send today is a step forward. 🌅',
   'The early bird catches the worm — and you have your CV ready. 💛',
@@ -536,28 +560,26 @@ export const MOTTOS_MATTINO_EN = [
   'Every morning is a new chapter. Write it well. ✍️',
 ]
 
-export const MOTTOS_POMERIGGIO_EN = [
-  'You are building something, one application at a time. 🧱',
-  '"We\'ll let you know." — And you keep count. 📬',
-  'Every no brings you closer to the right yes. ✨',
-  'Don\'t wait for them to get back to you — follow up. 📞',
-  'Organisation is half the battle. The other half is you. 💜',
-  'Your next job already exists. You\'re finding it. 💡',
-  'Every interview is practice for the right one. 🎙️',
-  '"We\'ll review your profile." — Meanwhile, you move on. 🚀',
-]
+// Aggiungi le variabili mancanti per l'inglese se non le hai già
+export const MOTTOS_POMERIGGIO_EN = ['You are building your future. 🧱', 'Every "no" brings you closer to the right "yes". ✨'];
+export const MOTTOS_SERA_EN = ['Good job today. Tomorrow we start again. 🌙', 'Rest, you did your best. 🌟'];
 
-export const MOTTOS_SERA_EN = [
-  'Good day. Tomorrow we start again, stronger than today. 🌙',
-  'Company silence is never the final word. 🤐',
-  'Hold on. The market doesn\'t know what it\'s missing yet. 💪',
-  'Every day that passes you\'re closer to the right answer. 🌟',
-  'Rest. Those who job hunt with heart and mind deserve a break too. 💜',
-  'Job hunting is a marathon, not a sprint. Great pace today. 🏃',
-  'Ghosted? It happens to the best. Keep going. 👻',
-]
+export function getMotto(lang = 'it') {
+  const h = new Date().getHours();
+  const day = new Date().getDate();
+  const isEn = lang === 'en';
 
+  let list;
+  if (h >= 5 && h < 12) {
+    list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
+  } else if (h >= 12 && h < 18) {
+    list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
+  } else {
+    list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
+  }
 
-export function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  // Fallback di sicurezza per evitare stringhe vuote
+  if (!list || list.length === 0) return isEn ? "Keep going! 🚀" : "Forza e coraggio! 🚀";
+
+  return list[day % list.length];
 }
