@@ -396,60 +396,82 @@ export const BADGES = [
 export const MOTTOS_MATTINO = [
   'Buona giornata. Ogni candidatura inviata oggi è un passo avanti. 🌅',
   'Il mattino ha l\'oro in bocca — e tu hai il CV pronto. 💛',
-  'Una nuova giornata, nuove opportunità da non lasciarsi sfuggire. 🚀'
-];
+  'Una nuova giornata, nuove opportunità da non lasciarsi sfuggire. 🚀',
+]
 
 export const MOTTOS_POMERIGGIO = [
   'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
   'Ogni no ti avvicina al sì giusto. ✨',
-  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜'
-];
+  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
+]
 
 export const MOTTOS_SERA = [
   'Brava giornata. Domani si ricomincia, più forti di oggi. 🌙',
   'Riposati. Chi cerca lavoro con testa e cuore merita anche una pausa. 💜',
-  'Ghostat*? Capita ai migliori. Vai avant*. 👻'
-];
+  'Ghostat*? Capita ai migliori. Vai avant*. 👻',
+]
 
 export const MOTTOS_MATTINO_EN = [
   'Good morning. Every application you send today is a step forward. 🌅',
   'The early bird catches the worm — and you have your CV ready. 💛',
-  'A new day, new opportunities not to be missed. 🚀'
-];
+  'A new day, new opportunities. 🚀',
+]
 
 export const MOTTOS_POMERIGGIO_EN = [
-  'You are building something, application by application. 🧱',
+  'You are building your future, one application at a time. 🧱',
   'Every "no" brings you closer to the right "yes". ✨',
-  'Organization is half the battle. You are the other half. 💜'
-];
+  'Organization is half the battle. You are the other half. 💜',
+]
 
 export const MOTTOS_SERA_EN = [
-  'Great day. Tomorrow we start again, stronger than today. 🌙',
-  'Rest. Those who look for work with head and heart deserve a break. 💜',
-  'Ghosted? It happens to the best. Keep moving forward. 👻'
-];
+  'Good job today. Tomorrow we start again. 🌙',
+  'Rest, you did your best. 🌟',
+  'Ghosted? It happens to the best of us. Keep going. 👻',
+]
 
-// Ritorna la frase giusta in base all'ora e lingua
 export function getMotto(lang = 'it') {
-  const h = new Date().getHours();
-  const day = new Date().getDate();
-  const isEn = lang === 'en';
+  const h = new Date().getHours()
+  const day = new Date().getDate()
+  const isEn = lang === 'en'
 
   let list;
-  if (h >= 5 && h < 12) {
-    list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
-  } else if (h >= 12 && h < 18) {
-    list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
-  } else {
-    list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
-  }
+  if (h >= 5 && h < 12) list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
+  else if (h >= 12 && h < 18) list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
+  else list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
 
-  if (!list || list.length === 0) return isEn ? "Keep going! 🚀" : "Forza! 🚀";
   return list[day % list.length];
 }
 
-// Compatibilità per vecchi componenti
-export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA];
+export function getGreeting(name = '', lang = 'it') {
+  const h = new Date().getHours()
+  const cleanName = name ? ` ${name}` : ''
+  const isEn = lang === 'en'
+
+  if (h >= 5 && h < 12) return isEn ? `Good morning${cleanName} 🌞` : `Buongiorno${cleanName} 🌞`
+  if (h >= 12 && h < 18) return isEn ? `Hello${cleanName} 👋` : `Ciao${cleanName} 👋`
+  return isEn ? `Good evening${cleanName} 🌙` : `Buonasera${cleanName} 🌙`
+}
+
+export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
+
+// ─── LOADING TIPS ────────────────────────────────────────────────
+
+export const LOADING_TIPS = [
+  { cat: '🎙️ Colloquio', text: "Arrivare 5 minuti prima dimostra organizzazione." },
+  { cat: '📄 CV', text: "Personalizza ogni CV per l'annuncio." },
+  { cat: '💜 Mindset', text: "Un no non è un giudizio su di te." },
+]
+
+export const LOADING_TIPS_EN = [
+  { cat: '🎙️ Interview', text: "Arriving 5 minutes early shows organization." },
+  { cat: '📄 CV', text: "Tailor every CV to the job description." },
+  { cat: '💜 Mindset', text: "A 'no' is not a judgment on you." },
+]
+
+export function getRandomTip(lang = 'it') {
+  const list = lang === 'en' ? LOADING_TIPS_EN : LOADING_TIPS;
+  return list[Math.floor(Math.random() * list.length)];
+}
 
 // ─── LOADING TIPS ────────────────────────────────────────────────
 
