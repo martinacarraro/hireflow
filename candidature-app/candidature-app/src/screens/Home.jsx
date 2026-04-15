@@ -79,7 +79,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
     onScrollChange?.(e.target.scrollTop)
   }, [onScrollChange])
 
-  const motto = getMotto(i18n.language)
+  const motto = useMemo(() => getMotto(i18n.language), [i18n.language])
   const [filtroStato, setFiltroStato] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
