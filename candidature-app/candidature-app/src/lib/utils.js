@@ -1,7 +1,6 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
 export const STATI = ['Inviata','Spontanea','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta']
-// NOTA: 'Assunta' è escluso da STATI — viene impostato automaticamente quando si accetta un'offerta
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
 
@@ -27,7 +26,7 @@ export const STATUS_CONFIG = {
   'Rifiutata':          { color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   emoji: '❌', label: 'Rifiutata' },
   'Non mi piace':       { color: '#6D28D9', bg: 'rgba(109,40,217,0.15)',  emoji: '😕', label: 'Non mi piace' },
   'GHOSTED':            { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '👻', label: 'GHOSTED' },
-  'Archiviate': {   color: '#6B7280',   bg: 'rgba(107,114,128,0.15)',   emoji: '📁',   label: 'Archiviate' },
+  'Archiviate':         { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '📁', label: 'Archiviate' },
 }
 
 export const PRIORITA_CONFIG = {
@@ -85,12 +84,9 @@ export async function fetchJobDataFromUrl(url) {
   try {
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
     const rawTitle = titleMatch ? titleMatch[1].trim() : ''
-
-    // Try og:title as fallback (more reliable on many job sites)
     const ogMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
       || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i)
     const ogTitle = ogMatch ? ogMatch[1].trim() : ''
-
     const title = ogTitle || rawTitle
     let azienda = '', ruolo = ''
     const lower = url.toLowerCase()
@@ -121,7 +117,6 @@ export async function fetchJobDataFromUrl(url) {
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.trim() || ''
     } else {
-      // Generic: prende le prime due parti divise da - o |
       const parts = title.split(/\s*[-|–]\s/)
       ruolo = parts[0]?.trim() || ''
       azienda = parts[1]?.trim() || ''
@@ -190,22 +185,20 @@ export const XP_EVENTS = {
   SMART_PARSE:       2,
 }
 
-// Helper per testo gendered
 export function g(profile, f, m, nb) {
   const gen = profile?.genere
   if (gen === 'f') return f
   if (gen === 'm') return m
-  return nb // nb o non specificato
+  return nb
 }
 
 export const LEVELS = [
-  { lv: 1, min: 0,   max: 99,   name: 'novizio', emoji: '👶' },
-  { lv: 2, min: 100, max: 299,  name: 'apprendista', emoji: '📜' },
-  { lv: 3, min: 300, max: 599,  name: 'esploratore', emoji: '🗺️' },
-  { lv: 4, min: 600, max: 999,  name: 'cacciatore', emoji: '🎯' }, // Il tuo "Cacciatore di Offerte"
-  { lv: 5, min: 1000, max: 1999, name: 'esperto', emoji: '🎯' },     // Il tuo "Pro della Ricerca"
-  // ... e così via per gli altri livelli
-];
+  { lv: 1, min: 0,    max: 99,   name: 'novizio',     emoji: '👶' },
+  { lv: 2, min: 100,  max: 299,  name: 'apprendista', emoji: '📜' },
+  { lv: 3, min: 300,  max: 599,  name: 'esploratore', emoji: '🗺️' },
+  { lv: 4, min: 600,  max: 999,  name: 'cacciatore',  emoji: '🎯' },
+  { lv: 5, min: 1000, max: 1999, name: 'esperto',     emoji: '🎯' },
+]
 
 export function getLevel(xp = 0) {
   return LEVELS.find(l => xp >= l.min && xp <= l.max) || LEVELS[0]
@@ -293,11 +286,9 @@ export const BADGES = [
     nameF: 'Ce l\'hai fatta davvero!',
     nameM: 'Ce l\'hai fatto davvero!',
     desc: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
-    descF: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
-    descM: 'Hai accettato un\'offerta. Finisce qui, inizia tutto. 💜',
     shareText: 'Ho trovato lavoro! 🌟 Ho tracciato ogni candidatura, ogni colloquio, ogni ghosting su Le faremo sapere. Ne è valsa la pena.',
     color: '#FFD700', bg: '#1a1500',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><path d="M20 34l8 8 16-18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="32" cy="32" r="18" stroke="white" stroke-width="2" fill="none" opacity="0.4"/><path d="M32 10 L34 18 L32 16 L30 18 Z" fill="white" opacity="0.6"/><path d="M32 54 L34 46 L32 48 L30 46 Z" fill="white" opacity="0.6"/><path d="M10 32 L18 30 L16 32 L18 34 Z" fill="white" opacity="0.6"/><path d="M54 32 L46 30 L48 32 L46 34 Z" fill="white" opacity="0.6"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><path d="M20 34l8 8 16-18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="32" cy="32" r="18" stroke="white" stroke-width="2" fill="none" opacity="0.4"/></svg>',
     check: (s) => s.assunta >= 1
   },
   {
@@ -305,13 +296,13 @@ export const BADGES = [
     desc: '5 aziende marchiate GHOSTED. Classici.',
     shareText: '5 ghost. Cinque. 👻 Le ho segnate tutte su Le faremo sapere. Il silenzio dice tanto quanto una risposta.',
     color: '#6B7280', bg: '#111827',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#374151"/><path d="M20 48V30a12 12 0 0124 0v18l-4-4-4 4-4-4-4 4-4-4-4 4z" fill="white" opacity="0.9"/><circle cx="27" cy="30" r="3" fill="#374151"/><circle cx="37" cy="30" r="3" fill="#374151"/><circle cx="28.5" cy="29" r="1" fill="white"/><circle cx="38.5" cy="29" r="1" fill="white"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#374151"/><path d="M20 48V30a12 12 0 0124 0v18l-4-4-4 4-4-4-4 4-4-4-4 4z" fill="white" opacity="0.9"/><circle cx="27" cy="30" r="3" fill="#374151"/><circle cx="37" cy="30" r="3" fill="#374151"/></svg>',
     check: (s) => s.ghosted >= 5
   },
   {
     id: 'writer', emoji: '✍️', name: 'Scrittor*', nameF: 'Scrittrice', nameM: 'Scrittore',
     desc: 'Note aggiunte a 10 candidature. Dettaglio è tutto.',
-    shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio — HR, colloqui, sensazioni. È un\'altra cosa.',
+    shareText: 'Note su tutte le mie candidature 📝 Su Le faremo sapere tengo traccia di ogni dettaglio.',
     color: '#06B6D4', bg: '#0a1a2a',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#06B6D4"/><rect x="18" y="18" width="28" height="34" rx="3" fill="white" opacity="0.9"/><line x1="24" y1="26" x2="40" y2="26" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="32" x2="40" y2="32" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="38" x2="34" y2="38" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/><path d="M36 44l8-8-3-3-8 8v3h3z" fill="#06B6D4"/></svg>',
     check: (s) => s.withNotes >= 10
@@ -327,23 +318,23 @@ export const BADGES = [
   {
     id: 'world', emoji: '🌍', name: 'Cosmopolita',
     desc: 'Candidature in 3+ paesi. Il mondo è il tuo ufficio.',
-    shareText: 'Sto cercando lavoro in più paesi 🌍 Con Le faremo sapere gestisco tutto in un posto solo — Italia, Europa e oltre.',
+    shareText: 'Sto cercando lavoro in più paesi 🌍 Con Le faremo sapere gestisco tutto in un posto solo.',
     color: '#10B981', bg: '#0a1a10',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><circle cx="32" cy="32" r="16" fill="white" opacity="0.15" stroke="white" stroke-width="1.5"/><ellipse cx="32" cy="32" rx="8" ry="16" stroke="white" stroke-width="1.5" fill="none"/><line x1="16" y1="32" x2="48" y2="32" stroke="white" stroke-width="1.5"/><line x1="18" y1="24" x2="46" y2="24" stroke="white" stroke-width="1.5"/><line x1="18" y1="40" x2="46" y2="40" stroke="white" stroke-width="1.5"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#10B981"/><circle cx="32" cy="32" r="16" fill="white" opacity="0.15" stroke="white" stroke-width="1.5"/><ellipse cx="32" cy="32" rx="8" ry="16" stroke="white" stroke-width="1.5" fill="none"/><line x1="16" y1="32" x2="48" y2="32" stroke="white" stroke-width="1.5"/></svg>',
     check: (s) => s.countries >= 3
   },
   {
     id: 'checklist', emoji: '📋', name: 'Organizzat*', nameF: 'Organizzata', nameM: 'Organizzato',
     desc: 'Checklist completa prima di un colloquio.',
-    shareText: 'Nessun colloquio senza preparazione ✅ Con Le faremo sapere ho la checklist sempre pronta. Dettaglio che fa la differenza.',
+    shareText: 'Nessun colloquio senza preparazione ✅ Con Le faremo sapere ho la checklist sempre pronta.',
     color: '#8B5CF6', bg: '#1a0a2a',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#8B5CF6"/><rect x="18" y="16" width="28" height="34" rx="3" fill="white" opacity="0.9"/><path d="M24 26l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M24 34l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="24" y1="44" x2="36" y2="44" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#8B5CF6"/><rect x="18" y="16" width="28" height="34" rx="3" fill="white" opacity="0.9"/><path d="M24 26l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M24 34l3 3 6-6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
     check: (s) => s.checklistComplete >= 1
   },
   {
     id: 'hundred', emoji: '💯', name: 'Centurione',
     desc: '100 candidature. Sei una macchina da guerra.',
-    shareText: '100 candidature inviate 💯 Se cercare lavoro fosse uno sport, avrei già vinto. Traccio tutto su Le faremo sapere.',
+    shareText: '100 candidature inviate 💯 Se cercare lavoro fosse uno sport, avrei già vinto.',
     color: '#FF2D8B', bg: '#2a0015',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#FF2D8B"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="22" font-weight="bold" font-family="Arial">100</text></svg>',
     check: (s) => s.total >= 100
@@ -351,7 +342,7 @@ export const BADGES = [
   {
     id: 'speed', emoji: '⚡', name: 'Speed Runner',
     desc: '5 candidature in un giorno solo. Impressionante.',
-    shareText: '5 candidature in un giorno ⚡ Quando ci si mette, ci si mette. Gestisco la mia ricerca lavoro su Le faremo sapere.',
+    shareText: '5 candidature in un giorno ⚡ Quando ci si mette, ci si mette.',
     color: '#FBBF24', bg: '#1a1500',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#FBBF24"/><path d="M36 12L20 34h14l-6 18 20-26H34z" fill="white"/></svg>',
     check: (s) => s.todayCount >= 5
@@ -359,7 +350,7 @@ export const BADGES = [
   {
     id: 'linked', emoji: '🔗', name: 'Link Master',
     desc: 'Link annuncio aggiunto a 5 candidature.',
-    shareText: 'Organizzo ogni candidatura col link all\'annuncio 🔗 Su Le faremo sapere tengo traccia di tutto — non perdo mai un dettaglio.',
+    shareText: 'Organizzo ogni candidatura col link all\'annuncio 🔗 Su Le faremo sapere non perdo mai un dettaglio.',
     color: '#0EA5E9', bg: '#0a1520',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#0EA5E9"/><path d="M26 38l12-12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M30 26l4-4a6 6 0 018.5 8.5l-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M34 38l-4 4a6 6 0 01-8.5-8.5l4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>',
     check: (s) => s.smartParsed >= 5
@@ -367,28 +358,27 @@ export const BADGES = [
   {
     id: 'streak3', emoji: '🗓️', name: 'Costante',
     desc: '3 settimane consecutive con almeno 1 candidatura.',
-    shareText: '3 settimane di ricerca lavoro consecutive 🗓️ La costanza paga. Lo traccio tutto su Le faremo sapere.',
+    shareText: '3 settimane di ricerca lavoro consecutive 🗓️ La costanza paga.',
     color: '#34D399', bg: '#0a1a10',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#34D399"/><rect x="16" y="18" width="32" height="30" rx="4" fill="white" opacity="0.9"/><rect x="16" y="18" width="32" height="8" rx="4" fill="#34D399"/><circle cx="24" cy="34" r="3" fill="#34D399"/><circle cx="32" cy="34" r="3" fill="#34D399"/><circle cx="40" cy="34" r="3" fill="#22C55E"/><circle cx="24" cy="42" r="3" fill="#34D399"/><circle cx="32" cy="42" r="3" fill="#22C55E"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#34D399"/><rect x="16" y="18" width="32" height="30" rx="4" fill="white" opacity="0.9"/><rect x="16" y="18" width="32" height="8" rx="4" fill="#34D399"/><circle cx="24" cy="34" r="3" fill="#34D399"/><circle cx="32" cy="34" r="3" fill="#34D399"/><circle cx="40" cy="34" r="3" fill="#22C55E"/></svg>',
     check: (s) => s.weekStreak >= 3
   },
   {
     id: 'secondcol', emoji: '🎙️🎙️', name: 'Finalista',
     desc: 'Hai raggiunto il secondo colloquio. Sei in lizza.',
-    shareText: 'Secondo colloquio raggiunto 🎙️🎙️ Ci siamo quasi. Gestisco la mia ricerca lavoro su Le faremo sapere — ogni passo conta.',
+    shareText: 'Secondo colloquio raggiunto 🎙️🎙️ Ci siamo quasi.',
     color: '#16A34A', bg: '#0a1a08',
-    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#16A34A"/><rect x="20" y="14" width="10" height="20" rx="5" fill="white"/><rect x="34" y="20" width="10" height="20" rx="5" fill="white" opacity="0.7"/><path d="M16 38c0 5 4 9 9 9" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 43c0 4 4 7 9 7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/></svg>',
+    svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#16A34A"/><rect x="20" y="14" width="10" height="20" rx="5" fill="white"/><rect x="34" y="20" width="10" height="20" rx="5" fill="white" opacity="0.7"/></svg>',
     check: (s) => s.secondi >= 1
   },
   {
     id: 'pioneer', emoji: '🌱', name: 'Pioneer*', nameF: 'Pioniera', nameM: 'Pioniere',
     desc: 'Prima candidatura spontanea inviata.',
-    shareText: 'Ho inviato la mia prima candidatura spontanea 🌱 A volte bisogna creare le opportunità, non aspettarle. Su Le faremo sapere traccio anche queste.',
+    shareText: 'Ho inviato la mia prima candidatura spontanea 🌱 A volte bisogna creare le opportunità, non aspettarle.',
     color: '#84CC16', bg: '#0f1a00',
     svg: '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="32" fill="#84CC16"/><path d="M32 50V32" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M32 32C32 32 24 26 22 18c6 0 10 4 10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 38C32 38 40 32 42 24c-6 0-10 4-10 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
     check: (s) => s.spontanee >= 1
   },
-
 ]
 
 // ─── MOTIVATIONAL PHRASES ────────────────────────────────────────
@@ -429,17 +419,20 @@ export const MOTTOS_SERA_EN = [
   'Ghosted? It happens to the best of us. Keep going. 👻',
 ]
 
+export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
+
 export function getMotto(lang = 'it') {
   const h = new Date().getHours()
   const day = new Date().getDate()
   const isEn = lang === 'en'
 
-  let list;
-  if (h >= 5 && h < 12) list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
-  else if (h >= 12 && h < 18) list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
-  else list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
+  let list
+  if (h >= 5 && h < 12) list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO
+  else if (h >= 12 && h < 18) list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO
+  else list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA
 
-  return list[day % list.length];
+  if (!list || list.length === 0) return isEn ? 'Keep going! 🚀' : 'Forza e coraggio! 🚀'
+  return list[day % list.length]
 }
 
 export function getGreeting(name = '', lang = 'it') {
@@ -452,27 +445,6 @@ export function getGreeting(name = '', lang = 'it') {
   return isEn ? `Good evening${cleanName} 🌙` : `Buonasera${cleanName} 🌙`
 }
 
-export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
-
-// ─── LOADING TIPS ────────────────────────────────────────────────
-
-export const LOADING_TIPS = [
-  { cat: '🎙️ Colloquio', text: "Arrivare 5 minuti prima dimostra organizzazione." },
-  { cat: '📄 CV', text: "Personalizza ogni CV per l'annuncio." },
-  { cat: '💜 Mindset', text: "Un no non è un giudizio su di te." },
-]
-
-export const LOADING_TIPS_EN = [
-  { cat: '🎙️ Interview', text: "Arriving 5 minutes early shows organization." },
-  { cat: '📄 CV', text: "Tailor every CV to the job description." },
-  { cat: '💜 Mindset', text: "A 'no' is not a judgment on you." },
-]
-
-export function getRandomTip(lang = 'it') {
-  const list = lang === 'en' ? LOADING_TIPS_EN : LOADING_TIPS;
-  return list[Math.floor(Math.random() * list.length)];
-}
-
 // ─── LOADING TIPS ────────────────────────────────────────────────
 
 export const LOADING_TIPS = [
@@ -480,9 +452,9 @@ export const LOADING_TIPS = [
   { cat: '🎙️ Colloquio', text: "La domanda 'Hai domande per noi?' NON è retorica. Preparane almeno 2." },
   { cat: '🎙️ Colloquio', text: "Parla dei risultati con numeri: 'Ho aumentato X del 30%' batte 'Lavoravo su X'." },
   { cat: '🎙️ Colloquio', text: "Se non capisci una domanda, chiedi di ripeterla. È attenzione, non ignoranza." },
-  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?' Ti posiziona come qualcuno che sa il fatto suo." },
-  { cat: '🎙️ Colloquio', text: "Dopo il colloquio, manda una mail di ringraziamento entro 24h. Pochi lo fanno. Quei pochi si ricordano." },
-  { cat: '🎙️ Colloquio', text: "Sul salario: cerca la media su LinkedIn o Glassdoor prima di rispondere. Non sparare alla cieca." },
+  { cat: '🎙️ Colloquio', text: "Fine colloquio: chiedi sempre 'Quali sono i prossimi passi?'" },
+  { cat: '🎙️ Colloquio', text: "Dopo il colloquio, manda una mail di ringraziamento entro 24h. Pochi lo fanno." },
+  { cat: '🎙️ Colloquio', text: "Sul salario: cerca la media su LinkedIn o Glassdoor prima di rispondere." },
   { cat: '📄 CV',         text: "Il CV perfetto è su una pagina (se hai meno di 10 anni di esperienza). Meno è più." },
   { cat: '📄 CV',         text: "Personalizza ogni CV. Copia le parole chiave dall'annuncio — gli ATS ti ringraziano." },
   { cat: '📄 CV',         text: "Candidati anche se non hai il 100% dei requisiti. Le aziende scrivono la lista dei sogni." },
@@ -499,17 +471,18 @@ export const LOADING_TIPS = [
   { cat: '🏆 Offerta',   text: "Confronta il pacchetto totale: RAL, benefit, ferie, smart working. Lo stipendio è solo una parte." },
   { cat: '🚀 Pro tip',   text: "Tenere traccia delle candidature (come fai qui!) riduce l'ansia del 'chissà quante ne ho mandate'." },
   { cat: '🚀 Pro tip',   text: "Stai usando questa app? Sei già più organizzat* del 90% delle persone in cerca di lavoro." },
-  { cat: '🚀 Pro tip',   text: "Candidarsi alle 9-11 di mattina aumenta le chance di essere visti. I recruiter iniziano la giornata freschi." },
+  { cat: '🚀 Pro tip',   text: "Candidarsi alle 9-11 di mattina aumenta le chance di essere visti." },
   { cat: '🚀 Pro tip',   text: "Un messaggio diretto al recruiter su LinkedIn dopo la candidatura può fare la differenza." },
 ]
+
 export const LOADING_TIPS_EN = [
   { cat: '🎙️ Interview', text: "Arrive 5 minutes early (not 20) — it shows organization, not anxiety." },
   { cat: '🎙️ Interview', text: "The question 'Do you have any questions for us?' is NOT rhetorical. Prepare at least 2." },
   { cat: '🎙️ Interview', text: "Talk about results with numbers: 'I increased X by 30%' beats 'I worked on X'." },
   { cat: '🎙️ Interview', text: "If you don't understand a question, ask them to repeat it. It shows attention, not ignorance." },
-  { cat: '🎙️ Interview', text: "End of interview: always ask 'What are the next steps?' It positions you as someone who means business." },
+  { cat: '🎙️ Interview', text: "End of interview: always ask 'What are the next steps?'" },
   { cat: '🎙️ Interview', text: "After the interview, send a thank-you email within 24h. Few people do it. Those few are remembered." },
-  { cat: '🎙️ Interview', text: "On salary: research the average on LinkedIn or Glassdoor before answering. Don't shoot in the dark." },
+  { cat: '🎙️ Interview', text: "On salary: research the average on LinkedIn or Glassdoor before answering." },
   { cat: '📄 CV',        text: "The perfect CV fits one page (if you have less than 10 years of experience). Less is more." },
   { cat: '📄 CV',        text: "Customize every CV. Copy keywords from the job posting — ATS systems will thank you." },
   { cat: '📄 CV',        text: "Apply even if you don't meet 100% of the requirements. Companies write their wish list." },
@@ -530,6 +503,11 @@ export const LOADING_TIPS_EN = [
   { cat: '🚀 Pro tip',  text: "A direct message to the recruiter on LinkedIn after applying can make all the difference." },
 ]
 
+export function getRandomTip(lang = 'it') {
+  const list = lang === 'en' ? LOADING_TIPS_EN : LOADING_TIPS
+  return list[Math.floor(Math.random() * list.length)]
+}
+
 // ─── CHECKLIST DEFAULT TASKS ─────────────────────────────────────
 
 export const DEFAULT_CHECKLIST = [
@@ -547,45 +525,4 @@ export const DEFAULT_CHECKLIST = [
 
 export function getInitial(name = '') {
   return name.trim().charAt(0).toUpperCase() || '?'
-}
-
-export function getGreeting(name = '', lang = 'it') {
-  const h = new Date().getHours();
-  const cleanName = name ? ` ${name}` : '';
-
-  if (lang === 'en') {
-    if (h >= 5 && h < 12) return `Good morning${cleanName} 🌞`;
-    if (h >= 12 && h < 18) return `Hello${cleanName} 👋`;
-    return `Good evening${cleanName} 🌙`;
-  }
-  
-  if (h >= 5 && h < 12) return `Buongiorno${cleanName} 🌞`;
-  if (h >= 12 && h < 18) return `Ciao${cleanName} 👋`;
-  return `Buonasera${cleanName} 🌙`;
-}
-
-
-
-// Aggiungi le variabili mancanti per l'inglese se non le hai già
-export const MOTTOS_POMERIGGIO_EN = ['You are building your future. 🧱', 'Every "no" brings you closer to the right "yes". ✨'];
-export const MOTTOS_SERA_EN = ['Good job today. Tomorrow we start again. 🌙', 'Rest, you did your best. 🌟'];
-
-export function getMotto(lang = 'it') {
-  const h = new Date().getHours();
-  const day = new Date().getDate();
-  const isEn = lang === 'en';
-
-  let list;
-  if (h >= 5 && h < 12) {
-    list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
-  } else if (h >= 12 && h < 18) {
-    list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
-  } else {
-    list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
-  }
-
-  // Fallback di sicurezza per evitare stringhe vuote
-  if (!list || list.length === 0) return isEn ? "Keep going! 🚀" : "Forza e coraggio! 🚀";
-
-  return list[day % list.length];
 }
