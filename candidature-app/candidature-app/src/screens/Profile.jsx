@@ -209,21 +209,34 @@ export default function Profile() {
   </button>
 
   <div className="flex justify-center gap-4 mt-3">
-  <a
-    href="https://lefaremosapere.vercel.app/privacy.html"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-[11px] text-white/50 hover:text-white/80"
-  >
-    Privacy
-  </a>
+    <a
+      href="https://lefaremosapere.vercel.app/privacy.html"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[11px] text-white/50 hover:text-white/80"
+    >
+      {isIt ? 'Privacy' : 'Privacy Policy'}
+    </a>
 
-  <a
-    href="https://lefaremosapere.vercel.app/terms.html"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-[11px] text-white/50 hover:text-white/80"
-  >
-    Termini
-  </a>
+    <a
+      href="https://lefaremosapere.vercel.app/terms.html"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[11px] text-white/50 hover:text-white/80"
+    >
+      {isIt ? 'Termini' : 'Terms'}
+    </a>
+
+    <a
+      href="mailto:lefaremosapereapp@gmail.com?subject=Supporto%20Le%20faremo%20sapere"
+      className="text-[11px] text-white/50 hover:text-white/80"
+    >
+      {isIt ? 'Supporto' : 'Support'}
+    </a>
+  </div>
 </div>
+        </div>
+      </div>
+    </div>
+  )
+}
