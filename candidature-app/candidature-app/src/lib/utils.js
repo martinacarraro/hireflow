@@ -500,3 +500,17 @@ export const DEFAULT_CHECKLIST = [
   { id: '4', text: 'Preparare almeno due domande da fare', completed: false },
   { id: '5', text: 'Controllare connessione/microfono o indirizzo', completed: false },
 ]
+
+export function getGreeting(lang = 'it') {
+  const h = new Date().getHours();
+  
+  if (lang === 'en') {
+    if (h >= 5 && h < 12) return 'Good morning';
+    if (h >= 12 && h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+  
+  if (h >= 5 && h < 12) return 'Buongiorno';
+  if (h >= 12 && h < 18) return 'Buon pomeriggio';
+  return 'Buonasera';
+}
