@@ -97,16 +97,22 @@ export default function App() {
   }, [user, isGuest, loading, dataLoading])
 
   useEffect(() => {
-    if (!user) return
-    const reviewKey = `lfs_review_shown_${user.id}`
-    if (localStorage.getItem(reviewKey)) return
-    const registered = new Date(user.created_at)
-    const daysSince = Math.floor((new Date() - registered) / (1000 * 60 * 60 * 24))
-    if (daysSince >= 5) {
-      const timeout = setTimeout(() => setShowReviewPopup(true), 3000)
-      return () => clearTimeout(timeout)
-    }
-  }, [user])
+  if (!user) return
+  const reviewKey = `lfs_review_shown_${user.id}`
+  const lastShown = localStorage.getItem(reviewKey)
+  const registered = new Date(user.created_at)
+  const daysSinceRegistration = Math.floor((new Date() - registered) / 86400000)
+  
+  if (daysSinceRegistration < 3) return // troppo presto
+
+  if (lastShown) {
+    const daysSinceLastShown = Math.floor((new Date() - new Date(lastShown)) / 86400000)
+    if (daysSinceLastShown < 30) return // già mostrato meno di 30 giorni fa
+  }
+
+  const timeout = setTimeout(() => setShowReviewPopup(true), 3000)
+  return () => clearTimeout(timeout)
+}, [user])
 
   if (showSplash || loading) return <Splash onDone={() => setShowSplash(false)} />
   if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
@@ -172,9 +178,9 @@ export default function App() {
           profile={profile} 
           t={t} 
           onClose={() => {
-            localStorage.setItem(`lfs_review_shown_${user.id}`, '1')
-            setShowReviewPopup(false)
-          }} 
+  localStorage.setItem(`lfs_review_shown_${user.id}`, new Date().toISOString())
+  setShowReviewPopup(false)
+}}
         />
       )}
     </div>

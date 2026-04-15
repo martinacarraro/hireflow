@@ -4,8 +4,9 @@ import { LOADING_TIPS, LOADING_TIPS_EN, randomInt } from '../lib/utils'
 
 export default function Splash({ onDone }) {
   const { t, i18n } = useTranslation()
-  const tips = i18n.language === 'en' ? LOADING_TIPS_EN : LOADING_TIPS
-  const [tip] = useState(() => tips[randomInt(0, tips.length - 1)])
+  const lang = localStorage.getItem('lfs_lang') || i18n.language || 'it'
+const tips = lang === 'en' ? LOADING_TIPS_EN : LOADING_TIPS
+const [tip] = useState(() => tips[randomInt(0, tips.length - 1)])
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
