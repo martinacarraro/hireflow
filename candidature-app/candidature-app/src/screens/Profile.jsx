@@ -48,11 +48,31 @@ export default function Profile() {
   }
 
   const deleteAccount = async () => {
-    if (confirm(isIt ? 'Sei sicuro di voler eliminare tutti i tuoi dati?' : 'Are you sure you want to delete all your data?')) {
-      await supabase.rpc('delete_user_data')
-      await signOut()
+  if (!confirm(isIt ? 'Sei sicuro di voler eliminare tutti i tuoi dati? Questa azione è irreversibile.' : 'Are you sure you want to delete all your data? This action is irreversible.')) return
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) throw new Error('Sessione non trovata')
+
+    const res = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Errore durante eliminazione')
     }
+
+    await signOut()
+  } catch (err) {
+    alert(isIt ? `Errore: ${err.message}` : `Error: ${err.message}`)
   }
+}
 
   if (showNotifs) return (
     <div className="screen">
