@@ -401,13 +401,23 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 ✅ {t('detail.si')}
               </button>
               <button onClick={async () => {
-                setForm(f => ({ ...f, offerta_risposta:'no' }))
-                await updateCandidatura(c.id, { offerta_risposta:'no', welfare:welfareList })
-                setIsDirty(false); showToast(t('detail.rispostaSalvata'), 'success')
-              }} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
-                style={{ background:'transparent', borderColor:'rgba(255,71,87,0.5)', color:'#FF4757' }}>
-                ❌ {t('detail.no')}
-              </button>
+  // Aggiungiamo un cambio di stato esplicito a 'Non mi piace'
+  try {
+    await updateCandidatura(c.id, { 
+      stato: 'Non mi piace', 
+      offerta_risposta: 'no', 
+      welfare: welfareList 
+    })
+    setIsDirty(false)
+    showToast(t('detail.rispostaSalvata'), 'success')
+    onBack() // Chiude la visualizzazione e torna alla lista
+  } catch(e) {
+    showToast("Errore durante l'aggiornamento", 'error')
+  }
+}} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
+  style={{ background:'transparent', borderColor:'rgba(255,71,87,0.5)', color:'#FF4757' }}>
+  ❌ {t('detail.no')}
+</button>
             </div>
           </div>
           <div className="card space-y-3" style={{ borderColor:'rgba(16,185,129,0.2)' }}>
