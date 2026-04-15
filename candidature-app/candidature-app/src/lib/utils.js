@@ -503,6 +503,10 @@ export function getInitial(name = '') {
   return name.trim().charAt(0).toUpperCase() || '?'
 }
 
+export function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export function getGreeting(name = '', lang = 'it') {
   const h = new Date().getHours()
   const cleanName = name ? ` ${name}` : '' // Evita lo spazio vuoto se non c'è il nome
@@ -517,6 +521,7 @@ export function getGreeting(name = '', lang = 'it') {
   if (h >= 12 && h < 18) return `Ciao${cleanName} 👋`
   return `Buonasera${cleanName} 🌙`
 }
+
 
 export const MOTTOS_MATTINO_EN = [
   'Good morning. Every application you send today is a step forward. 🌅',
