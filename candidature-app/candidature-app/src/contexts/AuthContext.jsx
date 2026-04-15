@@ -60,12 +60,14 @@ export function AuthProvider({ children }) {
   }
 
   const enterAsGuest = async () => {
-    // Fai signOut da Supabase prima, così non ci sono dati residui
-    await supabase.auth.signOut()
-    setUser(null)
-    localStorage.setItem('lfs_guest_mode', '1')
-    setIsGuest(true)
-  }
+  await supabase.auth.signOut()
+  setUser(null)
+  // Pulisce i dati guest precedenti → ogni sessione ospite riparte da zero
+  localStorage.removeItem('lfs_guest_candidature')
+  localStorage.removeItem('lfs_guest_profile')
+  localStorage.setItem('lfs_guest_mode', '1')
+  setIsGuest(true)
+}
 
   return (
     <AuthContext.Provider value={{ user, loading, isGuest, signInWithEmail, signUpWithEmail, signOut, enterAsGuest, convertGuestToAccount, resetPassword }}>
