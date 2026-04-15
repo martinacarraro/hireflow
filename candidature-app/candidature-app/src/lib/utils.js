@@ -414,43 +414,13 @@ export const MOTTOS_POMERIGGIO = [
 ]
 
 export const MOTTOS_SERA = [
-  'Bella giornata. Domani si ricomincia, più forti di oggi. 🌙',
+  'Brava giornata. Domani si ricomincia, più forti di oggi. 🌙',
   'Il silenzio delle aziende non è mai la parola fine. 🤐',
   'Resisti. Il mercato non sa ancora cosa si perde. 💪',
   'Ogni giorno che passa sei più vicin* alla risposta giusta. 🌟',
   'Riposati. Chi cerca lavoro con testa e cuore merita anche una pausa. 💜',
   'La ricerca di lavoro è una maratona, non uno sprint. Ottimo passo oggi. 🏃',
   'Ghostat*? Capita ai migliori. Vai avant*. 👻',
-]
-
-export const MOTTOS_MATTINO_EN = [
-  'Good morning. Every application sent today is a step forward. 🌅',
-  'The early bird catches the worm — and you have your CV ready. 💛',
-  'A new day, new opportunities not to be missed. 🚀',
-  'Start the day with a goal: one more application. 🎯',
-  'The job market doesn\'t sleep — and neither do you. Go! ☀️',
-  'Every morning is a new chapter. Write it well. ✍️',
-]
-
-export const MOTTOS_POMERIGGIO_EN = [
-  'You are building something, application by application. 🧱',
-  '"We\'ll let you know." — And you keep track. 📬',
-  'Every no brings you closer to the right yes. ✨',
-  'Don\'t wait for them to let you know — reach out first. 📞',
-  'Organization is half the battle. You are the other half. 💜',
-  'Your next job already exists. You are finding it. 💡',
-  'Every interview is practice for the right one. 🎙️',
-  '"We are evaluating your profile." — Meanwhile, you move forward. 🚀',
-]
-
-export const MOTTOS_SERA_EN = [
-  'Good day. Tomorrow we start again, stronger than today. 🌙',
-  'Company silence is never the final word. 🤐',
-  'Hold on. The market doesn\'t know what it\'s missing yet. 💪',
-  'Every passing day, you are closer to the right answer. 🌟',
-  'Rest up. Those who job hunt with heart and soul deserve a break too. 💜',
-  'Job hunting is a marathon, not a sprint. Great pace today. 🏃',
-  'Ghosted? It happens to the best of us. Keep going. 👻',
 ]
 
 // Ritorna la frase giusta in base all'ora — cambia ogni giorno
