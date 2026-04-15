@@ -478,14 +478,32 @@
     </div>
   </section>
 
-  <footer>
-      <p>© 2026 Le faremo sapere</p>
-<div style="margin-top:10px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-  <a href="/privacy.html">Privacy Policy</a>
-  <a href="/terms.html">Termini</a>
-  <a href="mailto:lefaremosapereapp@gmail.com?subject=Supporto%20Le%20faremo%20sapere">Supporto</a>
-</div>
-  </footer>
+<footer style="border-top:1px solid rgba(255,255,255,0.08); padding:32px 24px; text-align:center;">
+  <p style="font-size:13px; color:rgba(240,240,255,0.35); margin:0;">
+    © 2026 Le faremo sapere
+  </p>
+
+  <div style="margin-top:12px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap;">
+    
+    <a href="/privacy.html" class="footer-link">Privacy Policy</a>
+    <a href="/terms.html" class="footer-link">Termini</a>
+    <a href="mailto:lefaremosapereapp@gmail.com?subject=Supporto%20Le%20faremo%20sapere" class="footer-link">Supporto</a>
+  
+  </div>
+</footer>
+
+<style>
+  .footer-link {
+    color: rgba(240,240,255,0.6);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s ease;
+  }
+
+  .footer-link:hover {
+    color: #a78bfa;
+  }
+</style>
 
   <!-- MODAL -->
   <div id="requestModal" onclick="if(event.target===this)closeModal()">
