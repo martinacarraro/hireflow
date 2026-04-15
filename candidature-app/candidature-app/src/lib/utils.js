@@ -1,4 +1,4 @@
-// ─── STATUS & CONFIG ─────────────────────────────────────────────
+// ─── CONFIGURATION & CONSTANTS ─────────────────────────────────────
 
 export const STATI = ['Inviata','Spontanea','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta']
 export const PRIORITA = ['Alta','Media','Bassa']
@@ -35,13 +35,12 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-// ─── DATE HELPERS (Richiesti dal tuo import) ─────────────────────
+// ─── DATE HELPERS ────────────────────────────────────────────────
 
 export function daysSince(dateStr) {
   if (!dateStr) return 0
   const d = new Date(dateStr)
-  const now = new Date()
-  return Math.floor((now - d) / 86400000)
+  return Math.floor((new Date() - d) / 86400000)
 }
 
 export function isToday(dateStr) {
@@ -51,23 +50,25 @@ export function isToday(dateStr) {
 
 export function isTomorrow(dateStr) {
   if (!dateStr) return false
-  const d = new Date(dateStr)
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  return d.toDateString() === tomorrow.toDateString()
+  const d = new Date(dateStr); const t = new Date(); t.setDate(t.getDate() + 1)
+  return d.toDateString() === t.toDateString()
 }
 
 export function isYesterday(dateStr) {
   if (!dateStr) return false
-  const d = new Date(dateStr)
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  return d.toDateString() === yesterday.toDateString()
+  const d = new Date(dateStr); const y = new Date(); y.setDate(y.getDate() - 1)
+  return d.toDateString() === y.toDateString()
 }
 
 export function formatDate(dateStr) {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
+}
+
+export function formatDateTime(dateStr, timeStr) {
+  if (!dateStr) return ''
+  const d = formatDate(dateStr)
+  return timeStr ? `${d} alle ${timeStr.slice(0,5)}` : d
 }
 
 // ─── XP & GAMIFICATION ───────────────────────────────────────────
@@ -95,33 +96,35 @@ export function getXpProgress(xp = 0) {
   return Math.min(((xp - level.min) / (level.max - level.min)) * 100, 100)
 }
 
-// BADGES semplificati per il build
 export const BADGES = [
   { id: 'first', emoji: '🚀', name: 'Prima Candidatura', check: (s) => s.total >= 1 },
   { id: 'ten', emoji: '🎯', name: 'Cecchin*', check: (s) => s.total >= 10 },
-  { id: 'offer', emoji: '🏆', name: 'Ce l\'hai fatta!', check: (s) => s.offerte >= 1 }
+  { id: 'colloquio1', emoji: '🎙️', name: 'In the Game', check: (s) => s.colloqui >= 1 },
+  { id: 'offer', emoji: '🏆', name: 'Ce l\'hai fatta!', check: (s) => s.offerte >= 1 },
+  { id: 'assunta', emoji: '🌟', name: 'Assunta', check: (s) => s.assunta >= 1 }
 ]
 
-// ─── UTILS ───────────────────────────────────────────────────────
+// ─── MOTIVATION & SPLASH LOGIC ───────────────────────────────────
 
-export function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+export const LOADING_TIPS = [
+  "Prepara una 'elevator pitch' di 30 secondi. ⏱️",
+  "Personalizza sempre la lettera di presentazione. ✍️",
+  "Il 'no' fa parte del processo, non arrenderti. 💪",
+  "Ogni colloquio è un'opportunità di networking. 🤝"
+];
 
-export const DEFAULT_CHECKLIST = [
-  { id: '1', text: 'Rileggere l\'annuncio e i requisiti', completed: false },
-  { id: '2', text: 'Preparare una breve presentazione di sé', completed: false },
-  { id: '3', text: 'Ricercare l\'azienda e i suoi valori', completed: false },
-]
+export const MOTTOS_MATTINO = ['Ogni candidatura inviata oggi è un passo avanti. 🌅','Il mattino ha l\'oro in bocca. 💛']
+export const MOTTOS_POMERIGGIO = ['Stai costruendo il tuo futuro. 🧱','Ogni no ti avvicina al sì giusto. ✨']
+export const MOTTOS_SERA = ['Brava giornata. Domani si ricomincia. 🌙','Riposati, hai dato il massimo. 🌟']
 
-// ─── URL PARSER (Necessario per le funzioni smart) ───────────────
+// Variabile aggregata richiesta da molti Splash Screen
+export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA];
 
-export function parseJobUrl(url) {
-  if (!url) return { fonte: 'Altro' }
-  const lower = url.toLowerCase()
-  if (lower.includes('linkedin.com')) return { fonte: 'LinkedIn' }
-  if (lower.includes('indeed.')) return { fonte: 'Indeed' }
-  return { fonte: 'Sito aziendale' }
+export function getMotto(lang = 'it') {
+  const h = new Date().getHours();
+  const day = new Date().getDate();
+  const list = (h >= 5 && h < 12) ? MOTTOS_MATTINO : (h >= 12 && h < 18) ? MOTTOS_POMERIGGIO : MOTTOS_SERA;
+  return list[day % list.length];
 }
 
 export function getGreeting(lang = 'it') {
@@ -131,8 +134,26 @@ export function getGreeting(lang = 'it') {
   return 'Buonasera';
 }
 
-export const LOADING_TIPS = ["Prepara un pitch! ⏱️", "Personalizza il CV! ✍️", "In bocca al lupo! 💪"];
+export function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 export function getRandomTip(lang = 'it') {
   return LOADING_TIPS[randomInt(0, LOADING_TIPS.length - 1)];
+}
+
+// ─── OTHERS ──────────────────────────────────────────────────────
+
+export const DEFAULT_CHECKLIST = [
+  { id: '1', text: 'Rileggere l\'annuncio e i requisiti', completed: false },
+  { id: '2', text: 'Preparare una breve presentazione di sé', completed: false },
+  { id: '3', text: 'Ricercare l\'azienda e i suoi valori', completed: false },
+]
+
+export function parseJobUrl(url) {
+  if (!url) return { fonte: 'Altro' }
+  const lower = url.toLowerCase()
+  if (lower.includes('linkedin.com')) return { fonte: 'LinkedIn' }
+  if (lower.includes('indeed.')) return { fonte: 'Indeed' }
+  return { fonte: 'Sito aziendale' }
 }
