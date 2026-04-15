@@ -477,3 +477,19 @@ export function randomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+// --- COSTANTI E FUNZIONI MANCANTI ---
+
+export const DEFAULT_CHECKLIST = [
+  { id: '1', text: 'Rileggere l\'annuncio e i requisiti', completed: false },
+  { id: '2', text: 'Preparare una breve presentazione di sé', completed: false },
+  { id: '3', text: 'Ricercare l\'azienda e i suoi valori', completed: false },
+  { id: '4', text: 'Preparare almeno due domande da fare', completed: false },
+  { id: '5', text: 'Controllare connessione/microfono o indirizzo', completed: false },
+];
+
+export function randomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
