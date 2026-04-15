@@ -396,69 +396,60 @@ export const BADGES = [
 export const MOTTOS_MATTINO = [
   'Buona giornata. Ogni candidatura inviata oggi è un passo avanti. 🌅',
   'Il mattino ha l\'oro in bocca — e tu hai il CV pronto. 💛',
-  'Una nuova giornata, nuove opportunità da non lasciarsi sfuggire. 🚀',
-  'Inizia la giornata con un obiettivo: una candidatura in più. 🎯',
-  'Il mercato del lavoro non dorme — e nemmeno tu. Dai! ☀️',
-  'Ogni mattina è un nuovo capitolo. Scrivilo bene. ✍️',
-]
+  'Una nuova giornata, nuove opportunità da non lasciarsi sfuggire. 🚀'
+];
 
 export const MOTTOS_POMERIGGIO = [
   'Stai costruendo qualcosa, candidatura dopo candidatura. 🧱',
-  '"Le faremo sapere." — E tu tieni il conto. 📬',
   'Ogni no ti avvicina al sì giusto. ✨',
-  'Non aspettare che facciano sapere — anticipa. 📞',
-  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜',
-  'Il tuo prossimo lavoro esiste già. Lo stai trovando. 💡',
-  'Ogni colloquio è pratica per il colloquio giusto. 🎙️',
-  '"Valuteremo il tuo profilo." — Intanto tu vai avanti. 🚀',
-]
+  'Organizzazione è metà della battaglia. L\'altra metà sei tu. 💜'
+];
 
 export const MOTTOS_SERA = [
   'Brava giornata. Domani si ricomincia, più forti di oggi. 🌙',
-  'Il silenzio delle aziende non è mai la parola fine. 🤐',
-  'Resisti. Il mercato non sa ancora cosa si perde. 💪',
-  'Ogni giorno che passa sei più vicin* alla risposta giusta. 🌟',
   'Riposati. Chi cerca lavoro con testa e cuore merita anche una pausa. 💜',
-  'La ricerca di lavoro è una maratona, non uno sprint. Ottimo passo oggi. 🏃',
-  'Ghostat*? Capita ai migliori. Vai avant*. 👻',
-]
+  'Ghostat*? Capita ai migliori. Vai avant*. 👻'
+];
 
 export const MOTTOS_MATTINO_EN = [
-  'Have a great day. Every application sent today is a step forward. 🌅',
+  'Good morning. Every application you send today is a step forward. 🌅',
   'The early bird catches the worm — and you have your CV ready. 💛',
-  'A new day, new opportunities not to be missed. 🚀',
-  'Start the day with a goal: one more application. 🎯',
+  'A new day, new opportunities not to be missed. 🚀'
 ];
 
 export const MOTTOS_POMERIGGIO_EN = [
   'You are building something, application by application. 🧱',
   'Every "no" brings you closer to the right "yes". ✨',
-  'Organization is half the battle. You are the other half. 💜',
-  'Your next job already exists. You are finding it. 💡',
+  'Organization is half the battle. You are the other half. 💜'
 ];
 
 export const MOTTOS_SERA_EN = [
   'Great day. Tomorrow we start again, stronger than today. 🌙',
   'Rest. Those who look for work with head and heart deserve a break. 💜',
-  'Ghosted? It happens to the best. Keep moving forward. 👻',
+  'Ghosted? It happens to the best. Keep moving forward. 👻'
 ];
 
-// Ritorna la frase giusta in base all'ora — cambia ogni giorno
+// Ritorna la frase giusta in base all'ora e lingua
 export function getMotto(lang = 'it') {
-  const h = new Date().getHours()
-  const day = new Date().getDate()
-  if (lang === 'en') {
-    if (h >= 5 && h < 12) return MOTTOS_MATTINO_EN[day % MOTTOS_MATTINO_EN.length]
-    if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO_EN[day % MOTTOS_POMERIGGIO_EN.length]
-    return MOTTOS_SERA_EN[day % MOTTOS_SERA_EN.length]
+  const h = new Date().getHours();
+  const day = new Date().getDate();
+  const isEn = lang === 'en';
+
+  let list;
+  if (h >= 5 && h < 12) {
+    list = isEn ? MOTTOS_MATTINO_EN : MOTTOS_MATTINO;
+  } else if (h >= 12 && h < 18) {
+    list = isEn ? MOTTOS_POMERIGGIO_EN : MOTTOS_POMERIGGIO;
+  } else {
+    list = isEn ? MOTTOS_SERA_EN : MOTTOS_SERA;
   }
-  if (h >= 5 && h < 12) return MOTTOS_MATTINO[day % MOTTOS_MATTINO.length]
-  if (h >= 12 && h < 18) return MOTTOS_POMERIGGIO[day % MOTTOS_POMERIGGIO.length]
-  return MOTTOS_SERA[day % MOTTOS_SERA.length]
+
+  if (!list || list.length === 0) return isEn ? "Keep going! 🚀" : "Forza! 🚀";
+  return list[day % list.length];
 }
 
-// Keep for backward compat
-export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA]
+// Compatibilità per vecchi componenti
+export const MOTTOS = [...MOTTOS_MATTINO, ...MOTTOS_POMERIGGIO, ...MOTTOS_SERA];
 
 // ─── LOADING TIPS ────────────────────────────────────────────────
 
@@ -551,14 +542,7 @@ export function getGreeting(name = '', lang = 'it') {
   return `Buonasera${cleanName} 🌙`;
 }
 
-export const MOTTOS_MATTINO_EN = [
-  'Good morning. Every application you send today is a step forward. 🌅',
-  'The early bird catches the worm — and you have your CV ready. 💛',
-  'A new day, new opportunities not to be missed. 🚀',
-  'Start the day with one goal: one more application. 🎯',
-  'The job market never sleeps — and neither do you. Go! ☀️',
-  'Every morning is a new chapter. Write it well. ✍️',
-]
+
 
 // Aggiungi le variabili mancanti per l'inglese se non le hai già
 export const MOTTOS_POMERIGGIO_EN = ['You are building your future. 🧱', 'Every "no" brings you closer to the right "yes". ✨'];
