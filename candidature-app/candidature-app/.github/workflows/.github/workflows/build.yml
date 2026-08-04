@@ -1,0 +1,35 @@
+name: Build Android AAB
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build AAB con API 36
+        run: |
+          npm install -g @bubblewrap/cli
+          npx @bubblewrap/cli build
+
+      - name: Carica file AAB negli Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: ./*.aab
