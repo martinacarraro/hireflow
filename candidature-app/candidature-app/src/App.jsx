@@ -22,7 +22,7 @@ export default function App() {
   const { t } = useTranslation() // Hook usato correttamente nel componente principale
   
   const [showSplash, setShowSplash] = useState(true)
-  const [linguaScelta, setLinguaScelta] = useState(!!localStorage.getItem('lingua'))
+  const [linguaScelta, setLinguaScelta] = useState(!!localStorage.getItem('lfs_lang'))
   const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
     const hasSeen = localStorage.getItem('lfs_seen_intro')
     const hadSession = localStorage.getItem('lfs_had_session')
