@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import i18n from '../i18n'
-import { useAuth } from './AuthContext'
 import {
   XP_EVENTS, BADGES, DEFAULT_CHECKLIST, getLevel, randomInt,
   isYesterday, isTomorrow, isToday, daysSince
@@ -9,8 +8,6 @@ import {
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const { isGuest } = useAuth()
-
   const [candidature, setCandidature] = useState(() => {
     if (localStorage.getItem('lfs_guest_mode')) {
       try { return JSON.parse(localStorage.getItem('lfs_guest_candidature') || '[]') } catch { return [] }
@@ -294,7 +291,6 @@ export function AppProvider({ children }) {
     setTimeout(() => setConfetti(false), 2000)
   }
 
-  const migrateGuestToAccount = async () => ({ error: new Error('Account disabilitati') })
 
   return (
     <AppContext.Provider value={{
