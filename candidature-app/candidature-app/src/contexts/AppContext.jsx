@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
-import { supabase } from '../lib/supabase'
 import i18n from '../i18n'
 import { useAuth } from './AuthContext'
 import {
@@ -10,7 +9,7 @@ import {
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const { user, isGuest, convertGuestToAccount } = useAuth()
+  const { isGuest } = useAuth()
 
   const [candidature, setCandidature] = useState(() => {
     if (localStorage.getItem('lfs_guest_mode')) {
@@ -32,76 +31,30 @@ export function AppProvider({ children }) {
 
   const getLang = () => (i18n.language === 'en' ? 'en' : 'it')
 
-  const loadProfile = useCallback(async () => {
-    if (!user) return
-    const { data } = await supabase.from('user_profiles').select('*').eq('id', user.id).single()
-    if (data) {
-      setProfile(data)
-    } else {
-      const nome = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Utente'
-      const { data: newProfile } = await supabase
-        .from('user_profiles')
-        .insert({ id: user.id, nome, motto_index: randomInt(0, 9) })
-        .select().single()
-      setProfile(newProfile)
-    }
-  }, [user])
-
-  const loadCandidature = useCallback(async () => {
-    if (!user) return
-    const { data } = await supabase
-      .from('candidature').select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-    setCandidature(data || [])
-  }, [user])
-
-  // --- BLOCCO 1: Reset totale al Logout ---
+  // --- Caricamento locale ---
   useEffect(() => {
-    if (!user && !isGuest) {
-      setCandidature([]);
-      setProfile(null);
-      setNotifications([]);
-    }
-  }, [user, isGuest]);
+    const savedLang = localStorage.getItem('lfs_lang') || 'it'
+    if (i18n.language !== savedLang) i18n.changeLanguage(savedLang)
 
-  // --- BLOCCO 2: Caricamento Dati (User o Guest) ---
+    const guestCand = localStorage.getItem('lfs_guest_candidature')
+    const guestProf = localStorage.getItem('lfs_guest_profile')
+    setCandidature(guestCand ? JSON.parse(guestCand) : [])
+    setProfile(guestProf ? JSON.parse(guestProf) : {
+      id: 'local',
+      nome: '',
+      xp_points: 0,
+      streak_giorni: 0,
+      seen_onboarding: false,
+      badge_lista: ''
+    })
+    setLoading(false)
+  }, [])
+
+  // --- Salvataggio automatico locale ---
   useEffect(() => {
-    // 1. Forza la lingua salvata PRIMA di caricare i dati
-    const savedLang = localStorage.getItem('lfs_lang') || 'it';
-    if (i18n.language !== savedLang) {
-      i18n.changeLanguage(savedLang);
-    }
-
-    if (user) {
-      // Caricamento Supabase...
-      Promise.all([loadProfile(), loadCandidature()]).then(() => {
-        setLoading(false);
-        checkScheduledNotifications();
-        updateStreak();
-      });
-    } else if (isGuest) {
-      // Caricamento Guest...
-      const guestCand = localStorage.getItem('lfs_guest_candidature');
-      const guestProf = localStorage.getItem('lfs_guest_profile');
-      
-      setCandidature(guestCand ? JSON.parse(guestCand) : []);
-      setProfile(guestProf ? JSON.parse(guestProf) : { 
-        id: 'guest', nome: 'Ospite', xp: 0, streak: 0, seen_onboarding: false 
-      });
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [user, isGuest, loadProfile, loadCandidature]);
-
-  // --- BLOCCO 3: Salvataggio automatico solo se Guest ---
-  useEffect(() => {
-    if (isGuest) {
-      localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature));
-      if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile));
-    }
-  }, [candidature, profile, isGuest]);
+    localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature))
+    if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile))
+  }, [candidature, profile])
 
   // --- CRUD CANDIDATURE ---
 
@@ -109,30 +62,12 @@ export function AppProvider({ children }) {
     const isFirst = candidature.length === 0
     const _l = getLang()
 
-    if (isGuest) {
-      const row = { ...data, id: Date.now().toString(), user_id: 'guest', created_at: new Date().toISOString() }
-      setCandidature(prev => [row, ...prev])
-      const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
-      showToast(_l === 'en' ? `Added! 🚀 +${xp} XP` : `Aggiunta! 🚀 +${xp} XP`, 'success')
-      if (isFirst) triggerConfetti()
-      return row
-    }
-
-    const { data: row, error } = await supabase
-      .from('candidature')
-      .insert({ ...data, user_id: user.id })
-      .select().single()
-
-    if (error) {
-      showToast(_l === 'en' ? '❌ Error!' : '❌ Errore!', 'error')
-      return null
-    }
-
+    const row = { ...data, id: crypto.randomUUID?.() || Date.now().toString(), user_id: 'local', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
     setCandidature(prev => [row, ...prev])
     const xp = isFirst ? XP_EVENTS.FIRST_CANDIDATURA : XP_EVENTS.ADD_CANDIDATURA
     await addXP(xp)
     showToast(_l === 'en' ? `🎉 Added! +${xp} XP` : `🎉 Aggiunta! +${xp} XP`, 'success')
-    triggerConfetti()
+    if (isFirst) triggerConfetti()
     await checkBadges()
     return row
   }
@@ -142,11 +77,6 @@ export function AppProvider({ children }) {
     const prev = candidature.find(c => c.id === id)
 
     try {
-      if (!isGuest) {
-        const { error } = await supabase.from('candidature').update(updates).eq('id', id)
-        if (error) throw error
-      }
-
       setCandidature(prevList => prevList.map(c => 
         c.id === id ? { ...c, ...updates } : c
       ))
@@ -162,10 +92,7 @@ export function AppProvider({ children }) {
           pushNotification(pTitle, pBody, id)
           sendPushNow(pTitle, pBody)
           
-          if (!isGuest) {
-            const { data: exCl } = await supabase.from('checklist_items').select('id').eq('candidatura_id', id).limit(1)
-            if (!exCl || exCl.length === 0) await createChecklist(id)
-          }
+          await createChecklist(id)
         } else if (updates.stato === 'Offerta ricevuta') {
           await addXP(XP_EVENTS.OFFERTA)
           showToast(_l === 'en' ? '🏆 OFFER! +50 XP' : '🏆 OFFERTA! +50 XP', 'success')
@@ -192,8 +119,6 @@ export function AppProvider({ children }) {
   const deleteCandidatura = async (id) => {
     const _l = getLang()
     const cand = candidature.find(c => c.id === id)
-    if (!isGuest) await supabase.from('candidature').delete().eq('id', id)
-    
     setCandidature(cs => {
       const updated = cs.filter(c => c.id !== id)
       setTimeout(() => recheckBadgesAfterDelete(updated), 100)
@@ -209,10 +134,9 @@ export function AppProvider({ children }) {
 
   const addBulkCandidature = async (rows) => {
     const _l = getLang()
-    const toInsert = rows.map(r => ({ ...r, user_id: user.id }))
-    const { data, error } = await supabase.from('candidature').insert(toInsert).select()
-    if (error) return false
-    setCandidature(prev => [...(data || []), ...prev])
+    const now = new Date().toISOString()
+    const data = rows.map((r, i) => ({ ...r, id: crypto.randomUUID?.() || `${Date.now()}-${i}`, user_id: 'local', created_at: now, updated_at: now }))
+    setCandidature(prev => [...data, ...prev])
     showToast(_l === 'en' ? '🎉 Imported!' : '🎉 Importate!', 'success')
     triggerConfetti()
     await checkBadges()
@@ -222,18 +146,11 @@ export function AppProvider({ children }) {
   // --- LOGICA XP / PROFILE / STREAK ---
 
   const addXP = async (amount) => {
-    if (!profile || isGuest) return
-    const { data: fresh } = await supabase.from('user_profiles').select('xp_points').eq('id', user.id).single()
-    const newXP = (fresh?.xp_points || 0) + amount
-    await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
-    setProfile(p => ({ ...p, xp_points: newXP }))
+    setProfile(p => p ? ({ ...p, xp_points: (p.xp_points || 0) + amount }) : p)
   }
 
   const removeXP = async (amount) => {
-    if (!profile || isGuest) return
-    const newXP = Math.max(0, (profile.xp_points || 0) - amount)
-    await supabase.from('user_profiles').update({ xp_points: newXP }).eq('id', user.id)
-    setProfile(p => ({ ...p, xp_points: newXP }))
+    setProfile(p => p ? ({ ...p, xp_points: Math.max(0, (p.xp_points || 0) - amount) }) : p)
   }
 
   const xpForCandidatura = (cand) => {
@@ -244,12 +161,11 @@ export function AppProvider({ children }) {
   }
 
   const updateProfile = async (updates) => {
-    if (!isGuest) await supabase.from('user_profiles').update(updates).eq('id', user.id)
     setProfile(p => ({ ...p, ...updates }))
   }
 
   const updateStreak = async () => {
-    if (!profile || isGuest) return
+    if (!profile) return
     const today = new Date().toISOString().split('T')[0]
     const last = profile.ultimo_accesso
     let streak = profile.streak_giorni || 0
@@ -308,20 +224,29 @@ export function AppProvider({ children }) {
 
   // --- CHECKLIST ---
 
+  const checklistKey = (cid) => `lfs_checklist_${cid}`
+
   const createChecklist = async (cid) => {
-    if (isGuest) return
-    const items = DEFAULT_CHECKLIST.map((task, i) => ({ user_id: user.id, candidatura_id: cid, task, fatto: false, ordine: i }))
-    await supabase.from('checklist_items').insert(items)
+    if (localStorage.getItem(checklistKey(cid))) return
+    const items = DEFAULT_CHECKLIST.map((task, i) => ({ id: `${cid}-${i}`, candidatura_id: cid, task, fatto: false, ordine: i }))
+    localStorage.setItem(checklistKey(cid), JSON.stringify(items))
   }
 
   const getChecklist = async (cid) => {
-    if (isGuest) return []
-    const { data } = await supabase.from('checklist_items').select('*').eq('candidatura_id', cid).order('ordine')
-    return data || []
+    try { return JSON.parse(localStorage.getItem(checklistKey(cid)) || '[]') } catch { return [] }
   }
 
   const toggleChecklistItem = async (iid, fatto) => {
-    if (!isGuest) await supabase.from('checklist_items').update({ fatto }).eq('id', iid)
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('lfs_checklist_'))
+    for (const key of keys) {
+      let items = []
+      try { items = JSON.parse(localStorage.getItem(key) || '[]') } catch {}
+      if (items.some(i => i.id === iid)) {
+        items = items.map(i => i.id === iid ? { ...i, fatto } : i)
+        localStorage.setItem(key, JSON.stringify(items))
+        break
+      }
+    }
     if (fatto) await addXP(XP_EVENTS.CHECKLIST_ITEM)
   }
 
@@ -335,18 +260,7 @@ export function AppProvider({ children }) {
     setNotifications(prev => [notif, ...prev.slice(0, 49)])
   }
 
-  const sendPushNow = (title, body) => {
-    if (!user || isGuest) return
-    supabase.from('user_profiles').select('push_subscription').eq('id', user.id).single()
-      .then(({ data }) => {
-        if (!data?.push_subscription) return
-        fetch('/api/send-push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: data.push_subscription, title, body })
-        }).catch(() => {})
-      })
-  }
+  const sendPushNow = () => {}
 
   const checkScheduledNotifications = useCallback(() => {
     if (!candidature.length) return
@@ -370,16 +284,17 @@ export function AppProvider({ children }) {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const markOnboarded = async () => {
+    await updateProfile({ seen_onboarding: true })
+    localStorage.setItem('lfs_onboarding_done', '1')
+  }
+
   const triggerConfetti = () => {
     setConfetti(true)
     setTimeout(() => setConfetti(false), 2000)
   }
 
-  const migrateGuestToAccount = async (e, p) => {
-    const data = [...candidature]; const { error } = await convertGuestToAccount(e, p)
-    if (error) return { error }
-    showToast('Migrating...', 'info'); return { success: true }
-  }
+  const migrateGuestToAccount = async () => ({ error: new Error('Account disabilitati') })
 
   return (
     <AppContext.Provider value={{
