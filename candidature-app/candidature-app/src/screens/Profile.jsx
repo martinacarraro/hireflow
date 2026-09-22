@@ -2,10 +2,8 @@ import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as XLSX from 'xlsx'
 import { useApp } from '../contexts/AppContext'
-import { useAuth } from '../contexts/AuthContext'
 import { XpBar, SectionLabel } from '../components/UI'
 import { BADGES } from '../lib/utils'
-import { supabase } from '../lib/supabase'
 
 const TEMPLATE_B64 = 'UEsDBBQAAAAIAKpoZlxGx01IlQAAAM0AAAAQAAAAZG9jUHJvcHMvYXBwLnhtbE3PTQvCMAwG4L9SdreZih6kDkQ9ip68zy51hbYpbYT67+0EP255ecgboi6JIia2mEXxLuRtMzLHDUDWI/o+y8qhiqHke64x3YGMsRoPpB8eA8OibdeAhTEMOMzit7Dp1C5GZ3XPlkJ3sjpRJsPiWDQ6sScfq9wcChDneiU+ixNLOZcrBf+LU8sVU57mym/8ZAW/B7oXUEsDBBQAAAAIAKpoZlzd9FQI7gAAACsCAAARAAAAZG9jUHJvcHMvY29yZS54bWzNks9qwzAMh19l+J7ISVgOJs1lY6cWBits7GZstTWL/2BrJH37JV6bMrYH2NHSz58+gToVhPIRn6MPGMlgupvs4JJQYcNOREEAJHVCK1M5J9zcPPhoJc3PeIQg1Yc8ItSct2CRpJYkYQEWYSWyvtNKqIiSfLzgtVrx4TMOGaYV4IAWHSWoygpYv0wM52no4AZYYITRpu8C6pWYq39icwfYJTkls6bGcSzHJufmHSp4221f8rqFcYmkUzj/SkbQOeCGXSe/Ng+P+yfW17xuC94UvN1XjeD3oq7eF9cffjdh67U5mH9sfBXsO/h1F/0XUEsDBBQAAAAIAKpoZlyZXJwjEAYAAJwnAAATAAAAeGwvdGhlbWUvdGhlbWUxLnhtbO1aW3PaOBR+76/QeGf2bQvGNoG2tBNzaXbbtJmE7U4fhRFYjWx5ZJGEf79HNhDLlg3tkk26mzwELOn7zkVH5+g4efPuLmLohoiU8nhg2S/b1ru3L97gVzIkEUEwGaev8MAKpUxetVppAMM4fckTEsPcgosIS3gUy9Zc4FsaLyPW6rTb3VaEaWyhGEdkYH1eLGhA0FRRWm9fILTlHzP4FctUjWWjARNXQSa5iLTy+WzF/NrePmXP6TodMoFuMBtYIH/Ob6fkTlqI4VTCxMBqZz9Wa8fR0kiAgsl9lAW6SfAFg07Op1YznZ89sTtn4zK2nQ0bRrg4/F4OLbL0otwHATgUbuewp30bL+kQQm0o2nQZNj22q6RpqqNU0/T933f65tonAqNW0/Ta3fd046Jxq3QeA2+8U+Hw66JxqvQdOtpJif9rmuk6RZoQkbj63oSFbXlQNMgAFhwdtbM0gOWXin6dZQa2R273UFc8FjuOYkR/sbFBNZp0hmWNEZynZAFDgA3xNFMUHyvQbaK4MKS0lyQ1s8ptVAaCJrIgfVHgiHF3K/99Ze7yaQzep19Os5rlH9pqwGn7bubz5P8c+jkn6eT101CznC8LAnx+yNbYYcnbjsTcjocZ0J8z/b2kaUlMs/v+QrrTjxnH1aWsF3Pz+SejHIju932WH32T0duI9epwLMi15RGJEWfyC265BE4tUkNMhM/CJ2GmGpQHAKkCTGWoYb4tMasEeATfbe+CMjfjYj3q2+aPVehWEnahPgQRhrinHPmc9Fs+welRtH2Vbzco5dYFQGXGN80qjUsxdZ4lcDxrZw8HRMSzZQLBkGGlyQmEqk5fk1IE/4rpdr+nNNA8JQvJPpKkY9psyOndCbN6DMawUavG3WHaNI8ev4F+Zw1ChyRGx0CZxuzRiGEabvwHq8kjpqtwhErQj5iGTYacrUWgbZxqYRgWhLG0XhO0rQR/FmsNZM+YMjszZF1ztaRDhGSXjdCPmLOi5ARvx6GOEqa7aJxWAT9nl7DScHogstm/bh+htUzbCyO90fUF0rkDyanP+kyNAejmlkJvYRWap+qhzQ+qB4yCgXxuR4+5Xp4CjeWxrxQroJ7Af/R2jfCq/iCwDl/Ln3Ppe+59D2h0rc3I31nwdOLW95GblvE+64x2tc0LihjV3LNyMdUr5Mp2DmfwOz9aD6e8e362SSEr5pZLSMWkEuBs0EkuPyLyvAqxAnoZFslCctU02U3ihKeQhtu6VP1SpXX5a+5KLg8W+Tpr6F0PizP+Txf57TNCzNDt3JL6raUvrUmOEr0scxwTh7LDDtnPJIdtnegHTX79l125COlMFOXQ7gaQr4Dbbqd3Do4npiRuQrTUpBvw/npxXga4jnZBLl9mFdt59jR0fvnwVGwo+88lh3HiPKiIe6hhpjPw0OHeXtfmGeVxlA0FG1srCQsRrdguNfxLBTgZGAtoAeDr1EC8lJVYDFbxgMrkKJ8TIxF6HDnl1xf49GS49umZbVuryl3GW0iUjnCaZgTZ6vK3mWxwVUdz1Vb8rC+aj20FU7P/lmtyJ8MEU4WCxJIY5QXpkqi8xlTvucrScRVOL9FM7YSlxi84+bHcU5TuBJ2tg8CMrm7Oal6ZTFnpvLfLQwJLFuIWRLiTV3t1eebnK56Inb6l3fBYPL9cMlHD+U751/0XUOufvbd4/ukztITJx5xREBdEUCI5UcBhYXMuRQ7pKQBhMBzZTJRPACgmSmHICY+gu98gy5KRXOrT45f0Usg4ZOXtIlEhSKsAwFIRdy4+/vk2p3jNf6LIFthFQyZNUXykOJwT0zckPYVCXzrtomC4Xb4lTNuxq+JmBLw3punS0n/9te1D20Fz1G86OZ4B6zh3OberjCRaz/WNYe+TLfOXDbOt4DXuYTLEOkfsF9ioqAEativrqvT/klnDu0e/GBIJv81tuk9t3gDHzUq1qlZCsRP0sHfB+SBmOMW/Q0X48UYq2msa3G2jEMeYBY8wyhZjjfh0WaGjPVi6w5jQpvQdVA5T/b1A1o9g00HJEFXjGZtjaj5E4KPNz+7w2wwsSO4e2LvwFQSwMEFAAAAAgAqmhmXK6b0c1HAwAACgkAABgAAAB4bC93b3Jrc2hlZXRzL3NoZWV0MS54bWyNVlFv0zAQ/itWkHhqlzRZyxhtJdYOmMSgWmGIRy+5ttYcX7CdhfHrOTtp6FgarQ9tfb7vu/vOzl2mFep7swOw7HculZkFO2uL8zA06Q5ybk6wAEU7G9Q5t7TU29AUGnjmQbk'
 
@@ -19,7 +17,6 @@ export default function Profile() {
     addBulkCandidature,
   } = useApp()
 
-  const { user, signOut } = useAuth()
   const { t, i18n } = useTranslation()
 
   const changeLanguage = (lang) => {
@@ -80,45 +77,16 @@ export default function Profile() {
     }
   }
 
-  const deleteAccount = async () => {
+  const deleteLocalData = () => {
     const confirmMessage = isIt
-      ? 'Sei sicuro di voler eliminare tutti i tuoi dati? Questa azione è irreversibile.'
-      : 'Are you sure you want to delete all your data? This action is irreversible.'
-
+      ? 'Vuoi eliminare tutti i dati salvati su questo dispositivo? L’azione è irreversibile.'
+      : 'Delete all data stored on this device? This cannot be undone.'
     if (!window.confirm(confirmMessage)) return
 
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      const token = session?.access_token
-      if (!token) {
-        throw new Error(isIt ? 'Sessione non trovata' : 'Session not found')
-      }
-
-      const res = await fetch('/api/delete-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(
-          err.error ||
-            (isIt
-              ? 'Errore durante eliminazione'
-              : 'Error while deleting account')
-        )
-      }
-
-      await signOut()
-    } catch (err) {
-      alert(isIt ? `Errore: ${err.message}` : `Error: ${err.message}`)
-    }
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('lfs_'))
+      .forEach(k => localStorage.removeItem(k))
+    window.location.reload()
   }
 
   if (showNotifs) {
@@ -360,21 +328,22 @@ export default function Profile() {
           </div>
         </div>
 
+        <div className="card">
+          <SectionLabel>🔒 {isIt ? 'Privacy e dati' : 'Privacy & data'}</SectionLabel>
+          <p className="text-[11px] text-muted leading-relaxed mb-3">
+            {isIt
+              ? 'Candidature, profilo, XP e checklist vengono salvati solo su questo dispositivo. Nessun account e nessuna sincronizzazione cloud.'
+              : 'Applications, profile, XP and checklists are stored only on this device. No account and no cloud sync.'}
+          </p>
+          <button
+            onClick={deleteLocalData}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold border"
+            style={{ borderColor:'rgba(248,113,113,0.35)', color:'#F87171', background:'rgba(248,113,113,0.06)' }}>
+            {isIt ? '🗑️ Elimina tutti i dati locali' : '🗑️ Delete all local data'}
+          </button>
+        </div>
+
         <div className="pt-4 space-y-2">
-          <button
-            onClick={() => signOut()}
-            className="w-full py-3 bg-white/5 rounded-xl text-txt font-bold text-sm"
-          >
-            LOGOUT
-          </button>
-
-          <button
-            onClick={deleteAccount}
-            className="w-full py-2 text-red/60 text-[10px] font-medium uppercase tracking-widest text-center"
-          >
-            {isIt ? '🗑️ ELIMINA ACCOUNT' : '🗑️ DELETE ACCOUNT'}
-          </button>
-
           <div className="flex justify-center gap-4 mt-3 flex-wrap">
             <a
               href="https://lefaremosapere.vercel.app/privacy.html"
