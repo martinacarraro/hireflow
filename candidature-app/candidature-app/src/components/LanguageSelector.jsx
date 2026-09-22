@@ -4,8 +4,9 @@ export default function LanguageSelector({ onSelect }) {
   const { i18n } = useTranslation()
 
   const scegli = (lang) => {
-    i18n.changeLanguage(lang)
+    localStorage.setItem('lfs_lang', lang)
     localStorage.setItem('lingua', lang)
+    i18n.changeLanguage(lang)
     onSelect()
   }
 
