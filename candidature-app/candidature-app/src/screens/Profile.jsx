@@ -22,6 +22,12 @@ export default function Profile() {
   const { user, signOut } = useAuth()
   const { t, i18n } = useTranslation()
 
+  const changeLanguage = (lang) => {
+    localStorage.setItem('lfs_lang', lang)
+    localStorage.setItem('lingua', lang)
+    i18n.changeLanguage(lang)
+  }
+
   const [showNotifs, setShowNotifs] = useState(false)
   const [editNome, setEditNome] = useState(false)
   const [nomeEdit, setNomeEdit] = useState(profile?.nome || '')
@@ -331,7 +337,7 @@ export default function Profile() {
 
           <div className="flex gap-2 mt-2">
             <button
-              onClick={() => i18n.changeLanguage('it')}
+              onClick={() => changeLanguage('it')}
               className={`flex-1 py-2 rounded-xl text-xs font-bold ${
                 i18n.language === 'it'
                   ? 'bg-purple text-white'
@@ -342,7 +348,7 @@ export default function Profile() {
             </button>
 
             <button
-              onClick={() => i18n.changeLanguage('en')}
+              onClick={() => changeLanguage('en')}
               className={`flex-1 py-2 rounded-xl text-xs font-bold ${
                 i18n.language === 'en'
                   ? 'bg-purple text-white'
