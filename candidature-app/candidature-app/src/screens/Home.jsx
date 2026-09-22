@@ -1,58 +1,11 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { useAuth } from '../contexts/AuthContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
-function GuestConvertModal({ onClose, onSuccess }) {
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState('')
-  const { migrateGuestToAccount } = useApp()
-  const { t, i18n } = useTranslation()
-
-  const handle = async () => {
-    if (!email || !password) return setError(t('home.compilaCampi'))
-    if (password.length < 6) return setError(t('home.passwordMinimo'))
-    setLoading(true); setError('')
-    const result = await migrateGuestToAccount(email, password)
-    setLoading(false)
-    if (result?.error) setError(result.error.message)
-    else onSuccess?.()
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-lg rounded-t-3xl p-6 space-y-4" style={{ background: '#1A1A2E' }}>
-        <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
-        <div className="text-center">
-          <p className="text-2xl mb-1">👻✨</p>
-          <h3 className="font-bold text-txt text-lg">{t('home.salvaProgressi')}</h3>
-          <p className="text-muted text-sm mt-1">{t('home.salvaProgressiDesc')}</p>
-        </div>
-        <input className="input-field" type="email" placeholder={t('login.tuaEmail')}
-          value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="input-field" type="password" placeholder={t('home.scegliPassword')}
-          value={password} onChange={e => setPassword(e.target.value)} />
-        {error && <p className="text-red text-xs text-center">{error}</p>}
-        <button onClick={handle} disabled={loading}
-          className="w-full py-3.5 rounded-2xl font-bold text-white transition-opacity"
-          style={{ background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity: loading ? 0.6 : 1 }}>
-          {loading ? t('home.salvataggio') : t('home.creaAccountSalva')}
-        </button>
-        <button onClick={onClose} className="w-full text-center text-muted text-sm py-2">
-          {t('home.continuaOspite')}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
-  const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura, migrateGuestToAccount } = useApp()
-  const { user, isGuest } = useAuth()
+  const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
   const { t, i18n } = useTranslation()
 
   // --- AGGIUNGI QUESTA RIGA ---
@@ -60,7 +13,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const candidatureAttive = candidature.filter(c => !c.archiviata)
   // ----------------------------
 
-  const nome = profile?.nome || user?.user_metadata?.full_name?.split(' ')[0] || ''
+  const nome = profile?.nome || ''
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -88,7 +41,6 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
-  const [showGuestModal, setShowGuestModal] = useState(false)
 
  const stats = useMemo(() => [
   { emoji: '📞', label: t('home.primaCall'),   stato: 'Prima call',         color: '#A855F7' },
@@ -307,17 +259,6 @@ const candidatureFiltrate = useMemo(() => {
           </div>
         )}
 
-        {isGuest && (
-          <div className="mx-1 mb-3 rounded-2xl px-4 py-3 flex items-center gap-3 cursor-pointer active:opacity-80"
-            style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.25), rgba(255,45,139,0.25))', border: '1px solid rgba(123,47,255,0.4)' }}
-            onClick={() => setShowGuestModal(true)}>
-            <span className="text-xl">👻</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-txt">{t('home.modalitaOspite')}</p>
-              <p className="text-xs text-muted">{t('home.modalitaOspiteDesc')}</p>
-            </div>
-          </div>
-        )}
 
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           <button
@@ -396,12 +337,6 @@ const candidatureFiltrate = useMemo(() => {
         onCancel={() => setConfirmBulkArchive(false)}
       />
 
-      {showGuestModal && (
-        <GuestConvertModal
-          onClose={() => setShowGuestModal(false)}
-          onSuccess={() => setShowGuestModal(false)}
-        />
-      )}
     </div>
   )
 }
