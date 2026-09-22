@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
-import { supabase } from './lib/supabase'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
 import Splash from './screens/Splash'
-import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
 import Home from './screens/Home'
 import AddCandidatura from './screens/AddCandidatura'
@@ -17,7 +15,7 @@ import LanguageSelector from './components/LanguageSelector'
 import { useTranslation } from 'react-i18next'
 
 export default function App() {
-  const { user, loading: authLoading, isGuest } = useAuth()
+  const { loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const { t } = useTranslation() // Hook usato correttamente nel componente principale
   
@@ -32,35 +30,14 @@ export default function App() {
   const [view, setView] = useState(null)
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
-  const [showResetPassword, setShowResetPassword] = useState(false)
-  const [showReviewPopup, setShowReviewPopup] = useState(false)
-  const [showTutorial, setShowTutorial] = useState(false)
-  const [newPassword, setNewPassword] = useState('')
-  const [resetLoading, setResetLoading] = useState(false)
-  const [resetDone, setResetDone] = useState(false)
 
-  const loading = authLoading || (user && dataLoading)
+  const loading = authLoading || dataLoading
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
   }, [])
-
-  useEffect(() => {
-    const hash = window.location.hash
-    if (hash.includes('type=recovery') || hash.includes('type=signup')) {
-      setShowResetPassword(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('lfs_seen_intro', '1')
-      localStorage.setItem('lfs_had_session', '1')
-      setShowFirstOnboarding(false)
-    }
-  }, [user])
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -86,75 +63,32 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!user && !isGuest) return
-    if (loading || dataLoading) return
-    if (user) {
-      const key = `lfs_tutorial_done_${user.id}`
-      if (!localStorage.getItem(key)) setShowTutorial(true)
-    } else {
-      if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
-    }
-  }, [user, isGuest, loading, dataLoading])
+    if (!isGuest || loading || dataLoading) return
+    if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
+  }, [isGuest, loading, dataLoading])
 
   useEffect(() => {
-  if (!user) return
-  const reviewKey = `lfs_review_shown_${user.id}`
-  const lastShown = localStorage.getItem(reviewKey)
-  const registered = new Date(user.created_at)
-  const daysSinceRegistration = Math.floor((new Date() - registered) / 86400000)
-  
-  if (daysSinceRegistration < 3) return // troppo presto
-
-  if (lastShown) {
-    const daysSinceLastShown = Math.floor((new Date() - new Date(lastShown)) / 86400000)
-    if (daysSinceLastShown < 30) return // già mostrato meno di 30 giorni fa
-  }
-
-  const timeout = setTimeout(() => setShowReviewPopup(true), 3000)
-  return () => clearTimeout(timeout)
-}, [user])
+    const firstUse = localStorage.getItem('lfs_first_use_at')
+    const now = new Date()
+    if (!firstUse) {
+      localStorage.setItem('lfs_first_use_at', now.toISOString())
+      return
+    }
+    const daysSinceFirstUse = Math.floor((now - new Date(firstUse)) / 86400000)
+    if (daysSinceFirstUse < 3) return
+    const lastShown = localStorage.getItem('lfs_review_shown_local')
+    if (lastShown && Math.floor((now - new Date(lastShown)) / 86400000) < 30) return
+    const timeout = setTimeout(() => setShowReviewPopup(true), 3000)
+    return () => clearTimeout(timeout)
+  }, [])
 
   if (showSplash || loading) return <Splash onDone={() => setShowSplash(false)} />
   if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
   if (showFirstOnboarding) return <FirstTimeIntro onDone={() => setShowFirstOnboarding(false)} />
 
-  if (showResetPassword) return (
-    <div className="h-full flex flex-col items-center justify-center px-6" style={{ background: '#0E0E1A' }}>
-      <div className="w-full max-w-sm text-center">
-        {resetDone ? (
-          <>
-            <p className="text-5xl mb-4">✅</p>
-            <h2 className="text-xl font-bold text-white mb-2">Password aggiornata!</h2>
-            <p className="text-sm text-gray-400">Riapri l'app e accedi.</p>
-          </>
-        ) : (
-          <>
-            <p className="text-5xl mb-4">🔑</p>
-            <h2 className="text-xl font-bold text-white mb-2">Nuova password</h2>
-            <input type="password" placeholder="Min. 6 caratteri"
-              className="input-field w-full mb-3"
-              value={newPassword} onChange={e => setNewPassword(e.target.value)} autoFocus />
-            <button onClick={async () => {
-              setResetLoading(true)
-              const { error } = await supabase.auth.updateUser({ password: newPassword })
-              setResetLoading(false)
-              if (error) alert(error.message)
-              else setResetDone(true)
-            }} className="btn-primary w-full py-3">{resetLoading ? '⏳...' : '✅ Salva'}</button>
-          </>
-        )}
-      </div>
-    </div>
-  )
-
-  if (!user && !isGuest) return <Login />
-
-  const onboardingKey = user ? `lfs_onboarding_done_${user.id}` : null
-  const hasSeenOnboarding = (onboardingKey && !!localStorage.getItem(onboardingKey)) || profile?.seen_onboarding === true
-  if (user && !dataLoading && profile && !hasSeenOnboarding) return (
-    <Onboarding 
-    t={t} 
-    onDone={() => onboardingKey && localStorage.setItem(onboardingKey, '1')} />
+  const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
+  if (!dataLoading && profile && !hasSeenOnboarding) return (
+    <Onboarding onDone={() => localStorage.setItem('lfs_onboarding_done', '1')} />
   )
 
   if (view?.type === 'detail') return <DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} />
@@ -174,11 +108,11 @@ export default function App() {
       <Confetti active={confetti} />
       {showReviewPopup && (
         <ReviewPopup 
-          user={user} 
+          user={null} 
           profile={profile} 
           t={t} 
           onClose={() => {
-  localStorage.setItem(`lfs_review_shown_${user.id}`, new Date().toISOString())
+  localStorage.setItem('lfs_review_shown_local', new Date().toISOString())
   setShowReviewPopup(false)
 }}
         />
