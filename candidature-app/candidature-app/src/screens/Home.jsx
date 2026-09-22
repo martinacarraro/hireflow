@@ -580,7 +580,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
               <span className="text-xs text-muted font-medium">{days}{t('home.ggFa')}</span>
             </div>
           </div>
-          {c.data_scadenza_responso && <DeadlineRow scadenza={c.data_scadenza_responso} />}
+          {c.data_scadenza_responso && c.stato !== 'Assunta' && <DeadlineRow scadenza={c.data_scadenza_responso} />}
         </div>
       </div>
     </div>
