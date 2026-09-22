@@ -210,7 +210,7 @@ export default function Profile() {
               </button>
             )}
 
-            <p className="text-xs text-muted truncate">{user?.email}</p>
+            <p className="text-xs text-muted truncate">{isIt ? 'Dati salvati sul dispositivo' : 'Data stored on this device'}</p>
           </div>
         </div>
 
