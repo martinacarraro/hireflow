@@ -14,7 +14,6 @@ const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOS
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP, checkBadges } = useApp()
-  const { user } = useApp()
   const { t } = useTranslation()
   const trStatus = (status) => t(`add.stati.${status}`, status)
   const trPriority = (priority) => t(`add.priorita.${priority}`, priority)
