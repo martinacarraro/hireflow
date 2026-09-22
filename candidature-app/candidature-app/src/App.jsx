@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from './contexts/AuthContext'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
 import Splash from './screens/Splash'
@@ -15,7 +14,6 @@ import LanguageSelector from './components/LanguageSelector'
 import { useTranslation } from 'react-i18next'
 
 export default function App() {
-  const { loading: authLoading, isGuest } = useAuth()
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
   const { t } = useTranslation() // Hook usato correttamente nel componente principale
   
@@ -33,7 +31,7 @@ export default function App() {
   const [showReviewPopup, setShowReviewPopup] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
 
-  const loading = authLoading || dataLoading
+  const loading = dataLoading
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -65,9 +63,9 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!isGuest || loading || dataLoading) return
+    if (loading || dataLoading) return
     if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
-  }, [isGuest, loading, dataLoading])
+  }, [loading, dataLoading])
 
   useEffect(() => {
     const firstUse = localStorage.getItem('lfs_first_use_at')
