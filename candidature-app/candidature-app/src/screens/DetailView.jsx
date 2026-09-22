@@ -33,27 +33,11 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const aziendaTimer = useRef(null)
 
   useEffect(() => {
-    if (!editingAzienda) return
-    const q = form.azienda.trim()
-    if (q.length < 2) { setAziendaSugg([]); setShowAziendaSugg(false); return }
-    clearTimeout(aziendaTimer.current)
-    aziendaTimer.current = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`,
-          { mode: 'cors' }
-        )
-        if (!res.ok) throw new Error('no results')
-        const data = await res.json()
-        setAziendaSugg(data.slice(0, 6))
-        setShowAziendaSugg(data.length > 0)
-      } catch {
-        const domain = q.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'
-        setAziendaSugg([{ name: q, domain, logo: `https://logo.clearbit.com/${domain}` }])
-        setShowAziendaSugg(true)
-      }
-    }, 350)
+    // Privacy-first: il nome dell'azienda non viene inviato a servizi esterni.
+    setAziendaSugg([])
+    setShowAziendaSugg(false)
   }, [form.azienda, editingAzienda])
+
 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
