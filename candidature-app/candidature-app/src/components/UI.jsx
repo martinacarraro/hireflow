@@ -61,63 +61,19 @@ function guessDomain(name) {
   return clean + '.com'
 }
 
-export function CompanyAvatar({ name = '?', size = 40, domain: domainProp }) {
+export function CompanyAvatar({ name = '?', size = 40 }) {
   const letter = name.trim().charAt(0).toUpperCase() || '?'
   const [bg, text] = getAvatarColor(letter)
-  const domain = guessDomain(name)
-
-  // domainProp = '' → utente ha scelto "nome personalizzato" → SEMPRE lettera, niente logo
-  // domainProp = stringa → scelto da autocomplete → Clearbit → Google Favicon
-  // domainProp = undefined/null → non impostato → Google Favicon con dominio indovinato
-  const forceNoLogo = domainProp === ''
-  const sources = React.useMemo(() => {
-    if (forceNoLogo) return []
-    if (domainProp) return [
-      `https://logo.clearbit.com/${domainProp}`,
-      `https://www.google.com/s2/favicons?domain=${domainProp}&sz=128`,
-    ]
-    return [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`]
-  }, [domain, domainProp, forceNoLogo])
-
-  const [idx, setIdx] = React.useState(0)
-  const [failed, setFailed] = React.useState(false)
-
-  React.useEffect(() => { setIdx(0); setFailed(false) }, [domain])
-
-  const handleError = () => {
-    if (idx < sources.length - 1) setIdx(i => i + 1)
-    else setFailed(true)
-  }
-  const handleLoad = (e) => {
-    // Google favicon generico è 16px — salta al fallback
-    if (idx === 1 && e.target.naturalWidth <= 16) handleError()
-  }
-
-  if (failed || forceNoLogo) {
-    return (
-      <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
-        style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
-        {letter}
-      </div>
-    )
-  }
 
   return (
-    <div className="rounded-xl overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
-      style={{ width: size, height: size, minWidth: size }}>
-      <img
-        key={sources[idx]}
-        src={sources[idx]}
-        alt={name}
-        onLoad={handleLoad}
-        onError={handleError}
-        style={{ width: size * 0.82, height: size * 0.82, objectFit: 'contain' }}
-      />
+    <div className="flex items-center justify-center rounded-xl font-bold flex-shrink-0"
+      aria-label={name}
+      style={{ width: size, height: size, minWidth: size, fontSize: size * 0.42, background: bg, color: text }}>
+      {letter}
     </div>
   )
 }
 
-// ─── LEVEL BADGE ─────────────────────────────────────────────────
 export function LevelBadge({ xp = 0, genere }) {
   const { t } = useTranslation()
   const lv = getLevel(xp)
