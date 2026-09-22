@@ -25,23 +25,9 @@ export default function AddCandidatura({ onBack, onDone }) {
   const searchTimer = useRef(null)
 
   useEffect(() => {
-    const q = form.azienda.trim()
-    if (q.length < 2) { setSuggestions([]); setShowSugg(false); return }
-    clearTimeout(searchTimer.current)
-    searchTimer.current = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(q)}`,
-          { mode: 'cors' }
-        )
-        if (!res.ok) throw new Error('no results')
-        const data = await res.json()
-        setSuggestions(data.slice(0, 6))
-      } catch {
-        setSuggestions([])
-      }
-      setShowSugg(true)
-    }, 350)
+    // Privacy-first: nessuna ricerca azienda viene inviata a servizi esterni.
+    setSuggestions([])
+    setShowSugg(false)
   }, [form.azienda])
 
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
