@@ -53,6 +53,10 @@ export function AppProvider({ children }) {
     if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile))
   }, [candidature, profile])
 
+  useEffect(() => {
+    if (!loading && profile) updateStreak()
+  }, [loading])
+
   // --- CRUD CANDIDATURE ---
 
   const addCandidatura = async (data) => {
