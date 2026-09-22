@@ -122,7 +122,12 @@ export default function AddCandidatura({ onBack, onDone }) {
             <input className="input-field flex-1 text-sm" type="url"
               placeholder={t('add.linkPlaceholder')}
               value={form.link_annuncio} onChange={e => set('link_annuncio', e.target.value)} />
-          </Field>
+            {form.link_annuncio && (
+              <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
+                className="flex-shrink-0 px-3 py-2 rounded-xl border border-border text-muted text-sm active:scale-95 transition-all">↗</a>
+            )}
+          </div>
+        </Field>
 
         <Field label={t('add.prioritaLabel', t('detail.priorita'))}>
           <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)}
