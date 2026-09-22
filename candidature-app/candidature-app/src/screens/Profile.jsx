@@ -15,6 +15,7 @@ export default function Profile() {
     markAllNotificationsRead,
     unreadCount,
     addBulkCandidature,
+    candidature,
   } = useApp()
 
   const { t, i18n } = useTranslation()
@@ -31,11 +32,29 @@ export default function Profile() {
   const fileRef = useRef(null)
 
   const isIt = i18n.language === 'it'
-  const nome = profile?.nome || user?.email?.split('@')[0] || 'Utente'
-  const foto = user?.user_metadata?.avatar_url
+  const nome = profile?.nome || (isIt ? 'Utente' : 'User')
+  const foto = null
   const xp = profile?.xp_points || 0
   const earned = (profile?.badge_lista || '').split(',').filter(Boolean)
   const streak = profile?.streak_giorni || 0
+
+  const exportBackup = () => {
+    const backup = {
+      version: 1,
+      exported_at: new Date().toISOString(),
+      profile,
+      candidature,
+    }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `le-faremo-sapere-backup-${new Date().toISOString().slice(0,10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   const downloadTemplate = () => {
     if (!TEMPLATE_B64) return
@@ -335,6 +354,11 @@ export default function Profile() {
               ? 'Candidature, profilo, XP e checklist vengono salvati solo su questo dispositivo. Nessun account e nessuna sincronizzazione cloud.'
               : 'Applications, profile, XP and checklists are stored only on this device. No account and no cloud sync.'}
           </p>
+          <button
+            onClick={exportBackup}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold border border-white/10 bg-white/5 mb-2">
+            {isIt ? '💾 Esporta backup locale' : '💾 Export local backup'}
+          </button>
           <button
             onClick={deleteLocalData}
             className="w-full py-2.5 rounded-xl text-xs font-semibold border"
