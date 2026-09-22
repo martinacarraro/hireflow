@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useApp } from '../contexts/AppContext'
 import { useTranslation } from 'react-i18next'
 
