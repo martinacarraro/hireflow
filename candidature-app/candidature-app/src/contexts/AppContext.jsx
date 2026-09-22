@@ -296,7 +296,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       candidature, profile, notifications, toast, confetti, loading, unreadCount: notifications.filter(n => !n.read).length,
       addCandidatura, updateCandidatura, deleteCandidatura, addBulkCandidature, getChecklist, toggleChecklistItem,
-      addXP, removeXP, updateProfile, computeStats, checkBadges, triggerConfetti, showToast,
+      addXP, removeXP, updateProfile, computeStats, checkBadges, triggerConfetti, showToast, markOnboarded,
       pushNotification, sendPushNow, requestNotificationPermission, markAllNotificationsRead: () => setNotifications(n => n.map(x => ({...x, read: true})))
     }}>
       {children}
