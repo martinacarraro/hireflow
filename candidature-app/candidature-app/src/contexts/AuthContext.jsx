@@ -1,76 +1,36 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [isGuest, setIsGuest] = useState(() => !!localStorage.getItem('lfs_guest_mode'))
+  const [isGuest, setIsGuest] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      // Se siamo in modalità guest, ignoriamo la sessione Supabase
-      if (localStorage.getItem('lfs_guest_mode')) {
-        setUser(null)
-        setLoading(false)
-        return
-      }
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (localStorage.getItem('lfs_guest_mode')) return // ignora se siamo guest
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        setIsGuest(false)
-        localStorage.removeItem('lfs_guest_mode')
-      }
-    })
-    return () => subscription.unsubscribe()
+    localStorage.setItem('lfs_guest_mode', '1')
   }, [])
 
-  const signInWithEmail = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password })
-
-  const signUpWithEmail = (email, password) =>
-    supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: 'https://lefaremosapere.vercel.app'
-      }
-    })
-
-  const resetPassword = (email) =>
-    supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://lefaremosapere.vercel.app' })
-
-  const convertGuestToAccount = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) return { error }
-    return { data }
+  const enterAsGuest = async () => {
+    localStorage.setItem('lfs_guest_mode', '1')
+    setIsGuest(true)
   }
 
   const signOut = async () => {
-    setIsGuest(false)
-    localStorage.removeItem('lfs_guest_mode')
-    await supabase.auth.signOut()
-    setUser(null)
+    // Modalità solo locale: non esiste un account da disconnettere.
   }
 
-  const enterAsGuest = async () => {
-  await supabase.auth.signOut()
-  setUser(null)
-  // Pulisce i dati guest precedenti → ogni sessione ospite riparte da zero
-  localStorage.removeItem('lfs_guest_candidature')
-  localStorage.removeItem('lfs_guest_profile')
-  localStorage.setItem('lfs_guest_mode', '1')
-  setIsGuest(true)
-}
-
   return (
-    <AuthContext.Provider value={{ user, loading, isGuest, signInWithEmail, signUpWithEmail, signOut, enterAsGuest, convertGuestToAccount, resetPassword }}>
+    <AuthContext.Provider value={{
+      user: null,
+      loading,
+      isGuest,
+      signOut,
+      enterAsGuest,
+      signInWithEmail: async () => ({ error: new Error('Account disabilitati') }),
+      signUpWithEmail: async () => ({ error: new Error('Account disabilitati') }),
+      resetPassword: async () => ({ error: new Error('Account disabilitati') }),
+      convertGuestToAccount: async () => ({ error: new Error('Account disabilitati') }),
+    }}>
       {children}
     </AuthContext.Provider>
   )
