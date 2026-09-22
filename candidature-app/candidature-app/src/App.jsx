@@ -30,6 +30,8 @@ export default function App() {
   const [view, setView] = useState(null)
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
+  const [showReviewPopup, setShowReviewPopup] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
 
   const loading = authLoading || dataLoading
 
@@ -125,7 +127,7 @@ function FirstTimeIntro({ onDone }) {
   const [slide, setSlide] = useState(0)
   const SLIDES = [
     { title: '"Le faremo sapere."', subtitle: 'E tu tieni il conto.', body: 'Tieni traccia di ogni candidatura e colloquio.' },
-    { title: 'Tutto sotto controllo', subtitle: 'Gratis per sempre.', body: 'Inviata, Colloquio, Ghostata. Niente si perde.' },
+    { title: 'Tutto sotto controllo', subtitle: 'Privato per davvero.', body: 'Nessun account: candidature e progressi restano sul tuo dispositivo.' },
     { title: 'Guadagna badge', subtitle: 'La ricerca è una gara.', body: 'Sblocca badge e mantieni lo streak. 🏆' }
   ]
   const isLast = slide === SLIDES.length - 1
