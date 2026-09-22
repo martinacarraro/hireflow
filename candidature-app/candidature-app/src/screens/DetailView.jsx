@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import {
   StatusBadge, CompanyAvatar, SectionLabel, ConfirmDialog, Spinner
@@ -28,16 +28,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [loadingChecklist, setLoadingChecklist] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editingAzienda, setEditingAzienda] = useState(false)
-  const [aziendaSugg, setAziendaSugg] = useState([])
-  const [showAziendaSugg, setShowAziendaSugg] = useState(false)
-  const aziendaTimer = useRef(null)
-
-  useEffect(() => {
-    // Privacy-first: il nome dell'azienda non viene inviato a servizi esterni.
-    setAziendaSugg([])
-    setShowAziendaSugg(false)
-  }, [form.azienda, editingAzienda])
-
 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -570,31 +560,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   <div className="relative">
                     <input className="input-field text-sm font-bold py-1" value={form.azienda} autoFocus autoComplete="off"
                       onChange={e => { set('azienda', e.target.value); set('azienda_domain', '') }}
-                      onBlur={() => setTimeout(() => { setShowAziendaSugg(false); setEditingAzienda(false) }, 150)} />
-                    {(showAziendaSugg || form.azienda.trim().length > 1) && (
-                      <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl border border-border overflow-hidden shadow-xl" style={{ background:'#1A1A2E' }}>
-                        {aziendaSugg.map(s => (
-                          <button key={s.domain} type="button"
-                            onMouseDown={() => { set('azienda', s.name); set('azienda_domain', s.domain); setShowAziendaSugg(false); setEditingAzienda(false) }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface transition-colors border-b border-border/50 last:border-0">
-                            <div className="w-7 h-7 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
-                              <img src={`https://logo.clearbit.com/${s.domain}`} alt={s.name} className="w-6 h-6 object-contain" onError={e => e.target.style.display='none'} />
-                            </div>
-                            <div className="text-left min-w-0">
-                              <p className="text-sm font-medium text-txt truncate">{s.name}</p>
-                              <p className="text-xs text-disabled truncate">{s.domain}</p>
-                            </div>
-                          </button>
-                        ))}
-                        <button onMouseDown={() => { set('azienda_domain',''); setShowAziendaSugg(false); setEditingAzienda(false) }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface">
-                          <div className="w-7 h-7 rounded-lg bg-purple/20 flex items-center justify-center flex-shrink-0">
-                            <span className="text-purple-soft">+</span>
-                          </div>
-                          <p className="text-xs text-muted">{t('add.usaNomePersonalizzato', { nome: form.azienda })}</p>
-                        </button>
-                      </div>
-                    )}
+                      onBlur={() => setEditingAzienda(false)} />
                   </div>
                 ) : (
                   <button onClick={() => setEditingAzienda(true)} className="text-left w-full">
