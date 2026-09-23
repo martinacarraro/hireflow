@@ -14,8 +14,8 @@ const Profile = lazy(() => import('./screens/Profile'))
 const Calendar = lazy(() => import('./screens/Calendar'))
 
 export default function App() {
-  const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
-  const { t } = useTranslation() // Hook usato correttamente nel componente principale
+  const { profile, loading: dataLoading, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
+  const { t, i18n } = useTranslation()
   
   const [showSplash, setShowSplash] = useState(true)
   const [linguaScelta, setLinguaScelta] = useState(!!localStorage.getItem('lfs_lang'))
@@ -84,6 +84,13 @@ export default function App() {
       <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} />
       <Toast toast={toast} />
       <Confetti active={confetti} />
+      {migrationNotice && (
+        <MigrationNotice
+          notice={migrationNotice}
+          isIt={i18n.language !== 'en'}
+          onClose={dismissMigrationNotice}
+        />
+      )}
       {showReviewPopup && (
         <ReviewPopup
           profile={profile} 
@@ -94,6 +101,34 @@ export default function App() {
 }}
         />
       )}
+    </div>
+  )
+}
+
+function MigrationNotice({ notice, isIt, onClose }) {
+  const success = notice.type === 'success'
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-5">
+      <div className="card w-full max-w-sm text-center p-6">
+        <div className="text-5xl mb-3">{success ? '✅' : '⚠️'}</div>
+        <h2 className="text-xl font-bold text-txt mb-2">
+          {success
+            ? (isIt ? 'Dati recuperati' : 'Data recovered')
+            : (isIt ? 'Recupero non completato' : 'Recovery not completed')}
+        </h2>
+        <p className="text-sm text-muted leading-relaxed mb-5">
+          {success
+            ? (isIt
+                ? `Abbiamo copiato sul telefono ${notice.importedCount} candidature e ${notice.checklistCount} elementi delle checklist. Da ora restano disponibili solo sul dispositivo.`
+                : `We copied ${notice.importedCount} applications and ${notice.checklistCount} checklist items to this device. They are now stored locally.`)
+            : (isIt
+                ? 'La vecchia sessione non è più valida. Puoi recuperare i dati manualmente dalla sezione Profilo.'
+                : 'The old session is no longer valid. You can recover your data manually from Profile.')}
+        </p>
+        <button onClick={onClose} className="btn-primary w-full">
+          {isIt ? 'Ho capito' : 'Got it'}
+        </button>
+      </div>
     </div>
   )
 }

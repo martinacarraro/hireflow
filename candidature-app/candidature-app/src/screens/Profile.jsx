@@ -17,6 +17,7 @@ export default function Profile() {
     addBulkCandidature,
     candidature,
     showToast,
+    recoverLegacyData,
   } = useApp()
 
   const { t, i18n } = useTranslation()
@@ -30,6 +31,11 @@ export default function Profile() {
   const [showNotifs, setShowNotifs] = useState(false)
   const [editNome, setEditNome] = useState(false)
   const [nomeEdit, setNomeEdit] = useState(profile?.nome || '')
+  const [showLegacyRecovery, setShowLegacyRecovery] = useState(false)
+  const [legacyEmail, setLegacyEmail] = useState('')
+  const [legacyPassword, setLegacyPassword] = useState('')
+  const [legacyLoading, setLegacyLoading] = useState(false)
+  const [legacyError, setLegacyError] = useState('')
   const fileRef = useRef(null)
   const backupRef = useRef(null)
 
@@ -102,6 +108,30 @@ export default function Profile() {
       showToast(isIt ? 'Backup non valido' : 'Invalid backup', 'error')
     } finally {
       if (backupRef.current) backupRef.current.value = ''
+    }
+  }
+
+  const handleLegacyRecovery = async () => {
+    if (!legacyEmail.trim() || !legacyPassword) return
+    setLegacyLoading(true)
+    setLegacyError('')
+    try {
+      const result = await recoverLegacyData(legacyEmail.trim(), legacyPassword)
+      setLegacyEmail('')
+      setLegacyPassword('')
+      setShowLegacyRecovery(false)
+      showToast(
+        isIt ? `✅ Recuperate ${result.importedCount} candidature` : `✅ Recovered ${result.importedCount} applications`,
+        'success'
+      )
+    } catch (error) {
+      setLegacyError(
+        error?.message === 'invalid-credentials'
+          ? (isIt ? 'Email o password non corrette.' : 'Incorrect email or password.')
+          : (isIt ? 'Recupero non riuscito. Riprova più tardi.' : 'Recovery failed. Please try again later.')
+      )
+    } finally {
+      setLegacyLoading(false)
     }
   }
 
@@ -421,6 +451,45 @@ export default function Profile() {
             accept="application/json,.json"
             onChange={restoreBackup}
           />
+          <button
+            onClick={() => { setShowLegacyRecovery(v => !v); setLegacyError('') }}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold border border-purple/30 bg-purple/10 text-purple-soft mb-2">
+            {isIt ? '☁️ Recupera dati della vecchia versione' : '☁️ Recover data from the old version'}
+          </button>
+          {showLegacyRecovery && (
+            <div className="rounded-2xl border border-border bg-black/10 p-3 mb-3 space-y-2">
+              <p className="text-[10px] text-muted leading-relaxed">
+                {isIt
+                  ? 'Solo se usavi un account: accedi una volta per copiare candidature e checklist sul telefono. Le credenziali non vengono salvate.'
+                  : 'Only if you previously used an account: sign in once to copy applications and checklists to this device. Credentials are not stored.'}
+              </p>
+              <input
+                type="email"
+                autoComplete="email"
+                className="input-field text-sm"
+                placeholder="Email"
+                value={legacyEmail}
+                onChange={e => setLegacyEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                autoComplete="current-password"
+                className="input-field text-sm"
+                placeholder="Password"
+                value={legacyPassword}
+                onChange={e => setLegacyPassword(e.target.value)}
+              />
+              {legacyError && <p className="text-[11px] text-red-400">{legacyError}</p>}
+              <button
+                onClick={handleLegacyRecovery}
+                disabled={legacyLoading || !legacyEmail.trim() || !legacyPassword}
+                className="btn-primary w-full py-2.5 text-xs disabled:opacity-40">
+                {legacyLoading
+                  ? (isIt ? 'Recupero…' : 'Recovering…')
+                  : (isIt ? 'Copia i dati sul telefono' : 'Copy data to this device')}
+              </button>
+            </div>
+          )}
           <button
             onClick={deleteLocalData}
             className="w-full py-2.5 rounded-xl text-xs font-semibold border"

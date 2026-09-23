@@ -3,6 +3,7 @@ import i18n from '../i18n'
 import {
   XP_EVENTS, BADGES, DEFAULT_CHECKLIST, isYesterday, isToday
 } from '../lib/utils'
+import { migrateStoredLegacySession, recoverLegacyCloudData } from '../lib/legacyCloudMigration'
 
 const AppContext = createContext(null)
 
@@ -26,34 +27,55 @@ export function AppProvider({ children }) {
   const [toast, setToast] = useState(null)
   const [confetti, setConfetti] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [migrationNotice, setMigrationNotice] = useState(null)
   const sentNotifs = useRef(new Set())
 
   const getLang = () => (i18n.language === 'en' ? 'en' : 'it')
 
   // --- Caricamento locale ---
   useEffect(() => {
-    const savedLang = localStorage.getItem('lfs_lang') || 'it'
-    if (i18n.language !== savedLang) i18n.changeLanguage(savedLang)
+    let active = true
+    const loadData = async () => {
+      const savedLang = localStorage.getItem('lfs_lang') || 'it'
+      if (i18n.language !== savedLang) i18n.changeLanguage(savedLang)
 
-    const localCand = readLocalJson(CANDIDATURE_KEY, 'lfs_guest_candidature', [])
-    const localProf = readLocalJson(PROFILE_KEY, 'lfs_guest_profile', null)
-    const defaultProfile = {
-      id: 'local',
-      nome: '',
-      xp_points: 0,
-      streak_giorni: 0,
-      seen_onboarding: false,
-      badge_lista: ''
+      const localCand = readLocalJson(CANDIDATURE_KEY, 'lfs_guest_candidature', [])
+      const localProf = readLocalJson(PROFILE_KEY, 'lfs_guest_profile', null)
+      const defaultProfile = {
+        id: 'local',
+        nome: '',
+        xp_points: 0,
+        streak_giorni: 0,
+        seen_onboarding: false,
+        badge_lista: ''
+      }
+
+      let finalCand = localCand
+      let finalProf = localProf || defaultProfile
+
+      try {
+        const migrated = await migrateStoredLegacySession(localCand, finalProf)
+        if (migrated) {
+          finalCand = migrated.candidature
+          finalProf = migrated.profile
+          setMigrationNotice({ type: 'success', ...migrated })
+        }
+      } catch {
+        // La sessione resta sul dispositivo: il recupero potrà essere ritentato.
+        setMigrationNotice({ type: 'error' })
+      }
+
+      if (!active) return
+      setCandidature(finalCand)
+      setProfile(finalProf)
+      localStorage.setItem(CANDIDATURE_KEY, JSON.stringify(finalCand))
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(finalProf))
+      localStorage.removeItem('lfs_guest_mode')
+      setLoading(false)
     }
 
-    setCandidature(localCand)
-    setProfile(localProf || defaultProfile)
-
-    // Migrazione trasparente dai vecchi dati della modalità ospite.
-    localStorage.setItem(CANDIDATURE_KEY, JSON.stringify(localCand))
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(localProf || defaultProfile))
-    localStorage.removeItem('lfs_guest_mode')
-    setLoading(false)
+    loadData()
+    return () => { active = false }
   }, [])
 
   // --- Salvataggio automatico locale ---
@@ -304,13 +326,23 @@ export function AppProvider({ children }) {
     setTimeout(() => setConfetti(false), 2000)
   }
 
+  const recoverLegacyData = async (email, password) => {
+    const migrated = await recoverLegacyCloudData(email, password, candidature, profile)
+    setCandidature(migrated.candidature)
+    setProfile(migrated.profile)
+    setMigrationNotice({ type: 'success', ...migrated })
+    return migrated
+  }
+
 
   return (
     <AppContext.Provider value={{
-      candidature, profile, notifications, toast, confetti, loading, unreadCount: notifications.filter(n => !n.read).length,
+      candidature, profile, notifications, toast, confetti, loading, migrationNotice, unreadCount: notifications.filter(n => !n.read).length,
       addCandidatura, updateCandidatura, deleteCandidatura, addBulkCandidature, getChecklist, toggleChecklistItem,
       addXP, removeXP, updateProfile, computeStats, checkBadges, triggerConfetti, showToast, markOnboarded,
-      pushNotification, sendPushNow, requestNotificationPermission, markAllNotificationsRead: () => setNotifications(n => n.map(x => ({...x, read: true})))
+      pushNotification, sendPushNow, requestNotificationPermission, recoverLegacyData,
+      dismissMigrationNotice: () => setMigrationNotice(null),
+      markAllNotificationsRead: () => setNotifications(n => n.map(x => ({...x, read: true})))
     }}>
       {children}
     </AppContext.Provider>
