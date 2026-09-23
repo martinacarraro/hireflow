@@ -1,5 +1,5 @@
 // Service Worker — avvio istantaneo e aggiornamenti in background
-const CACHE_NAME = 'lfs-app-shell-v3'
+const CACHE_NAME = 'lfs-app-shell-v4'
 const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', event => {
@@ -26,20 +26,18 @@ self.addEventListener('fetch', event => {
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then(cached => {
-        const fresh = fetch(event.request)
-          .then(response => {
-            if (response.ok) {
-              const copy = response.clone()
-              caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy))
-            }
-            return response
-          })
-          .catch(() => cached)
-
-        // Mostra subito l'app salvata sul telefono e aggiorna la copia in sottofondo.
-        return cached || fresh
-      })
+      // Per la pagina principale usiamo prima la rete: così l'HTML e i file
+      // versionati appartengono sempre allo stesso aggiornamento. La cache
+      // resta disponibile come fallback quando il dispositivo è offline.
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy))
+          }
+          return response
+        })
+        .catch(() => caches.match('/index.html'))
     )
     return
   }
