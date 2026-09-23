@@ -13,6 +13,30 @@ const Stats = lazy(() => import('./screens/Stats'))
 const Profile = lazy(() => import('./screens/Profile'))
 const Calendar = lazy(() => import('./screens/Calendar'))
 
+const SUPPORT_OPEN_DAYS_KEY = 'lfs_support_open_days'
+const SUPPORT_LAST_SHOWN_KEY = 'lfs_support_shown_at'
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+
+function registerOpenAndShouldAskForSupport(now = new Date()) {
+  const today = now.toISOString().slice(0, 10)
+  const oldestAllowed = new Date(now)
+  oldestAllowed.setUTCDate(oldestAllowed.getUTCDate() - 6)
+  const cutoff = oldestAllowed.toISOString().slice(0, 10)
+
+  let savedDays = []
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SUPPORT_OPEN_DAYS_KEY) || '[]')
+    if (Array.isArray(parsed)) savedDays = parsed.filter(day => typeof day === 'string')
+  } catch {}
+
+  const recentDays = [...new Set([...savedDays.filter(day => day >= cutoff), today])].sort()
+  localStorage.setItem(SUPPORT_OPEN_DAYS_KEY, JSON.stringify(recentDays))
+
+  const lastShown = localStorage.getItem(SUPPORT_LAST_SHOWN_KEY)
+  const shownRecently = lastShown && now - new Date(lastShown) < THIRTY_DAYS_MS
+  return recentDays.length >= 2 && !shownRecently
+}
+
 export default function App() {
   const { profile, loading: dataLoading, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
   const { t, i18n } = useTranslation()
@@ -24,6 +48,7 @@ export default function App() {
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showReviewPopup, setShowReviewPopup] = useState(false)
+  const [showSupportPopup, setShowSupportPopup] = useState(false)
 
   const loading = dataLoading
 
@@ -45,8 +70,16 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const firstUse = localStorage.getItem('lfs_first_use_at')
     const now = new Date()
+    if (registerOpenAndShouldAskForSupport(now)) {
+      const timeout = setTimeout(() => {
+        localStorage.setItem(SUPPORT_LAST_SHOWN_KEY, new Date().toISOString())
+        setShowSupportPopup(true)
+      }, 8000)
+      return () => clearTimeout(timeout)
+    }
+
+    const firstUse = localStorage.getItem('lfs_first_use_at')
     if (!firstUse) {
       localStorage.setItem('lfs_first_use_at', now.toISOString())
       return
@@ -91,7 +124,13 @@ export default function App() {
           onClose={dismissMigrationNotice}
         />
       )}
-      {showReviewPopup && (
+      {showSupportPopup && !migrationNotice && (
+        <SupportPopup
+          isIt={i18n.language !== 'en'}
+          onClose={() => setShowSupportPopup(false)}
+        />
+      )}
+      {showReviewPopup && !showSupportPopup && !migrationNotice && (
         <ReviewPopup
           profile={profile} 
           t={t} 
@@ -101,6 +140,36 @@ export default function App() {
 }}
         />
       )}
+    </div>
+  )
+}
+
+function SupportPopup({ isIt, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/80 px-4 pb-6" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-3xl border border-purple-500/30 bg-gray-900 p-6 text-center" onClick={event => event.stopPropagation()}>
+        <div className="mb-3 text-5xl">💜</div>
+        <h2 className="mb-2 text-xl font-bold text-white">
+          {isIt ? 'Le faremo sapere ti sta aiutando?' : 'Is Le faremo sapere helping you?'}
+        </h2>
+        <p className="mb-5 text-sm leading-relaxed text-gray-400">
+          {isIt
+            ? 'L’app è gratuita e senza pubblicità. Se ti va, puoi sostenere il progetto anche con solo 1 €.'
+            : 'The app is free and ad-free. If you like it, you can support the project with as little as €1.'}
+        </p>
+        <a
+          href="https://ko-fi.com/lefaremosapere"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          className="btn-primary mb-2 block w-full py-3"
+        >
+          {isIt ? 'Sostieni con 1 €' : 'Support with €1'}
+        </a>
+        <button onClick={onClose} className="w-full py-3 text-sm text-gray-400">
+          {isIt ? 'Non ora' : 'Not now'}
+        </button>
+      </div>
     </div>
   )
 }
