@@ -13,7 +13,7 @@ const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
-  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast, addXP, checkBadges } = useApp()
+  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast } = useApp()
   const { t } = useTranslation()
   const trStatus = (status) => t(`add.stati.${status}`, status)
   const trPriority = (priority) => t(`add.priorita.${priority}`, priority)
@@ -111,10 +111,9 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           _subject: '🏆 Feedback da utente assunto/a — Le faremo sapere',
-          azienda: form.azienda, ruolo: form.ruolo,
-          utilita: fbUtilita, cosa_e_piaciuto: fbCosa,
+          utilita: fbUtilita,
+          cosa_e_piaciuto: fbCosa,
           cosa_migliorare: fbMigliorare,
-          nome: profile?.nome || 'Anonimo', genere: profile?.genere || '-',
         })
       })
     } catch(e) {}
@@ -367,7 +366,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                 triggerConfetti(); setShowAssuntaCelebration(true)
                 try {
                   await updateCandidatura(c.id, { stato:'Assunta', offerta_risposta:'si', offerta_ral:form.offerta_ral?parseInt(form.offerta_ral):null, offerta_scadenza:form.offerta_scadenza||null, offerta_note:form.offerta_note||null, offerta_feeling:form.offerta_feeling||null, data_inizio:form.data_inizio||null, welfare:welfareList, welfare_note:form.welfare_note||null })
-                  setIsDirty(false); await addXP(50); await checkBadges()
+                  setIsDirty(false)
                 } catch(e) {}
               }} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
                 style={{ background:'transparent', borderColor:'rgba(16,185,129,0.5)', color:'#10B981' }}>

@@ -1,25 +1,27 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import i18n from '../i18n'
 import {
-  XP_EVENTS, BADGES, DEFAULT_CHECKLIST, getLevel, randomInt,
-  isYesterday, isTomorrow, isToday, daysSince
+  XP_EVENTS, BADGES, DEFAULT_CHECKLIST, isYesterday, isToday
 } from '../lib/utils'
 
 const AppContext = createContext(null)
 
+const CANDIDATURE_KEY = 'lfs_candidature'
+const PROFILE_KEY = 'lfs_profile'
+
+function readLocalJson(primaryKey, legacyKey, fallback) {
+  const raw = localStorage.getItem(primaryKey) ?? localStorage.getItem(legacyKey)
+  if (!raw) return fallback
+  try { return JSON.parse(raw) } catch { return fallback }
+}
+
 export function AppProvider({ children }) {
-  const [candidature, setCandidature] = useState(() => {
-    if (localStorage.getItem('lfs_guest_mode')) {
-      try { return JSON.parse(localStorage.getItem('lfs_guest_candidature') || '[]') } catch { return [] }
-    }
-    return []
-  })
-  const [profile, setProfile] = useState(() => {
-    if (localStorage.getItem('lfs_guest_mode')) {
-      try { return JSON.parse(localStorage.getItem('lfs_guest_profile') || 'null') } catch { return null }
-    }
-    return null
-  })
+  const [candidature, setCandidature] = useState(() =>
+    readLocalJson(CANDIDATURE_KEY, 'lfs_guest_candidature', [])
+  )
+  const [profile, setProfile] = useState(() =>
+    readLocalJson(PROFILE_KEY, 'lfs_guest_profile', null)
+  )
   const [notifications, setNotifications] = useState([])
   const [toast, setToast] = useState(null)
   const [confetti, setConfetti] = useState(false)
@@ -33,24 +35,31 @@ export function AppProvider({ children }) {
     const savedLang = localStorage.getItem('lfs_lang') || 'it'
     if (i18n.language !== savedLang) i18n.changeLanguage(savedLang)
 
-    const guestCand = localStorage.getItem('lfs_guest_candidature')
-    const guestProf = localStorage.getItem('lfs_guest_profile')
-    setCandidature(guestCand ? JSON.parse(guestCand) : [])
-    setProfile(guestProf ? JSON.parse(guestProf) : {
+    const localCand = readLocalJson(CANDIDATURE_KEY, 'lfs_guest_candidature', [])
+    const localProf = readLocalJson(PROFILE_KEY, 'lfs_guest_profile', null)
+    const defaultProfile = {
       id: 'local',
       nome: '',
       xp_points: 0,
       streak_giorni: 0,
       seen_onboarding: false,
       badge_lista: ''
-    })
+    }
+
+    setCandidature(localCand)
+    setProfile(localProf || defaultProfile)
+
+    // Migrazione trasparente dai vecchi dati della modalità ospite.
+    localStorage.setItem(CANDIDATURE_KEY, JSON.stringify(localCand))
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(localProf || defaultProfile))
+    localStorage.removeItem('lfs_guest_mode')
     setLoading(false)
   }, [])
 
   // --- Salvataggio automatico locale ---
   useEffect(() => {
-    localStorage.setItem('lfs_guest_candidature', JSON.stringify(candidature))
-    if (profile) localStorage.setItem('lfs_guest_profile', JSON.stringify(profile))
+    localStorage.setItem(CANDIDATURE_KEY, JSON.stringify(candidature))
+    if (profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
   }, [candidature, profile])
 
   useEffect(() => {
@@ -79,7 +88,7 @@ export function AppProvider({ children }) {
 
     try {
       setCandidature(prevList => prevList.map(c => 
-        c.id === id ? { ...c, ...updates } : c
+        c.id === id ? { ...c, ...updates, updated_at: new Date().toISOString() } : c
       ))
 
       if (updates.stato && updates.stato !== prev?.stato) {

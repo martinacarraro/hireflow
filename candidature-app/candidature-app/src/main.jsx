@@ -33,13 +33,16 @@ class ErrorBoundary extends React.Component {
               {this.state.error?.stack?.split('\n').slice(0,5).join('\n')}
             </p>
           </div>
+          <p style={{ color: '#AAA', fontSize: 12, marginTop: 12, textAlign: 'center' }}>
+            I tuoi dati locali non verranno cancellati.
+          </p>
           <button
-            onClick={() => { localStorage.clear(); window.location.reload() }}
+            onClick={() => window.location.reload()}
             style={{
               marginTop: 24, background: '#7B2FFF', color: 'white', border: 'none',
               borderRadius: 12, padding: '12px 24px', fontSize: 14, cursor: 'pointer'
             }}>
-            🔄 Reset e ricarica
+            🔄 Ricarica l’app
           </button>
         </div>
       )

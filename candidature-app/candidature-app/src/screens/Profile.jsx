@@ -16,6 +16,7 @@ export default function Profile() {
     unreadCount,
     addBulkCandidature,
     candidature,
+    showToast,
   } = useApp()
 
   const { t, i18n } = useTranslation()
@@ -30,6 +31,7 @@ export default function Profile() {
   const [editNome, setEditNome] = useState(false)
   const [nomeEdit, setNomeEdit] = useState(profile?.nome || '')
   const fileRef = useRef(null)
+  const backupRef = useRef(null)
 
   const isIt = i18n.language === 'it'
   const nome = profile?.nome || (isIt ? 'Utente' : 'User')
@@ -39,11 +41,17 @@ export default function Profile() {
   const streak = profile?.streak_giorni || 0
 
   const exportBackup = () => {
+    const localStorageSnapshot = {}
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('lfs_') || k === 'lingua')
+      .forEach(k => { localStorageSnapshot[k] = localStorage.getItem(k) })
+
     const backup = {
-      version: 1,
+      version: 2,
       exported_at: new Date().toISOString(),
       profile,
       candidature,
+      local_storage: localStorageSnapshot,
     }
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -54,6 +62,44 @@ export default function Profile() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  const restoreBackup = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const backup = JSON.parse(await file.text())
+      if (!backup || !Array.isArray(backup.candidature) || !backup.profile) {
+        throw new Error('invalid-backup')
+      }
+
+      const confirmMessage = isIt
+        ? 'Ripristinare questo backup? I dati attuali sul dispositivo verranno sostituiti.'
+        : 'Restore this backup? Current data on this device will be replaced.'
+      if (!window.confirm(confirmMessage)) return
+
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('lfs_'))
+        .forEach(k => localStorage.removeItem(k))
+
+      if (backup.local_storage && typeof backup.local_storage === 'object') {
+        Object.entries(backup.local_storage).forEach(([key, value]) => {
+          if ((key.startsWith('lfs_') || key === 'lingua') && typeof value === 'string') {
+            localStorage.setItem(key, value)
+          }
+        })
+      }
+
+      localStorage.setItem('lfs_candidature', JSON.stringify(backup.candidature))
+      localStorage.setItem('lfs_profile', JSON.stringify(backup.profile))
+      localStorage.setItem('lfs_onboarding_done', '1')
+      window.location.reload()
+    } catch {
+      showToast(isIt ? 'Backup non valido' : 'Invalid backup', 'error')
+    } finally {
+      if (backupRef.current) backupRef.current.value = ''
+    }
   }
 
   const downloadTemplate = () => {
@@ -105,6 +151,7 @@ export default function Profile() {
     Object.keys(localStorage)
       .filter(k => k.startsWith('lfs_'))
       .forEach(k => localStorage.removeItem(k))
+    localStorage.removeItem('lingua')
     window.location.reload()
   }
 
@@ -359,6 +406,18 @@ export default function Profile() {
             className="w-full py-2.5 rounded-xl text-xs font-semibold border border-white/10 bg-white/5 mb-2">
             {isIt ? '💾 Esporta backup locale' : '💾 Export local backup'}
           </button>
+          <button
+            onClick={() => backupRef.current?.click()}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold border border-white/10 bg-white/5 mb-2">
+            {isIt ? '📥 Ripristina backup locale' : '📥 Restore local backup'}
+          </button>
+          <input
+            ref={backupRef}
+            type="file"
+            className="hidden"
+            accept="application/json,.json"
+            onChange={restoreBackup}
+          />
           <button
             onClick={deleteLocalData}
             className="w-full py-2.5 rounded-xl text-xs font-semibold border"

@@ -40,29 +40,6 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      e.preventDefault()
-      e.returnValue = 'Vuoi davvero uscire?'
-      return e.returnValue
-    }
-    window.history.pushState({ lfs: true }, '')
-    const handlePopState = () => {
-      const confirmed = window.confirm('Vuoi davvero uscire?')
-      if (confirmed) {
-        window.history.go(-1)
-      } else {
-        window.history.pushState({ lfs: true }, '')
-      }
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    window.addEventListener('popstate', handlePopState)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      window.removeEventListener('popstate', handlePopState)
-    }
-  }, [])
-
-  useEffect(() => {
     if (loading || dataLoading) return
     if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
   }, [loading, dataLoading])
@@ -107,8 +84,7 @@ export default function App() {
       <Toast toast={toast} />
       <Confetti active={confetti} />
       {showReviewPopup && (
-        <ReviewPopup 
-          user={null} 
+        <ReviewPopup
           profile={profile} 
           t={t} 
           onClose={() => {
@@ -141,7 +117,7 @@ function FirstTimeIntro({ onDone }) {
   )
 }
 
-function ReviewPopup({ user, profile, onClose, t }) {
+function ReviewPopup({ profile, onClose, t }) {
   const [step, setStep] = useState(0)
   const [rating, setRating] = useState(null)
   const [text, setText] = useState('')
@@ -158,9 +134,7 @@ function ReviewPopup({ user, profile, onClose, t }) {
         body: JSON.stringify({
           tipo: 'recensione_5gg',
           stelle: rating,
-          testo: text,
-          utente: user?.id,
-          nome: profile?.nome || '—'
+          testo: text
         })
       })
     } catch(e) {}
