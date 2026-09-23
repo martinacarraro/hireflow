@@ -4,6 +4,39 @@ import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, Conf
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
+const DASHBOARD_FILTERS = {
+  ACTIVE: '__active__',
+  UPCOMING: '__upcoming__',
+  FOLLOW_UP: '__follow_up__',
+  HIRED: '__hired__',
+}
+
+const CLOSED_STATUSES = new Set(['Rifiutata', 'Non mi piace', 'GHOSTED', 'Assunta'])
+
+function getDashboardDates() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const inSevenDays = new Date(today)
+  inSevenDays.setDate(today.getDate() + 7)
+  return { today, inSevenDays }
+}
+
+function isUpcoming(candidatura, today, inSevenDays) {
+  const dates = [candidatura.data_colloquio, candidatura.data_secondo_colloquio].filter(Boolean)
+  return !candidatura.archiviata && dates.some(value => {
+    const date = new Date(value)
+    date.setHours(0, 0, 0, 0)
+    return !Number.isNaN(date.getTime()) && date >= today && date <= inSevenDays
+  })
+}
+
+function needsFollowUp(candidatura, today) {
+  if (!candidatura.data_scadenza_responso || candidatura.archiviata || CLOSED_STATUSES.has(candidatura.stato)) return false
+  const deadline = new Date(candidatura.data_scadenza_responso)
+  deadline.setHours(0, 0, 0, 0)
+  return !Number.isNaN(deadline.getTime()) && deadline < today
+}
+
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
   const { t, i18n } = useTranslation()
@@ -67,39 +100,37 @@ const stats = useMemo(() => [
 .filter(s => s.count > 0), [candidature, t]);
 
   const dashboardStats = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const inSevenDays = new Date(today)
-    inSevenDays.setDate(today.getDate() + 7)
-    const closed = new Set(['Rifiutata', 'Non mi piace', 'GHOSTED', 'Assunta'])
-    const active = candidature.filter(c => !c.archiviata && !closed.has(c.stato)).length
-    const upcoming = candidature.filter(c => {
-      const dates = [c.data_colloquio, c.data_secondo_colloquio].filter(Boolean)
-      return !c.archiviata && dates.some(value => {
-        const date = new Date(value)
-        date.setHours(0, 0, 0, 0)
-        return date >= today && date <= inSevenDays
-      })
-    }).length
-    const followUps = candidature.filter(c => {
-      if (!c.data_scadenza_responso || c.archiviata || closed.has(c.stato)) return false
-      const deadline = new Date(c.data_scadenza_responso)
-      deadline.setHours(0, 0, 0, 0)
-      return deadline < today
-    }).length
+    const { today, inSevenDays } = getDashboardDates()
+    const active = candidature.filter(c => !c.archiviata && !CLOSED_STATUSES.has(c.stato)).length
+    const upcoming = candidature.filter(c => isUpcoming(c, today, inSevenDays)).length
+    const followUps = candidature.filter(c => needsFollowUp(c, today)).length
     const hired = candidature.filter(c => c.stato === 'Assunta').length
     return [
-      { emoji: '🚀', value: active, it: 'Attive', en: 'Active' },
-      { emoji: '🎙️', value: upcoming, it: 'Prossimi 7 gg', en: 'Next 7 days' },
-      { emoji: '📞', value: followUps, it: 'Da ricontattare', en: 'Follow up' },
-      { emoji: '🏆', value: hired, it: 'Successi', en: 'Successes' },
+      { emoji: '🚀', value: active, it: 'Attive', en: 'Active', filter: DASHBOARD_FILTERS.ACTIVE },
+      { emoji: '🎙️', value: upcoming, it: 'Prossimi 7 gg', en: 'Next 7 days', filter: DASHBOARD_FILTERS.UPCOMING },
+      { emoji: '📞', value: followUps, it: 'Da ricontattare', en: 'Follow up', filter: DASHBOARD_FILTERS.FOLLOW_UP },
+      { emoji: '🏆', value: hired, it: 'Successi', en: 'Successes', filter: DASHBOARD_FILTERS.HIRED },
     ]
   }, [candidature])
 
 const candidatureFiltrate = useMemo(() => {
     let list = [...candidature];
 
-    if (filtroStato === 'Archiviate') {
+    if (filtroStato === DASHBOARD_FILTERS.ACTIVE) {
+      list = list.filter(c => !c.archiviata && !CLOSED_STATUSES.has(c.stato))
+    }
+    else if (filtroStato === DASHBOARD_FILTERS.UPCOMING) {
+      const { today, inSevenDays } = getDashboardDates()
+      list = list.filter(c => isUpcoming(c, today, inSevenDays))
+    }
+    else if (filtroStato === DASHBOARD_FILTERS.FOLLOW_UP) {
+      const { today } = getDashboardDates()
+      list = list.filter(c => needsFollowUp(c, today))
+    }
+    else if (filtroStato === DASHBOARD_FILTERS.HIRED) {
+      list = list.filter(c => c.stato === 'Assunta')
+    }
+    else if (filtroStato === 'Archiviate') {
       // Mostra solo le archiviate (indipendentemente dallo stato originale)
       list = list.filter(c => c.archiviata === true);
     } 
@@ -292,13 +323,23 @@ const candidatureFiltrate = useMemo(() => {
         {!selectMode && (
           <div className="grid grid-cols-4 gap-2 mb-4">
             {dashboardStats.map(item => (
-              <div key={item.it} className="rounded-2xl border border-border bg-surface px-2 py-3 text-center">
+              <button
+                key={item.it}
+                type="button"
+                aria-pressed={filtroStato === item.filter}
+                onClick={() => setFiltroStato(current => current === item.filter ? null : item.filter)}
+                className={`rounded-2xl border px-2 py-3 text-center transition-all active:scale-95 ${
+                  filtroStato === item.filter
+                    ? 'border-purple bg-purple/20 ring-1 ring-purple/40'
+                    : 'border-border bg-surface'
+                }`}
+              >
                 <div className="text-lg mb-1">{item.emoji}</div>
                 <div className="text-lg font-black text-txt leading-none">{item.value}</div>
                 <div className="text-[9px] text-muted mt-1 leading-tight">
                   {i18n.language === 'en' ? item.en : item.it}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
