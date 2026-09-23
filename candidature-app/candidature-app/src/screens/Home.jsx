@@ -42,7 +42,7 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const [selected, setSelected] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
- const stats = useMemo(() => [
+const stats = useMemo(() => [
   { emoji: '📞', label: t('home.primaCall'),   stato: 'Prima call',         color: '#A855F7' },
   { emoji: '🎙️', label: t('home.colloquio'),   stato: 'Colloquio',           color: '#22C55E' },
   { emoji: '🎙️🎙️', label: t('home.secondoCol'), stato: 'Secondo colloquio', color: '#16A34A' },
@@ -65,6 +65,36 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   return { ...s, count };
 })
 .filter(s => s.count > 0), [candidature, t]);
+
+  const dashboardStats = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const inSevenDays = new Date(today)
+    inSevenDays.setDate(today.getDate() + 7)
+    const closed = new Set(['Rifiutata', 'Non mi piace', 'GHOSTED', 'Assunta'])
+    const active = candidature.filter(c => !c.archiviata && !closed.has(c.stato)).length
+    const upcoming = candidature.filter(c => {
+      const dates = [c.data_colloquio, c.data_secondo_colloquio].filter(Boolean)
+      return !c.archiviata && dates.some(value => {
+        const date = new Date(value)
+        date.setHours(0, 0, 0, 0)
+        return date >= today && date <= inSevenDays
+      })
+    }).length
+    const followUps = candidature.filter(c => {
+      if (!c.data_scadenza_responso || c.archiviata || closed.has(c.stato)) return false
+      const deadline = new Date(c.data_scadenza_responso)
+      deadline.setHours(0, 0, 0, 0)
+      return deadline < today
+    }).length
+    const hired = candidature.filter(c => c.stato === 'Assunta').length
+    return [
+      { emoji: '🚀', value: active, it: 'Attive', en: 'Active' },
+      { emoji: '🎙️', value: upcoming, it: 'Prossimi 7 gg', en: 'Next 7 days' },
+      { emoji: '📞', value: followUps, it: 'Da ricontattare', en: 'Follow up' },
+      { emoji: '🏆', value: hired, it: 'Successi', en: 'Successes' },
+    ]
+  }, [candidature])
 
 const candidatureFiltrate = useMemo(() => {
     let list = [...candidature];
@@ -256,6 +286,20 @@ const candidatureFiltrate = useMemo(() => {
         {!selectMode && (
           <div className="card border-l-[3px] border-l-purple mb-4 flex items-center justify-between">
             <p className="text-sm italic text-purple-soft flex-1 leading-relaxed">{motto}</p>
+          </div>
+        )}
+
+        {!selectMode && (
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {dashboardStats.map(item => (
+              <div key={item.it} className="rounded-2xl border border-border bg-surface px-2 py-3 text-center">
+                <div className="text-lg mb-1">{item.emoji}</div>
+                <div className="text-lg font-black text-txt leading-none">{item.value}</div>
+                <div className="text-[9px] text-muted mt-1 leading-tight">
+                  {i18n.language === 'en' ? item.en : item.it}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

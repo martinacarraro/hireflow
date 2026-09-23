@@ -14,7 +14,7 @@ const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOS
 
 export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast } = useApp()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const trStatus = (status) => t(`add.stati.${status}`, status)
   const trPriority = (priority) => t(`add.priorita.${priority}`, priority)
   const trFonte = (fonte) => t(`add.fonti.${fonte}`, fonte)
@@ -532,6 +532,24 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
             className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
             style={{ background:saved?'linear-gradient(135deg, #10B981, #059669)':'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity:saving?0.6:1 }}>
             {saving ? t('detail.salvataggio') : saved ? t('detail.salvato') : t('detail.salva')}
+          </button>
+          <button
+            onClick={async () => {
+              const nextValue = !form.archiviata
+              await updateCandidatura(c.id, { archiviata: nextValue })
+              setForm(f => ({ ...f, archiviata: nextValue }))
+              showToast(
+                i18n.language === 'en'
+                  ? (nextValue ? '🏆 Saved among your successes' : 'Moved back to active applications')
+                  : (nextValue ? '🏆 Salvata tra i tuoi successi' : 'Riportata tra le candidature attive'),
+                'success'
+              )
+            }}
+            className="w-full py-3 rounded-2xl border border-border text-sm font-semibold text-muted active:scale-95 transition-all"
+          >
+            {form.archiviata
+              ? (i18n.language === 'en' ? '↩ Move back to active' : '↩ Riporta tra le attive')
+              : (i18n.language === 'en' ? '📦 Archive as a success' : '📦 Archivia come successo')}
           </button>
         </div>
         {ReviewPrompt}

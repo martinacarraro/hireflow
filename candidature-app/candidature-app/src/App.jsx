@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
 import Splash from './screens/Splash'
-import Onboarding from './screens/Onboarding'
 import Home from './screens/Home'
-import AddCandidatura from './screens/AddCandidatura'
-import DetailView from './screens/DetailView'
-import Stats from './screens/Stats'
-import Profile from './screens/Profile'
-import Calendar from './screens/Calendar'
-import Tutorial from './components/Tutorial'
 import LanguageSelector from './components/LanguageSelector'
 import { useTranslation } from 'react-i18next'
+
+const Onboarding = lazy(() => import('./screens/Onboarding'))
+const AddCandidatura = lazy(() => import('./screens/AddCandidatura'))
+const DetailView = lazy(() => import('./screens/DetailView'))
+const Stats = lazy(() => import('./screens/Stats'))
+const Profile = lazy(() => import('./screens/Profile'))
+const Calendar = lazy(() => import('./screens/Calendar'))
 
 export default function App() {
   const { profile, loading: dataLoading, toast, confetti, unreadCount } = useApp()
@@ -19,17 +19,11 @@ export default function App() {
   
   const [showSplash, setShowSplash] = useState(true)
   const [linguaScelta, setLinguaScelta] = useState(!!localStorage.getItem('lfs_lang'))
-  const [showFirstOnboarding, setShowFirstOnboarding] = useState(() => {
-    const hasSeen = localStorage.getItem('lfs_seen_intro')
-    const hadSession = localStorage.getItem('lfs_had_session')
-    return !hasSeen && !hadSession
-  })
   const [tab, setTab] = useState('home')
   const [view, setView] = useState(null)
   const [homeScrollPos, setHomeScrollPos] = useState(0)
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showReviewPopup, setShowReviewPopup] = useState(false)
-  const [showTutorial, setShowTutorial] = useState(false)
 
   const loading = dataLoading
 
@@ -38,11 +32,6 @@ export default function App() {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
   }, [])
-
-  useEffect(() => {
-    if (loading || dataLoading) return
-    if (!localStorage.getItem('lfs_tutorial_done')) setShowTutorial(true)
-  }, [loading, dataLoading])
 
   useEffect(() => {
     const firstUse = localStorage.getItem('lfs_first_use_at')
@@ -61,26 +50,27 @@ export default function App() {
 
   if (showSplash || loading) return <Splash onDone={() => setShowSplash(false)} />
   if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
-  if (showFirstOnboarding) return <FirstTimeIntro onDone={() => setShowFirstOnboarding(false)} />
-
   const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
   if (!dataLoading && profile && !hasSeenOnboarding) return (
-    <Onboarding onDone={() => localStorage.setItem('lfs_onboarding_done', '1')} />
+    <Suspense fallback={<ScreenLoader />}>
+      <Onboarding onDone={() => localStorage.setItem('lfs_onboarding_done', '1')} />
+    </Suspense>
   )
 
-  if (view?.type === 'detail') return <DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} />
-  if (view?.type === 'add') return <AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} />
+  if (view?.type === 'detail') return <Suspense fallback={<ScreenLoader />}><DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
+  if (view?.type === 'add') return <Suspense fallback={<ScreenLoader />}><AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} /></Suspense>
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
         {tab === 'home' && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
-        {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
-        {tab === 'stats' && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
-        {tab === 'profile' && <Profile />}
+        <Suspense fallback={<ScreenLoader />}>
+          {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
+          {tab === 'stats' && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
+          {tab === 'profile' && <Profile />}
+        </Suspense>
       </div>
       <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} />
-      {showTutorial && <Tutorial onDone={() => setShowTutorial(false)} />}
       <Toast toast={toast} />
       <Confetti active={confetti} />
       {showReviewPopup && (
@@ -97,24 +87,8 @@ export default function App() {
   )
 }
 
-function FirstTimeIntro({ onDone }) {
-  const [slide, setSlide] = useState(0)
-  const SLIDES = [
-    { title: '"Le faremo sapere."', subtitle: 'E tu tieni il conto.', body: 'Tieni traccia di ogni candidatura e colloquio.' },
-    { title: 'Tutto sotto controllo', subtitle: 'Privato per davvero.', body: 'Nessun account: candidature e progressi restano sul tuo dispositivo.' },
-    { title: 'Guadagna badge', subtitle: 'La ricerca è una gara.', body: 'Sblocca badge e mantieni lo streak. 🏆' }
-  ]
-  const isLast = slide === SLIDES.length - 1
-  return (
-    <div className="screen flex flex-col p-10 text-center justify-center bg-slate-900 text-white">
-      <h1 className="text-3xl font-black mb-2">{SLIDES[slide].title}</h1>
-      <p className="mb-4 opacity-70">{SLIDES[slide].subtitle}</p>
-      <p className="text-sm opacity-50 mb-10">{SLIDES[slide].body}</p>
-      <button onClick={isLast ? onDone : () => setSlide(s => s + 1)} className="btn-primary py-4 rounded-2xl">
-        {isLast ? '🚀 Inizia' : 'Avanti'}
-      </button>
-    </div>
-  )
+function ScreenLoader() {
+  return <div className="screen flex items-center justify-center"><div className="text-3xl animate-pulse">💜</div></div>
 }
 
 function ReviewPopup({ profile, onClose, t }) {

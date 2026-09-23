@@ -74,9 +74,12 @@ export default function Profile() {
         throw new Error('invalid-backup')
       }
 
+      const backupDate = backup.exported_at
+        ? new Date(backup.exported_at).toLocaleString(isIt ? 'it-IT' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+        : (isIt ? 'data non disponibile' : 'date unavailable')
       const confirmMessage = isIt
-        ? 'Ripristinare questo backup? I dati attuali sul dispositivo verranno sostituiti.'
-        : 'Restore this backup? Current data on this device will be replaced.'
+        ? `Backup del ${backupDate}\nCandidature nel backup: ${backup.candidature.length}\nCandidature attuali: ${candidature.length}\n\nRipristinare? I dati attuali verranno sostituiti.`
+        : `Backup from ${backupDate}\nApplications in backup: ${backup.candidature.length}\nCurrent applications: ${candidature.length}\n\nRestore it? Current data will be replaced.`
       if (!window.confirm(confirmMessage)) return
 
       Object.keys(localStorage)
