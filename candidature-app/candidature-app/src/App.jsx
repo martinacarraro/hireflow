@@ -31,6 +31,17 @@ export default function App() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
+
+    // Prepara silenziosamente le schermate durante lo splash:
+    // i cambi di sezione restano immediati, senza loader visibili.
+    Promise.all([
+      import('./screens/Onboarding'),
+      import('./screens/AddCandidatura'),
+      import('./screens/DetailView'),
+      import('./screens/Stats'),
+      import('./screens/Profile'),
+      import('./screens/Calendar'),
+    ]).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -52,19 +63,19 @@ export default function App() {
   if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
   const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
   if (!dataLoading && profile && !hasSeenOnboarding) return (
-    <Suspense fallback={<ScreenLoader />}>
+    <Suspense fallback={null}>
       <Onboarding onDone={() => localStorage.setItem('lfs_onboarding_done', '1')} />
     </Suspense>
   )
 
-  if (view?.type === 'detail') return <Suspense fallback={<ScreenLoader />}><DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
-  if (view?.type === 'add') return <Suspense fallback={<ScreenLoader />}><AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} /></Suspense>
+  if (view?.type === 'detail') return <Suspense fallback={null}><DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
+  if (view?.type === 'add') return <Suspense fallback={null}><AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} /></Suspense>
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
         {tab === 'home' && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
-        <Suspense fallback={<ScreenLoader />}>
+        <Suspense fallback={null}>
           {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
           {tab === 'stats' && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
           {tab === 'profile' && <Profile />}
@@ -85,10 +96,6 @@ export default function App() {
       )}
     </div>
   )
-}
-
-function ScreenLoader() {
-  return <div className="screen flex items-center justify-center"><div className="text-3xl animate-pulse">💜</div></div>
 }
 
 function ReviewPopup({ profile, onClose, t }) {

@@ -1,11 +1,59 @@
-// Service Worker — Le faremo sapere
+// Service Worker — avvio istantaneo e aggiornamenti in background
+const CACHE_NAME = 'lfs-app-shell-v3'
+const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png']
 
-self.addEventListener('install', e => { self.skipWaiting() })
-self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()) })
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  )
+})
 
-self.addEventListener('fetch', e => {
-  if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).catch(() => caches.match('/index.html')))
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  )
+})
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return
+
+  const url = new URL(event.request.url)
+  if (url.origin !== self.location.origin) return
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match('/index.html').then(cached => {
+        const fresh = fetch(event.request)
+          .then(response => {
+            if (response.ok) {
+              const copy = response.clone()
+              caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy))
+            }
+            return response
+          })
+          .catch(() => cached)
+
+        // Mostra subito l'app salvata sul telefono e aggiorna la copia in sottofondo.
+        return cached || fresh
+      })
+    )
+    return
+  }
+
+  if (url.pathname.startsWith('/assets/') || /\.(?:png|svg|webp|ico|json)$/.test(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+        if (response.ok) {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy))
+        }
+        return response
+      }))
+    )
   }
 })
 
@@ -14,8 +62,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title || '👻 Le faremo sapere', {
       body: data.body || '',
-      icon: '/icon-192.png',      // logo app — immagine grande della notifica
-      badge: '/ghost-badge.svg',  // 👻 fantasmino — icona piccola in alto a sx accanto al titolo
+      icon: '/icon-192.png',
+      badge: '/ghost-badge.svg',
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' }
     })
@@ -25,8 +73,8 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close()
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cls => {
-      const existing = cls.find(c => c.url.includes(self.location.origin))
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(openClients => {
+      const existing = openClients.find(client => client.url.includes(self.location.origin))
       if (existing) return existing.focus()
       return clients.openWindow(event.notification.data?.url || '/')
     })
