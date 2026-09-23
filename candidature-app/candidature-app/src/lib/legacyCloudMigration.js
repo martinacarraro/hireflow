@@ -51,13 +51,13 @@ async function readTable(table, query, session, config) {
 
 function mergeCandidature(cloudRows, localRows) {
   const rows = new Map()
-  cloudRows.forEach(row => rows.set(row.id, row))
+  cloudRows.forEach(({ user_id, ...row }) => rows.set(row.id, { ...row, user_id: 'local' }))
   localRows.forEach(row => rows.set(row.id, row))
   return [...rows.values()].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
 }
 
 function mergeProfile(cloudProfile, localProfile) {
-  const cloud = cloudProfile || {}
+  const { push_subscription, id: cloudId, ...cloud } = cloudProfile || {}
   const local = localProfile || {}
   const badges = new Set([
     ...(cloud.badge_lista || '').split(','),
@@ -80,8 +80,9 @@ function mergeProfile(cloudProfile, localProfile) {
 function saveChecklists(cloudItems) {
   const grouped = new Map()
   cloudItems.forEach(item => {
-    if (!grouped.has(item.candidatura_id)) grouped.set(item.candidatura_id, [])
-    grouped.get(item.candidatura_id).push(item)
+    const { user_id, ...localItem } = item
+    if (!grouped.has(localItem.candidatura_id)) grouped.set(localItem.candidatura_id, [])
+    grouped.get(localItem.candidatura_id).push(localItem)
   })
 
   grouped.forEach((cloudList, candidaturaId) => {
