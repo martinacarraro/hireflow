@@ -8,7 +8,7 @@ import CompanyAutocomplete from '../components/CompanyAutocomplete'
 const TODAY = new Date().toISOString().split('T')[0]
 
 export default function AddCandidatura({ onBack, onDone }) {
-  const { addCandidatura } = useApp()
+  const { addCandidatura, showToast } = useApp()
   const { t, i18n } = useTranslation()
   const isIt = i18n.language !== 'en'
   const [form, setForm] = useState({
@@ -20,7 +20,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })) }
 
   const validate = () => {
     const e = {}
@@ -31,17 +31,26 @@ export default function AddCandidatura({ onBack, onDone }) {
   }
 
   const handleSubmit = async () => {
-    if (!validate()) return
+    if (loading) return
+    if (!validate()) {
+      document.querySelector('[data-application-fields]')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
     setLoading(true)
+    try {
     const payload = {
       ...form,
+      azienda: form.azienda.trim(),
+      ruolo: form.ruolo.trim(),
       stipendio_min: form.stipendio_min ? parseInt(form.stipendio_min) : null,
       stipendio_max: form.stipendio_max ? parseInt(form.stipendio_max) : null,
       data_colloquio: form.data_colloquio || null,
     }
     const result = await addCandidatura(payload)
-    setLoading(false)
     if (result) onDone?.()
+    } catch {
+      showToast(isIt ? 'Salvataggio non riuscito. Riprova: i campi sono ancora qui.' : 'Could not save. Try again: your entries are still here.', 'error')
+    } finally { setLoading(false) }
   }
 
   return (
@@ -56,7 +65,7 @@ export default function AddCandidatura({ onBack, onDone }) {
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
 
-        <SectionLabel>{t('add.fondamentali')}</SectionLabel>
+        <div data-application-fields className="text-xs text-muted mb-3">{isIt ? '1. A quale opportunità ti candidi?' : '1. Which opportunity are you applying for?'}</div>
 
         <Field label={t('add.azienda')}>
           <CompanyAutocomplete
@@ -76,6 +85,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
+        <p className="text-xs text-muted pt-3 pb-2">{isIt ? '2. A che punto sei?' : '2. Where are you in the process?'}</p>
         <Field label={t('add.stato')}>
           <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
             {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{t(`add.stati.${s}`, s)}</option>)}
@@ -170,13 +180,13 @@ export default function AddCandidatura({ onBack, onDone }) {
         </div>
 
         </details>
-        <div className="pt-4 pb-6">
+      </div>
+        <div className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <button onClick={handleSubmit} disabled={loading}
             className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2">
-            {loading ? <Spinner size={20} /> : t('add.aggiungi')}
+            {loading ? <Spinner size={20} /> : (isIt ? 'Salva candidatura' : 'Save application')}
           </button>
         </div>
-      </div>
     </div>
   )
 }
