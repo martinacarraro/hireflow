@@ -4,19 +4,12 @@ import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
 import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
-import { parseJobText } from '../lib/jobText'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
 export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura } = useApp()
-  const { t, i18n } = useTranslation()
-  const isIt = i18n.language !== 'en'
-  const [importText, setImportText] = useState('')
-  const [importLink, setImportLink] = useState('')
-  const [proposal, setProposal] = useState(null)
-  const [importMessage, setImportMessage] = useState('')
-  const importLabels = { azienda: isIt ? 'Azienda' : 'Company', ruolo: isIt ? 'Ruolo' : 'Role', sede: isIt ? 'Sede' : 'Location', stipendio_min: isIt ? 'RAL minima (€)' : 'Minimum annual gross (€)', stipendio_max: isIt ? 'RAL massima (€)' : 'Maximum annual gross (€)', link_annuncio: 'Link', fonte: isIt ? 'Fonte' : 'Source' }
+  const { t } = useTranslation()
   const [form, setForm] = useState({
     azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
     sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
@@ -64,24 +57,6 @@ export default function AddCandidatura({ onBack, onDone }) {
       </div>
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
-
-        <details className="card mb-4">
-          <summary className="font-semibold text-purple-soft cursor-pointer">{isIt ? '📋 Compila da un annuncio' : '📋 Fill from a job posting'}</summary>
-          <p className="text-xs text-muted my-3">{isIt ? 'Incolla il testo: viene analizzato sul dispositivo. Controlla i suggerimenti prima di applicarli; alcuni dati potrebbero non essere riconosciuti.' : 'Paste the text: it is processed on your device. Review suggestions before applying them; some details may not be recognized.'}</p>
-          <textarea aria-label={isIt ? 'Testo annuncio' : 'Job posting text'} className="input-field w-full" rows={6} maxLength={30000} value={importText} onChange={e => { setImportText(e.target.value); setProposal(null) }} placeholder={isIt ? 'Incolla qui il testo completo dell’offerta…' : 'Paste the complete job posting here…'} />
-          <input aria-label={isIt ? 'Link annuncio facoltativo' : 'Optional posting URL'} className="input-field w-full mt-2" type="url" value={importLink} onChange={e => { setImportLink(e.target.value); setProposal(null) }} placeholder={isIt ? 'Link facoltativo (non viene aperto)' : 'Optional URL (will not be opened)'} />
-          <button type="button" disabled={!importText.trim()} className="btn-primary w-full mt-3 disabled:opacity-50" onClick={() => { setProposal(parseJobText(importText, importLink)); setImportMessage('') }}>{isIt ? 'Trova i dati' : 'Find details'}</button>
-          {proposal && <div className="mt-3 space-y-2">
-            <p className="text-xs text-muted">{Object.keys(proposal).length ? (isIt ? 'Correggi i valori proposti. Verranno applicati solo ai campi ancora vuoti.' : 'Edit the proposed values. They will only fill empty fields.') : (isIt ? 'Non ho riconosciuto dati con sufficiente certezza. Puoi compilare il modulo qui sotto.' : 'No details could be recognized confidently. Complete the form below.')}</p>
-            {Object.entries(proposal).map(([key, value]) => <label key={key} className="block text-xs text-muted">{importLabels[key]}<input className="input-field w-full mt-1" value={value} onChange={e => setProposal(p => ({ ...p, [key]: e.target.value }))} /></label>)}
-            {Object.keys(proposal).length > 0 && <button type="button" className="btn-primary w-full" onClick={() => {
-              setForm(current => { const next = { ...current }; for (const [key, value] of Object.entries(proposal)) if (!String(current[key] || '').trim() && value.trim()) next[key] = value.trim(); return next })
-              setProposal(null)
-              setImportMessage(isIt ? 'Dati applicati ai campi vuoti. Controlla il modulo e completa ciò che manca prima di salvare.' : 'Empty fields filled. Review the form and complete missing details before saving.')
-            }}>{isIt ? 'Applica ai campi vuoti' : 'Fill empty fields'}</button>}
-          </div>}
-          {importMessage && <p role="status" className="text-xs text-purple-soft mt-3">{importMessage}</p>}
-        </details>
 
         <SectionLabel>{t('add.fondamentali')}</SectionLabel>
 
