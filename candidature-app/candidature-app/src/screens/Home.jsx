@@ -367,6 +367,10 @@ const candidatureFiltrate = useMemo(() => {
 
 
 
+        {candidatureFiltrate.length === 0 && <div className="card text-center py-8">
+          <p className="text-sm text-muted mb-3">{i18n.language === 'en' ? 'No applications match these filters.' : 'Nessuna candidatura corrisponde a questi filtri.'}</p>
+          <button className="text-purple-soft font-semibold text-sm" onClick={() => { setFiltroStato(null); setSearchQuery('') }}>{i18n.language === 'en' ? 'Show all applications' : 'Mostra tutte le candidature'}</button>
+        </div>}
         {STATUS_GROUP_ORDER.map(stato => {
   const items = grouped[stato]
   if (!items) return null
