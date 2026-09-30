@@ -32,12 +32,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   const [saved, setSaved] = useState(false)
   const [interviewMode, setInterviewMode] = useState(false)
   const [showAssuntaCelebration, setShowAssuntaCelebration] = useState(false)
-  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
-  const [fbStep, setFbStep] = useState(0)
-  const [fbUtilita, setFbUtilita] = useState(null)
-  const [fbCosa, setFbCosa] = useState('')
-  const [fbMigliorare, setFbMigliorare] = useState('')
-  const [fbSending, setFbSending] = useState(false)
+  const [showCoffeePrompt, setShowCoffeePrompt] = useState(false)
   const [editingDataInizio, setEditingDataInizio] = useState(false)
   const [savingDataInizio, setSavingDataInizio] = useState(false)
 
@@ -59,7 +54,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     const timer = setTimeout(() => {
       setForm(f => ({ ...f, stato: 'Assunta', offerta_risposta: 'si' }))
       setShowAssuntaCelebration(false)
-      setShowReviewPrompt(true)
+      setShowCoffeePrompt(true)
     }, 2500)
     return () => clearTimeout(timer)
   }, [showAssuntaCelebration])
@@ -103,24 +98,6 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const sendFeedback = async () => {
-    setFbSending(true)
-    try {
-      await fetch('https://formspree.io/f/xpqydppa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          _subject: '🏆 Feedback da utente assunto/a — Le faremo sapere',
-          utilita: fbUtilita,
-          cosa_e_piaciuto: fbCosa,
-          cosa_migliorare: fbMigliorare,
-        })
-      })
-    } catch(e) {}
-    setFbSending(false)
-    setFbStep(1)
-  }
-
   const handleToggleChecklist = async (item) => {
     const newFatto = !item.fatto
     setChecklist(list => list.map(i => i.id === item.id ? { ...i, fatto: newFatto } : i))
@@ -132,8 +109,8 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     onBack()
   }
 
-  const chiudiReview = () => {
-    setShowReviewPrompt(false)
+  const closeCoffeePrompt = () => {
+    setShowCoffeePrompt(false)
     setForm(f => ({ ...f, stato: 'Assunta', offerta_risposta: 'si' }))
     onUpdate?.()
   }
@@ -183,54 +160,33 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     )
   })() : null
 
-  const ReviewPrompt = showReviewPrompt ? (
+  const CoffeePrompt = showCoffeePrompt ? (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center px-6"
       style={{ background:'rgba(0,0,0,0.88)', backdropFilter:'blur(6px)' }}>
-      <div className="card w-full max-w-sm space-y-4" style={{ borderColor:'rgba(123,47,255,0.4)', background:'linear-gradient(135deg, rgba(123,47,255,0.07), rgba(255,45,139,0.05))' }}>
-        {fbStep === 0 ? (<>
-          <div className="text-center">
-            <div className="text-4xl mb-2">💜</div>
-            <h3 className="text-lg font-bold text-txt">{t('detail.reviewTitolo')}</h3>
-            <p className="text-xs text-muted mt-1">{t('detail.reviewDesc')}</p>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{t('detail.reviewUtilita')}</p>
-            <div className="flex gap-2">
-              {[t('detail.reviewTantissimo'), t('detail.reviewAbbastanza'), t('detail.reviewPoco')].map(opt => (
-                <button key={opt} onClick={() => setFbUtilita(opt)}
-                  className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95"
-                  style={{
-                    background: fbUtilita === opt ? 'rgba(123,47,255,0.25)' : 'transparent',
-                    borderColor: fbUtilita === opt ? 'rgba(123,47,255,0.6)' : 'rgba(255,255,255,0.08)',
-                    color: fbUtilita === opt ? '#c4b5fd' : 'rgba(240,240,255,0.5)',
-                  }}>{opt}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">{t('detail.reviewCosa')}</p>
-            <input className="input-field text-sm" placeholder={t('detail.reviewCosaPlaceholder')}
-              value={fbCosa} onChange={e => setFbCosa(e.target.value)} />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">{t('detail.reviewMigliorare')}</p>
-            <input className="input-field text-sm" placeholder={t('detail.reviewMigliorarePlaceholder')}
-              value={fbMigliorare} onChange={e => setFbMigliorare(e.target.value)} />
-          </div>
-          <button onClick={sendFeedback} disabled={fbSending || !fbUtilita}
-            className="w-full py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-all"
-            style={{ background:'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity:(!fbUtilita||fbSending)?0.5:1 }}>
-            {fbSending ? t('detail.invio') : t('detail.inviaFeedback')}
-          </button>
-          <button onClick={chiudiReview} className="text-xs text-disabled py-1 w-full text-center">{t('detail.salta')}</button>
-        </>) : (
-          <div className="text-center space-y-3 py-4">
-            <div className="text-5xl">🙏</div>
-            <h3 className="text-lg font-bold text-txt">{t('detail.grazieMille')}</h3>
-            <p className="text-sm text-muted">{t('detail.grazieDesc')}</p>
-            <button onClick={chiudiReview} className="btn-primary w-full py-3 text-sm font-bold mt-2">🚀 {t('detail.vai')}</button>
-          </div>
-        )}
+      <div className="card w-full max-w-sm space-y-5 text-center" style={{ borderColor:'rgba(123,47,255,0.4)', background:'linear-gradient(135deg, rgba(123,47,255,0.12), rgba(255,45,139,0.07))' }}>
+        <div className="text-5xl">☕</div>
+        <div>
+          <h3 className="text-xl font-bold text-txt">
+            {i18n.language === 'en' ? 'Shall we celebrate with a coffee?' : 'Festeggiamo con un caffè?'}
+          </h3>
+          <p className="text-sm text-muted mt-2 leading-relaxed">
+            {i18n.language === 'en'
+              ? 'If Le faremo sapere helped you reach this milestone, you can support the project by buying me a coffee. 💜'
+              : 'Se Le faremo sapere ti ha aiutato a raggiungere questo traguardo, puoi sostenere il progetto offrendomi un caffè. 💜'}
+          </p>
+        </div>
+        <a
+          href="https://ko-fi.com/lefaremosapere"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={closeCoffeePrompt}
+          className="btn-primary block w-full py-3 text-sm font-bold"
+        >
+          ☕ {i18n.language === 'en' ? 'Buy me a coffee' : 'Offrimi un caffè'}
+        </a>
+        <button onClick={closeCoffeePrompt} className="w-full py-2 text-xs text-disabled">
+          {i18n.language === 'en' ? 'Not now' : 'Non ora'}
+        </button>
       </div>
     </div>
   ) : null
@@ -300,7 +256,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </div>
       </div>
       {CelebrationOverlay}
-      {ReviewPrompt}
+      {CoffeePrompt}
     </div>
   )
 
@@ -450,7 +406,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </button>
         </div>
         {CelebrationOverlay}
-        {ReviewPrompt}
+        {CoffeePrompt}
       </div>
     )
   }
@@ -552,7 +508,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               : (i18n.language === 'en' ? '📦 Archive as a success' : '📦 Archivia come successo')}
           </button>
         </div>
-        {ReviewPrompt}
+        {CoffeePrompt}
       </div>
     )
   }
@@ -895,7 +851,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         danger
       />
       {CelebrationOverlay}
-      {ReviewPrompt}
+      {CoffeePrompt}
     </div>
   )
 }
