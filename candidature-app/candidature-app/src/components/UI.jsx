@@ -266,19 +266,20 @@ export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel, dan
 
 // ─── TAB BAR ─────────────────────────────────────────────────────
 export function TabBar({ active, onChange, unread = 0 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isIt = i18n.language !== 'en'
   const tabs = [
-    { id: 'home',     icon: '🏠', label: 'Home' },
-    { id: 'calendar', icon: '📅', label: 'Cal' },
-    { id: 'add',      icon: '+',  label: '', special: true },
-    { id: 'stats',    icon: '📊', label: 'Stats' },
+    { id: 'home',     icon: '🏠', label: isIt ? 'Candidature' : 'Applications' },
+    { id: 'calendar', icon: '📅', label: isIt ? 'Calendario' : 'Calendar' },
+    { id: 'add',      icon: '+',  label: isIt ? 'Aggiungi' : 'Add', special: true },
+    { id: 'stats',    icon: '📊', label: isIt ? 'Statistiche' : 'Statistics' },
     { id: 'profile',  icon: '👤', label: t('profile.titolo').replace(' 👤','') },
   ]
   return (
     <div data-tutorial="tabbar" className="bg-surface border-t border-border flex-shrink-0 overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-end h-16">
         {tabs.map(tab => (
-          <button key={tab.id} onClick={() => onChange(tab.id)}
+          <button key={tab.id} aria-label={tab.label} aria-current={active === tab.id ? 'page' : undefined} onClick={() => onChange(tab.id)}
             className={`flex-1 flex flex-col items-center justify-end pb-2 gap-0.5 transition-all active:scale-95
               ${active === tab.id && !tab.special ? 'text-purple' : 'text-disabled'}`}>
             {tab.special ? (
@@ -287,6 +288,7 @@ export function TabBar({ active, onChange, unread = 0 }) {
                   style={{ marginTop: '-28px', background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', boxShadow: '0 6px 24px rgba(255,45,139,0.4)' }}>
                   {tab.icon}
                 </span>
+                <span className="text-[10px] mt-1 text-muted">{tab.label}</span>
               </div>
             ) : (
               <>
