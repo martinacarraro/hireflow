@@ -35,7 +35,7 @@
     },
     "step3": {
       "title": "How old are you?",
-      "subtitle": "Helps us understand our users 📊",
+      "subtitle": "You must be at least 16 to use the app.",
       "erroreEta": "⚠️ You must be at least 16 to use this app."
     },
     "step4": {
@@ -184,7 +184,7 @@
     "paese": "🌍 Country",
     "dettagli": "DETAILS",
     "fonte": "📣 Source *",
-    "fonteAvviso": "📣 Select a source — it helps us understand what works 🙏",
+    "fonteAvviso": "Where did you find the job? Adding a source is optional.",
     "linkAnnuncio": "🔗 Job link",
     "linkPlaceholder": "Paste LinkedIn, Indeed, or website link...",
     "importaAuto": "Import data automatically",
