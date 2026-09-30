@@ -8,6 +8,7 @@ import {
   TIPI_COLLOQUIO, FONTI, WELFARE_OPTIONS, daysSince, formatDate
 } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
+import CompanyAutocomplete from '../components/CompanyAutocomplete'
 
 const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
@@ -529,9 +530,15 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               <CompanyAvatar name={form.azienda} size={44} domain={form.azienda_domain} />
               <div className="min-w-0 flex-1">
                 {editingAzienda ? (
-                  <div className="relative">
-                    <input className="input-field text-sm font-bold py-1" value={form.azienda} autoFocus autoComplete="off"
-                      onChange={e => { set('azienda', e.target.value); set('azienda_domain', '') }}
+                  <div className="relative z-50">
+                    <CompanyAutocomplete
+                      className="input-field text-sm font-bold py-1"
+                      value={form.azienda}
+                      autoFocus
+                      onChange={value => { set('azienda', value); set('azienda_domain', '') }}
+                      onSelect={company => {
+                        set('azienda', company.name)
+                      }}
                       onBlur={() => setEditingAzienda(false)} />
                   </div>
                 ) : (
