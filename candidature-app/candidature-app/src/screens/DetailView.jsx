@@ -567,7 +567,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
       </div>
 
       <div className="flex-1 scrollable px-4 py-4 space-y-4">
-        <Section label={`📋 ${t('detail.aggiornaStato')}`}>
+        <Section expanded label={`📋 ${t('detail.aggiornaStato')}`}>
           <select value={form.stato}
             onChange={async e => {
               const nuovoStato = e.target.value
@@ -594,7 +594,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         </Section>
 
         {form.stato !== 'Offerta ricevuta' && (
-          <Section label={`🎙️ ${t('detail.dettagliColloquio')}`}>
+          <Section expanded={STATI_CON_COLLOQUIO.includes(form.stato)} label={`🎙️ ${t('detail.dettagliColloquio')}`}>
             <div className="space-y-3">
               <p className="text-xs text-disabled font-semibold uppercase tracking-wide">{t('detail.primoColloquio')}</p>
               <div className="flex gap-3">
@@ -639,7 +639,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         {form.stato !== 'Offerta ricevuta' && (
-          <Section label={`⏰ ${t('detail.promemoria')}`}>
+          <Section expanded={!!form.reminder_date} label={`⏰ ${t('detail.promemoria')}`}>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <input className="input-field text-sm flex-1" type="date" value={form.reminder_date||''} onChange={e => set('reminder_date', e.target.value)} />
@@ -664,7 +664,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         {STATI_CON_COLLOQUIO.includes(form.stato) && (
-          <Section label={`✅ ${t('detail.checklistPre')}`}>
+          <Section expanded label={`✅ ${t('detail.checklistPre')}`}>
             {loadingChecklist ? <div className="flex justify-center py-4"><Spinner /></div> : (
               <>
                 {checklist.length > 0 && (
@@ -768,14 +768,14 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         )}
 
         {form.stato !== 'Offerta ricevuta' && (
-          <Section label={`📅 ${t('detail.entroQuandoRisposta')}`}>
+          <Section expanded label={`📅 ${t('detail.entroQuandoRisposta')}`}>
             <input className="input-field" type="date"
               value={form.data_scadenza_responso||''} onChange={e => set('data_scadenza_responso', e.target.value)} />
             <p className="text-[10px] text-disabled mt-1">{t('detail.entroQuandoDesc')}</p>
           </Section>
         )}
 
-        <Section label={`📝 ${t('detail.mieNote')}`}>
+        <Section expanded label={`📝 ${t('detail.mieNote')}`}>
           <textarea className="input-field resize-none" rows={4}
             placeholder={t('detail.notePlaceholder')}
             value={form.note||''} onChange={e => set('note', e.target.value)} />
@@ -863,7 +863,13 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   )
 }
 
-function Section({ label, children }) {
+function Section({ label, children, expanded = false }) {
+  if (!expanded) return (
+    <details className="card">
+      <summary className="cursor-pointer text-sm font-semibold text-muted py-1">{label}</summary>
+      <div className="pt-3">{children}</div>
+    </details>
+  )
   return (
     <div className="card">
       <SectionLabel>{label}</SectionLabel>
