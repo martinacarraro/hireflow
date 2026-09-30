@@ -3,6 +3,7 @@ import { useApp } from '../contexts/AppContext'
 import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
 import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
+import CompanyAutocomplete from '../components/CompanyAutocomplete'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
@@ -60,11 +61,13 @@ export default function AddCandidatura({ onBack, onDone }) {
         <SectionLabel>{t('add.fondamentali')}</SectionLabel>
 
         <Field label={t('add.azienda')}>
-          <input className={`input-field ${errors.azienda ? 'border-red' : ''}`}
+          <CompanyAutocomplete
+            className={`input-field ${errors.azienda ? 'border-red' : ''}`}
             placeholder={t('add.aziendaPlaceholder')}
             value={form.azienda}
-            onChange={e => set('azienda', e.target.value)}
-            autoComplete="off" />
+            onChange={value => set('azienda', value)}
+            onSelect={company => set('azienda', company.name)}
+          />
           {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
         </Field>
 
