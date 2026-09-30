@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
-import { STATI, PRIORITA, FONTI, STATUS_CONFIG } from '../lib/utils'
+import { STATI, PRIORITA, FONTI } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
 
@@ -9,7 +9,8 @@ const TODAY = new Date().toISOString().split('T')[0]
 
 export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura } = useApp()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isIt = i18n.language !== 'en'
   const [form, setForm] = useState({
     azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
     sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
@@ -25,7 +26,6 @@ export default function AddCandidatura({ onBack, onDone }) {
     const e = {}
     if (!form.azienda.trim()) e.azienda = t('add.campoObbligatorio')
     if (!form.ruolo.trim()) e.ruolo = t('add.campoObbligatorio')
-    if (!form.fonte) e.fonte = t('add.selezionaFonte')
     setErrors(e)
     return !Object.keys(e).length
   }
@@ -44,15 +44,13 @@ export default function AddCandidatura({ onBack, onDone }) {
     if (result) onDone?.()
   }
 
-  const statusColor = (s) => STATUS_CONFIG[s]?.color
-
   return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
         <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
         <div>
           <h2 className="font-bold text-txt text-base">{t('add.titolo')}</h2>
-          <p className="text-xs text-muted italic">{t('add.sottotitolo')}</p>
+          <p className="text-xs text-muted">{isIt ? 'Bastano azienda e ruolo. Il resto puoi aggiungerlo dopo.' : 'Company and role are enough. Add the rest later.'}</p>
         </div>
       </div>
 
@@ -79,13 +77,9 @@ export default function AddCandidatura({ onBack, onDone }) {
         </Field>
 
         <Field label={t('add.stato')}>
-          <ChoicePicker 
-  value={form.stato} 
-  options={STATI.filter(s => s !== 'Archiviate')} 
-  onChange={v => set('stato', v)} 
-  colorFn={statusColor}
-  labelFn={v => t(`add.stati.${v}`, v)} 
-/>
+          <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
+            {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{t(`add.stati.${s}`, s)}</option>)}
+          </select>
         </Field>
 
         <Field label={t('add.dataCandidatura')}>
@@ -100,6 +94,9 @@ export default function AddCandidatura({ onBack, onDone }) {
           </Field>
         )}
 
+        <details className="card mt-4">
+          <summary className="cursor-pointer font-semibold text-purple-soft py-1">{isIt ? 'Altri dettagli · facoltativi' : 'More details · optional'}</summary>
+          <p className="text-xs text-muted mt-2 mb-4">{isIt ? 'Luogo, link, stipendio e appunti: aggiungi solo ciò che ti serve.' : 'Location, link, salary and notes: add only what you need.'}</p>
         <SectionLabel>{t('add.dove')}</SectionLabel>
         <div className="flex gap-3">
           <Field label={t('add.sede')}>
@@ -115,9 +112,10 @@ export default function AddCandidatura({ onBack, onDone }) {
         <SectionLabel>{t('add.dettagli')}</SectionLabel>
 
         <Field label={t('add.fonte')}>
-          <ChoicePicker value={form.fonte} options={FONTI} onChange={v => set('fonte', v)}
-  labelFn={v => t(`add.fonti.${v}`, v)} />
-          {(errors.fonte || (!form.fonte)) && <p className="text-red text-xs mt-1">{t('add.fonteAvviso')}</p>}
+          <select aria-label={t('add.fonte')} className="input-field" value={form.fonte} onChange={e => set('fonte', e.target.value)}>
+            <option value="">{isIt ? 'Non specificata' : 'Not specified'}</option>
+            {FONTI.map(f => <option key={f} value={f}>{t(`add.fonti.${f}`, f)}</option>)}
+          </select>
         </Field>
 
         <Field label={t('add.linkAnnuncio')}>
@@ -141,13 +139,13 @@ export default function AddCandidatura({ onBack, onDone }) {
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-              <input className="input-field pl-7" type="number" placeholder="Min k"
+              <input aria-label={isIt ? 'Stipendio minimo in euro' : 'Minimum salary in euros'} className="input-field pl-7" type="number" placeholder="28000"
                 value={form.stipendio_min} onChange={e => set('stipendio_min', e.target.value)} />
             </div>
             <span className="text-muted">–</span>
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-              <input className="input-field pl-7" type="number" placeholder="Max k"
+              <input aria-label={isIt ? 'Stipendio massimo in euro' : 'Maximum salary in euros'} className="input-field pl-7" type="number" placeholder="35000"
                 value={form.stipendio_max} onChange={e => set('stipendio_max', e.target.value)} />
             </div>
           </div>
@@ -171,6 +169,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           </button>
         </div>
 
+        </details>
         <div className="pt-4 pb-6">
           <button onClick={handleSubmit} disabled={loading}
             className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2">
