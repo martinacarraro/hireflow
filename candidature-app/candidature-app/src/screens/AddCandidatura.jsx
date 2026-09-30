@@ -4,6 +4,7 @@ import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
 import { STATI, PRIORITA, FONTI } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
+import JobFields, { RoleInput } from '../components/JobFields'
 
 const TODAY = new Date().toISOString().split('T')[0]
 
@@ -79,9 +80,9 @@ export default function AddCandidatura({ onBack, onDone }) {
         </Field>
 
         <Field label={t('add.ruolo')}>
-          <input className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
+          <RoleInput className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
             placeholder={t('add.ruoloPlaceholder')}
-            value={form.ruolo} onChange={e => set('ruolo', e.target.value)} />
+            value={form.ruolo} onChange={value => set('ruolo', value)} />
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
@@ -108,6 +109,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           <summary className="cursor-pointer font-semibold text-purple-soft py-1">{isIt ? 'Altri dettagli · facoltativi' : 'More details · optional'}</summary>
           <p className="text-xs text-muted mt-2 mb-4">{isIt ? 'Luogo, link, stipendio e appunti: aggiungi solo ciò che ti serve.' : 'Location, link, salary and notes: add only what you need.'}</p>
         <SectionLabel>{t('add.dove')}</SectionLabel>
+        <JobFields form={form} onChange={set} />
         <div className="flex gap-3">
           <Field label={t('add.sede')}>
             <input className="input-field" placeholder={t('add.sedePlaceholder')}
