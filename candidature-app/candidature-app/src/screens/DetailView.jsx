@@ -9,6 +9,7 @@ import {
 } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
+import JobFields, { RoleInput } from '../components/JobFields'
 
 const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
 const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
@@ -579,6 +580,10 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           </select>
         </Section>
 
+        <Section label={i18n.language === 'en' ? '💼 Role and contract' : '💼 Ruolo e contratto'}>
+          <div className="mb-3"><RoleInput className="input-field" value={form.ruolo} onChange={value => set('ruolo', value)} /></div>
+          <JobFields form={form} onChange={set} />
+        </Section>
         <Section label={`⚡ ${t('detail.priorita')}`}>
           <div className="flex gap-2">
             {PRIORITA.map(p => {
