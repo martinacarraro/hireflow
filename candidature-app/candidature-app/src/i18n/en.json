@@ -185,7 +185,7 @@
     "paese": "🌍 Country",
     "dettagli": "DETAILS",
     "fonte": "📣 Source *",
-    "fonteAvviso": "Where did you find the job? Adding a source is optional.",
+    "fonteAvviso": "Where did you find the job?",
     "linkAnnuncio": "🔗 Job link",
     "linkPlaceholder": "Paste LinkedIn, Indeed, or website link...",
     "importaAuto": "Import data automatically",

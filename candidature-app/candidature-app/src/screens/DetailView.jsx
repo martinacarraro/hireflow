@@ -145,7 +145,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     </header>
     <div className="flex-1 scrollable px-5 py-4 space-y-4">
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
-      <label className="block text-sm font-semibold">{en?'Where are you now?':'A che punto sei?'}
+      <label className="block text-sm font-semibold">{en?'Where are you now? *':'A che punto sei? *'}
         <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>save({stato:e.target.value})}>
           {STATI.map(state=><option key={state} value={state}>{t('add.stati.'+state,state)}</option>)}
         </select>
@@ -161,8 +161,8 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
       <details className="card">
         <summary>{en?'Edit details':'Modifica dettagli'}</summary>
         <div className="pt-3 space-y-4">
-          <label className="block text-xs text-muted">{en?'Company':'Azienda'}<CompanyAutocomplete className="input-field mt-1" value={form.azienda} onChange={v=>set('azienda',v)} onSelect={company=>set('azienda',company.name)}/></label>
-          <label className="block text-xs text-muted">{en?'Role':'Ruolo'}<RoleInput className="input-field mt-1" value={form.ruolo} onChange={v=>set('ruolo',v)}/></label>
+          <label className="block text-xs text-muted">{en?'Company *':'Azienda *'}<CompanyAutocomplete className="input-field mt-1" value={form.azienda} onChange={v=>set('azienda',v)} onSelect={company=>set('azienda',company.name)}/></label>
+          <label className="block text-xs text-muted">{en?'Role *':'Ruolo *'}<RoleInput className="input-field mt-1" value={form.ruolo} onChange={v=>set('ruolo',v)}/></label>
           <EssentialDetails form={form} onChange={set}/>
           {form.data_scadenza_responso && <label className="block text-xs text-muted">{en?'Expected reply date':'Risposta prevista entro'}<input className="input-field mt-1" type="date" value={form.data_scadenza_responso} onChange={e=>set('data_scadenza_responso',e.target.value)}/></label>}
           {form.reminder_date && <details><summary>{en?'Saved reminder':'Promemoria salvato'}</summary><div className="pt-2 space-y-3">
@@ -173,8 +173,8 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
           </div></details>}
           {['Offerta ricevuta','Offerta rifiutata','Assunta'].includes(form.stato) && <div className="space-y-3">
             <label className="block text-xs text-muted">{en?'Offered gross annual salary · euros':'RAL offerta · euro'}<input className="input-field mt-1" type="number" value={form.offerta_ral ?? ''} onChange={e=>set('offerta_ral',e.target.value)}/></label>
-            {form.stato==='Offerta ricevuta' && <label className="block text-xs text-muted">{en?'Reply by · optional':'Rispondi entro · facoltativo'}<input className="input-field mt-1" type="date" value={form.offerta_scadenza || ''} onChange={e=>set('offerta_scadenza',e.target.value)}/></label>}
-            <label className="block text-xs text-muted">{en?'Start date · optional':'Data inizio · facoltativa'}<input className="input-field mt-1" type="date" value={form.data_inizio || ''} onChange={e=>set('data_inizio',e.target.value)}/></label>
+            {form.stato==='Offerta ricevuta' && <label className="block text-xs text-muted">{en?'Reply by':'Rispondi entro'}<input className="input-field mt-1" type="date" value={form.offerta_scadenza || ''} onChange={e=>set('offerta_scadenza',e.target.value)}/></label>}
+            <label className="block text-xs text-muted">{en?'Start date':'Data inizio'}<input className="input-field mt-1" type="date" value={form.data_inizio || ''} onChange={e=>set('data_inizio',e.target.value)}/></label>
             {form.offerta_note && <p className="text-sm text-muted whitespace-pre-wrap">{form.offerta_note}</p>}
           </div>}
           {legacy.length>0 && <details><summary>{en?'Previously saved information':'Informazioni già salvate'}</summary><dl className="pt-2 space-y-2">{legacy.map(([label,value])=><div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="text-sm whitespace-pre-wrap">{value}</dd></div>)}</dl></details>}

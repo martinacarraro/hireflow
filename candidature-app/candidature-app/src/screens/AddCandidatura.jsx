@@ -160,7 +160,7 @@ export default function AddCandidatura({ onBack, onDone }) {
 
         {statiConColloquio.includes(form.stato) && <div className="py-3"><InterviewFields form={form} onChange={set}/></div>}
         <details className="card mt-4">
-          <summary>{isIt?'Altri dettagli · facoltativi':'More details · optional'}</summary>
+          <summary>{isIt?'Altri dettagli':'More details'}</summary>
           <EssentialDetails form={form} onChange={set} includeNotes/>
         </details>
       </div>

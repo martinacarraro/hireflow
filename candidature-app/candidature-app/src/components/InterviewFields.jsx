@@ -10,14 +10,14 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
   const current = items.find(e=>!e.needsReview && e.order===order && e.status==='scheduled') || upcomingInterviews(form)[0] || items.find(e=>!e.needsReview && e.order===order && e.status!=='cancelled')
   const update = (id,patch) => onChange('interviews',items.map(e=>e.id===id?{...e,...patch}:e))
   const inputs = e => <div className="grid grid-cols-2 gap-3">
-    <label className="text-xs text-muted">{en?'Date · optional':'Data · facoltativa'}<input aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>update(e.id,{date:ev.target.value})}/></label>
-    <label className="text-xs text-muted">{en?'Time · optional':'Ora · facoltativa'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
+    <label className="text-xs text-muted">{en?'Date':'Data'}<input aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>update(e.id,{date:ev.target.value})}/></label>
+    <label className="text-xs text-muted">{en?'Time':'Ora'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
   </div>
   if(historyOnly) {
     const previous = items.filter(e=>e.id!==current?.id)
     if(!previous.length && form.stato!=='Secondo colloquio')return null
     return <details>
-      <summary>{en?'Previous meetings · optional':'Incontri precedenti · facoltativi'}</summary>
+      <summary>{en?'Previous meetings':'Incontri precedenti'}</summary>
       <div className="space-y-4 pt-3">
         {previous.map(e=><div key={e.id}>
           <p className="text-sm font-medium mb-2">{interviewLabel(e,en)}</p>
