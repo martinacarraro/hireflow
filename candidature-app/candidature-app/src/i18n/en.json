@@ -86,7 +86,7 @@
     "inviata": "Applied",
     "vista": "Viewed",
     "rifiutata": "Rejected",
-    "nonPiace": "Not interested",
+    "nonPiace": "Withdrawn",
     "ghostate": "Ghosted",
     "spontanea": "Cold outreach",
     "cercaPlaceholder": "Search company, role, location...",
@@ -109,14 +109,15 @@
       "Colloquio": "Interview",
       "Secondo colloquio": "Second interview",
       "In attesa risposta": "Waiting for response",
-      "Non mi piace": "Not for me",
+      "Non mi piace": "Withdrawn",
       "Rifiutata": "Rejected",
       "GHOSTED": "GHOSTED",
       "Spontanea": "Cold Application",
       "Offerta ricevuta": "Offer received",
       "Assunta": "Hired",
       "Assunto": "Hired",
-      "Assunt*": "Hired"
+      "Assunt*": "Hired",
+      "Offerta rifiutata": "Offer declined"
     }
   },
   "stats": {
@@ -213,10 +214,12 @@
       "Colloquio": "Interview",
       "Secondo colloquio": "Second interview",
       "In attesa risposta": "Waiting for response",
-      "Non mi piace": "Not for me",
+      "Non mi piace": "Withdrawn",
       "Rifiutata": "Rejected",
       "GHOSTED": "GHOSTED",
-      "Offerta ricevuta": "Offer received"
+      "Offerta ricevuta": "Offer received",
+      "Offerta rifiutata": "Offer declined",
+      "Assunta": "Hired"
     },
     "fonti": {
       "Sito aziendale": "Company site",

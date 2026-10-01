@@ -38,7 +38,7 @@ function registerOpenAndShouldAskForSupport(now = new Date()) {
 }
 
 export default function App() {
-  const { profile, loading: dataLoading, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
+  const { profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
   const { t, i18n } = useTranslation()
   
   const [showSplash, setShowSplash] = useState(true)
@@ -92,6 +92,7 @@ export default function App() {
     return () => clearTimeout(timeout)
   }, [])
 
+  if (loadError) return <div className="screen items-center justify-center p-6 text-center gap-4"><h1 className="text-xl font-bold">{i18n.language==='en'?'Cannot access saved data':'Impossibile accedere ai dati salvati'}</h1><p>{i18n.language==='en'?'No changes were made. Check storage availability and try again.':'Nessuna modifica applicata. Controlla lo spazio disponibile e riprova.'}</p><button className="btn-primary" onClick={()=>window.location.reload()}>{i18n.language==='en'?'Try again':'Riprova'}</button></div>
   if (showSplash || loading) return <Splash onDone={() => setShowSplash(false)} />
   if (!linguaScelta) return <LanguageSelector onSelect={() => setLinguaScelta(true)} />
   const hasSeenOnboarding = !!localStorage.getItem('lfs_onboarding_done') || profile?.seen_onboarding === true
@@ -101,8 +102,8 @@ export default function App() {
     </Suspense>
   )
 
-  if (view?.type === 'detail') return <Suspense fallback={null}><DetailView candidatura={view.data} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
-  if (view?.type === 'add') return <Suspense fallback={null}><AddCandidatura onBack={() => setView(null)} onDone={() => setView(null)} /></Suspense>
+  if (view?.type === 'detail') return <Suspense fallback={null}><DetailView key={view.data.id} candidatura={view.data} celebrateOnOpen={view.celebrate} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
+  if (view?.type === 'add') return <Suspense fallback={null}><AddCandidatura onBack={() => setView(null)} onDone={row => setView(row?.stato==='Assunta'?{type:'detail',data:row,celebrate:true}:null)} /></Suspense>
 
   return (
     <div className="h-full flex flex-col">

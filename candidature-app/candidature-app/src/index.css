@@ -13,9 +13,9 @@
     -webkit-font-smoothing: antialiased;
   }
   input, textarea, select { font-family: inherit; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2A2A4A; border-radius: 2px; }
+  /* Hide scrollbar chrome without changing scrolling or keyboard navigation. */
+  * { scrollbar-width: none; }
+  ::-webkit-scrollbar { display: none; width: 0; height: 0; }
 }
 
 @layer components {
@@ -25,7 +25,7 @@
   .scrollable {
     @apply overflow-y-auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
   .card {
     @apply bg-surface rounded-2xl border border-border p-4 shadow-glow;

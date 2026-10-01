@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
+import { CLOSED, upcomingInterviews, needsFollowUp as flowFollowUp, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays } from '../lib/applicationFlow'
 import { useTranslation } from 'react-i18next'
 
 const DASHBOARD_FILTERS = {
@@ -11,7 +12,7 @@ const DASHBOARD_FILTERS = {
   HIRED: '__hired__',
 }
 
-const CLOSED_STATUSES = new Set(['Rifiutata', 'Non mi piace', 'GHOSTED', 'Assunta'])
+const CLOSED_STATUSES = CLOSED
 
 function getDashboardDates() {
   const today = new Date()
@@ -21,21 +22,8 @@ function getDashboardDates() {
   return { today, inSevenDays }
 }
 
-function isUpcoming(candidatura, today, inSevenDays) {
-  const dates = [candidatura.data_colloquio, candidatura.data_secondo_colloquio].filter(Boolean)
-  return !candidatura.archiviata && dates.some(value => {
-    const date = new Date(value)
-    date.setHours(0, 0, 0, 0)
-    return !Number.isNaN(date.getTime()) && date >= today && date <= inSevenDays
-  })
-}
-
-function needsFollowUp(candidatura, today) {
-  if (!candidatura.data_scadenza_responso || candidatura.archiviata || CLOSED_STATUSES.has(candidatura.stato)) return false
-  const deadline = new Date(candidatura.data_scadenza_responso)
-  deadline.setHours(0, 0, 0, 0)
-  return !Number.isNaN(deadline.getTime()) && deadline < today
-}
+function isUpcoming(candidatura) { return upcomingInterviews(candidatura,new Date(),7).length>0 }
+function needsFollowUp(candidatura) { return flowFollowUp(candidatura) }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
@@ -83,6 +71,7 @@ const stats = useMemo(() => [
   { emoji: '📤', label: t('home.inviata'),     stato: 'Inviata',            color: '#3B82F6' },
   { emoji: '👀', label: t('home.vista'),       stato: 'Vista',              color: '#F97316' },
   { emoji: '❌', label: t('home.rifiutata'),   stato: 'Rifiutata',          color: '#EF4444' },
+  { emoji: '↩️', label: t('add.stati.Offerta rifiutata'), stato: 'Offerta rifiutata', color: '#A78BFA' },
   { emoji: '😕', label: t('home.nonPiace'),    stato: 'Non mi piace',       color: '#6D28D9' },
   { emoji: '👻', label: t('home.ghostate'),    stato: 'GHOSTED',            color: '#6B7280' },
   { emoji: '💡', label: t('home.spontanea'),   stato: 'Spontanea',          color: '#9CA3AF' },
@@ -181,8 +170,7 @@ const candidatureFiltrate = useMemo(() => {
   const toggleGroup = (s) => setCollapsed(c => ({ ...c, [s]: !c[s] }))
 
   const handleDuplicate = async (cand) => {
-    const { id, created_at, updated_at, user_id, ...rest } = cand
-    await addCandidatura({ ...rest, stato: 'Inviata', data_invio: new Date().toISOString().split('T')[0], note: (rest.note ? rest.note + '\n' : '') + '[Duplicata]' })
+    await addCandidatura(duplicateApplication(cand))
   }
 
   const greet = getGreeting(nome, i18n.language)
@@ -523,7 +511,7 @@ function DeadlineRow({ scadenza }) {
 function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, genere }) {
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
-  const isStale = days >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
+  const isStale = elapsedDays(waitingSince(c)) >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
   const lastUpdate = new Date(c.updated_at || c.created_at)
   const isRecent = (new Date() - lastUpdate) / (1000 * 60 * 60 * 24) <= 7
   const STATI_ATTIVI = ['Inviata','Vista','Prima call','Colloquio','In attesa risposta','Secondo colloquio','Offerta ricevuta']
@@ -587,16 +575,8 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
               <StatusBadge stato={c.stato} genere={genere} />
             </div>
           </div>
-          {(c.data_colloquio || c.data_secondo_colloquio) && (
-            <div className="mt-1.5 space-y-0.5">
-              {c.data_colloquio && (
-                <p className="text-xs text-amber">📅 {c.data_secondo_colloquio ? '1° ' : ''}{formatDateTime(c.data_colloquio, c.ora_colloquio)}</p>
-              )}
-              {c.data_secondo_colloquio && (
-                <p className="text-xs" style={{color:'#34D399'}}>📅 2° {formatDateTime(c.data_secondo_colloquio, c.ora_secondo_colloquio)}</p>
-              )}
-            </div>
-          )}
+          {upcomingInterviews(c)[0] && <p className="text-xs text-amber mt-1.5">📅 {interviewLabel(upcomingInterviews(c)[0],i18n.language==='en')} · {formatDateTime(upcomingInterviews(c)[0].date,upcomingInterviews(c)[0].time)}</p>}
+          {getInterviews(c).some(e=>e.needsReview) && <p className="text-xs text-amber mt-1.5">{i18n.language==='en'?'Check the stage of a previous interview':'Verifica la fase di un colloquio precedente'}</p>}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -604,7 +584,7 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
               <span className="text-xs text-muted font-medium">{days}{t('home.ggFa')}</span>
             </div>
           </div>
-          {c.data_scadenza_responso && c.stato !== 'Assunta' && <DeadlineRow scadenza={c.data_scadenza_responso} />}
+          {c.data_scadenza_responso && !c.archiviata && !CLOSED.has(c.stato) && c.stato !== 'Offerta ricevuta' && <DeadlineRow scadenza={c.data_scadenza_responso} />}
         </div>
       </div>
     </div>

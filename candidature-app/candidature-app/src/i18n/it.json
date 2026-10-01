@@ -29,17 +29,33 @@
       "subtitle": "Ti chiameremo così nell'app",
       "placeholder": "Il tuo nome"
     },
-    "step2": { "title": "Sei:", "subtitle": "Serve solo per personalizzare i messaggi dell'app 🤍" },
-    "step3": { "title": "Quanti anni hai?", "subtitle": "Per usare l'app devi avere almeno 16 anni.", "erroreEta": "⚠️ Devi avere almeno 16 anni per usare l'app." },
-    "step4": { "title": "In che settore cerchi?", "placeholder": "Scrivi il tuo settore..." },
-    "step5": { "title": "Come ci hai trovato?", "placeholder": "Dove ci hai trovato?" },
-    "step6": { "title": "Dove vivi?", "subtitle": "Lo usiamo per calcolare la distanza dai luoghi dei colloqui 🗺️" },
-    "step7": { 
-        "title": "Vuoi ricevere notifiche?", 
-        "body": "Ti avvisiamo per colloqui e promemoria. Niente spam. 💜",
-        "btnSi": "🔔 Sì, attiva le notifiche",
-        "btnNo": "No grazie, dopo",
-        "loading": "⏳ Un attimo..."
+    "step2": {
+      "title": "Sei:",
+      "subtitle": "Serve solo per personalizzare i messaggi dell'app 🤍"
+    },
+    "step3": {
+      "title": "Quanti anni hai?",
+      "subtitle": "Per usare l'app devi avere almeno 16 anni.",
+      "erroreEta": "⚠️ Devi avere almeno 16 anni per usare l'app."
+    },
+    "step4": {
+      "title": "In che settore cerchi?",
+      "placeholder": "Scrivi il tuo settore..."
+    },
+    "step5": {
+      "title": "Come ci hai trovato?",
+      "placeholder": "Dove ci hai trovato?"
+    },
+    "step6": {
+      "title": "Dove vivi?",
+      "subtitle": "Lo usiamo per calcolare la distanza dai luoghi dei colloqui 🗺️"
+    },
+    "step7": {
+      "title": "Vuoi ricevere notifiche?",
+      "body": "Ti avvisiamo per colloqui e promemoria. Niente spam. 💜",
+      "btnSi": "🔔 Sì, attiva le notifiche",
+      "btnNo": "No grazie, dopo",
+      "loading": "⏳ Un attimo..."
     }
   },
   "rating": {
@@ -70,7 +86,7 @@
     "inviata": "Inviata",
     "vista": "Vista",
     "rifiutata": "Rifiutata",
-    "nonPiace": "Non mi piace",
+    "nonPiace": "Rinunciata",
     "ghostate": "Ghostate",
     "spontanea": "Spontanea",
     "cercaPlaceholder": "Cerca azienda, ruolo, luogo...",
@@ -93,14 +109,15 @@
       "Colloquio": "Colloquio",
       "Secondo colloquio": "Secondo colloquio",
       "In attesa risposta": "In attesa risposta",
-      "Non mi piace": "Non mi piace",
+      "Non mi piace": "Rinunciata",
       "Rifiutata": "Rifiutata",
       "GHOSTED": "GHOSTED",
       "Spontanea": "Spontanea",
       "Offerta ricevuta": "Offerta ricevuta",
-      "Assunta": "Assunta",
+      "Assunta": "Assunzione",
       "Assunto": "Assunto",
-      "Assunt*": "Assunt*"
+      "Assunt*": "Assunt*",
+      "Offerta rifiutata": "Offerta rifiutata"
     }
   },
   "stats": {
@@ -197,10 +214,12 @@
       "Colloquio": "Colloquio",
       "Secondo colloquio": "Secondo colloquio",
       "In attesa risposta": "In attesa risposta",
-      "Non mi piace": "Non mi piace",
+      "Non mi piace": "Rinunciata",
       "Rifiutata": "Rifiutata",
       "GHOSTED": "GHOSTED",
-      "Offerta ricevuta": "Offerta ricevuta"
+      "Offerta ricevuta": "Offerta ricevuta",
+      "Offerta rifiutata": "Offerta rifiutata",
+      "Assunta": "Assunzione"
     },
     "fonti": {
       "Sito aziendale": "Sito aziendale",

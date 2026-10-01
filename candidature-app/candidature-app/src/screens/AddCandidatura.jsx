@@ -5,6 +5,8 @@ import { STATI, PRIORITA, FONTI } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
 import JobFields, { RoleInput } from '../components/JobFields'
+import InterviewFields from '../components/InterviewFields'
+import { ensureStageInterview, getInterviews, validationIssues, validationMessage } from '../lib/applicationFlow'
 
 const DRAFT_KEY = 'lfs_application_draft_v1'
 const emptyForm = () => ({
@@ -12,7 +14,7 @@ const emptyForm = () => ({
   sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
   stipendio_min: '', stipendio_max: '', note: '', notifiche_push: true,
   data_invio: new Date().toLocaleDateString('sv-SE'), data_colloquio: '',
-  orario_lavoro: '', tipo_contratto: '', modalita_lavoro: '', livello_ruolo: '',
+  tipo_candidatura: 'annuncio', interviews: [], attesa_dal: '', orario_lavoro: '', tipo_contratto: '', modalita_lavoro: '', livello_ruolo: '',
 })
 function readDraft() {
   const defaults = emptyForm()
@@ -20,8 +22,13 @@ function readDraft() {
     const saved = JSON.parse(localStorage.getItem(DRAFT_KEY))
     if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return defaults
     for (const key of Object.keys(defaults)) {
-      if (typeof saved[key] === typeof defaults[key]) defaults[key] = saved[key]
+      if (key === 'interviews' ? Array.isArray(saved[key]) : typeof saved[key] === typeof defaults[key]) defaults[key] = saved[key]
     }
+    if (!Array.isArray(saved.interviews)) {
+      delete defaults.interviews
+      defaults.interviews = getInterviews(defaults)
+    }
+    defaults.interviews = ensureStageInterview(defaults)
   } catch {}
   return defaults
 }
@@ -34,11 +41,14 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [draftStatus, setDraftStatus] = useState(() => {
     try { return localStorage.getItem(DRAFT_KEY) ? 'saved' : '' } catch { return '' }
   })
+  const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => {
     const next = { ...form, [k]: v }
+    if(k === 'stato') next.interviews = ensureStageInterview(next,v)
+    setFormError('')
     setForm(next)
     setErrors(e => ({ ...e, [k]: '' }))
     try {
@@ -61,8 +71,10 @@ export default function AddCandidatura({ onBack, onDone }) {
     const e = {}
     if (!form.azienda.trim()) e.azienda = t('add.campoObbligatorio')
     if (!form.ruolo.trim()) e.ruolo = t('add.campoObbligatorio')
+    const issue = validationIssues(form)[0]
+    setFormError(issue ? validationMessage(issue,!isIt) : '')
     setErrors(e)
-    return !Object.keys(e).length
+    return !issue
   }
 
   const handleSubmit = async () => {
@@ -86,9 +98,10 @@ export default function AddCandidatura({ onBack, onDone }) {
       try { localStorage.removeItem(DRAFT_KEY) } catch {}
       setForm(emptyForm())
       setDraftStatus('')
-      onDone?.()
+      onDone?.(result)
     }
-    } catch {
+    } catch (error) {
+      setFormError(error.message || (isIt ? 'Salvataggio non riuscito.' : 'Could not save.'))
       showToast(isIt ? 'Salvataggio non riuscito. Riprova: i campi sono ancora qui.' : 'Could not save. Try again: your entries are still here.', 'error')
     } finally { setLoading(false) }
   }
@@ -144,18 +157,23 @@ export default function AddCandidatura({ onBack, onDone }) {
           </select>
         </Field>
 
+        <Field label={isIt ? 'Tipo di candidatura' : 'Application type'}>
+          <select className="input-field" value={form.tipo_candidatura} onChange={e=>set('tipo_candidatura',e.target.value)}>
+            <option value="annuncio">{isIt?'Risposta a un annuncio':'Job posting'}</option>
+            <option value="spontanea">{isIt?'Candidatura spontanea':'Unsolicited application'}</option>
+          </select>
+        </Field>
         <Field label={t('add.dataCandidatura')}>
           <input className="input-field" type="date"
             value={form.data_invio} onChange={e => set('data_invio', e.target.value)} />
         </Field>
 
-        {statiConColloquio.includes(form.stato) && (
-          <Field label={t('add.dataColloquio')}>
-            <input className="input-field" type="date"
-              value={form.data_colloquio} onChange={e => set('data_colloquio', e.target.value)} />
-          </Field>
+        {(statiConColloquio.includes(form.stato) || form.interviews.length > 0) && (
+          <div className="card my-4"><InterviewFields form={form} onChange={set}/></div>
         )}
-
+        {form.stato === 'In attesa risposta' && <Field label={isIt?'In attesa dal · facoltativo':'Waiting since · optional'}>
+          <input className="input-field" type="date" value={form.attesa_dal} onChange={e=>set('attesa_dal',e.target.value)}/>
+        </Field>}
         <details className="card mt-4">
           <summary className="cursor-pointer font-semibold text-purple-soft py-1">{isIt ? 'Altri dettagli · facoltativi' : 'More details · optional'}</summary>
           <p className="text-xs text-muted mt-2 mb-4">{isIt ? 'Luogo, link, stipendio e appunti: aggiungi solo ciò che ti serve.' : 'Location, link, salary and notes: add only what you need.'}</p>
@@ -198,7 +216,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   labelFn={v => t(`add.priorita.${v}`, v)} />
         </Field>
 
-        <Field label={t('add.stipendio')}>
+        <Field label={isIt ? 'RAL annua lorda · euro' : 'Gross annual salary · euros'}>
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
@@ -223,18 +241,19 @@ export default function AddCandidatura({ onBack, onDone }) {
 
         <div className="flex items-center justify-between py-2">
           <div>
-            <p className="text-sm font-medium text-txt">🔔 {t('add.notifiche')}</p>
-            <p className="text-xs text-muted">{t('add.notificheDesc')}</p>
+            <p className="text-sm font-medium text-txt">🔔 {isIt?'Avvisi dentro l’app':'In-app reminders'}</p>
+            <p className="text-xs text-muted">{isIt?'Visibili nella campanella quando apri l’app.':'Shown in the notification bell when you open the app.'}</p>
           </div>
           <button onClick={() => set('notifiche_push', !form.notifiche_push)}
             className={`w-12 h-6 rounded-full transition-all duration-200 relative ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push ? 'left-6.5' : 'left-0.5'}`} />
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push ? 'left-[26px]' : 'left-0.5'}`} />
           </button>
         </div>
 
         </details>
       </div>
         <div className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+          {formError && <p role="alert" className="text-sm text-red mb-3">{formError}</p>}
           <button onClick={handleSubmit} disabled={loading}
             className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2">
             {loading ? <Spinner size={20} /> : (isIt ? 'Salva candidatura' : 'Save application')}

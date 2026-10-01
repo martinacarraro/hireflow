@@ -10,7 +10,7 @@ const GENERI = [
 ]
 
 export default function Onboarding({ onDone }) {
-  const { markOnboarded, updateProfile, requestNotificationPermission, triggerConfetti, profile } = useApp()
+  const { markOnboarded, updateProfile, triggerConfetti, profile } = useApp()
   const { i18n } = useTranslation()
   const isIt = i18n.language !== 'en'
   const [step, setStep] = useState(0)
@@ -20,8 +20,7 @@ export default function Onboarding({ onDone }) {
 
   const finish = async (enableNotifications = false) => {
     setLoading(true)
-    if (enableNotifications) await requestNotificationPermission()
-    await updateProfile({ nome: nome.trim(), genere, seen_onboarding: true })
+    await updateProfile({ nome: nome.trim(), genere, reminders_enabled: enableNotifications, seen_onboarding: true })
     await markOnboarded()
     localStorage.setItem('lfs_onboarding_done', '1')
     localStorage.setItem('lfs_tutorial_done', '1')
@@ -95,12 +94,12 @@ export default function Onboarding({ onDone }) {
       {step === 2 && (
         <div className="flex-1 flex flex-col items-center justify-center px-7 py-8 text-center">
           <div className="text-7xl mb-5">🔔</div>
-          <h2 className="text-2xl font-bold text-txt mb-3">{isIt ? 'Vuoi i promemoria?' : 'Would you like reminders?'}</h2>
+          <h2 className="text-2xl font-bold text-txt mb-3">{isIt ? 'Vuoi gli avvisi nell’app?' : 'Would you like in-app reminders?'}</h2>
           <p className="text-muted leading-relaxed mb-10">
-            {isIt ? 'Ti ricorderemo colloqui e scadenze. Puoi cambiare idea in qualsiasi momento.' : 'We will remind you about interviews and deadlines. You can change this anytime.'}
+            {isIt ? 'Gli avvisi compaiono nella campanella quando apri l’app. Per riceverli ad app chiusa, puoi esportare gli appuntamenti nel calendario del telefono.' : 'Reminders appear in the bell when you open the app. For alerts with the app closed, export events to your phone calendar.'}
           </p>
           <button onClick={() => finish(true)} disabled={loading} className="btn-primary w-full py-4 text-base mb-3">
-            {loading ? '...' : (isIt ? '🔔 Attiva promemoria' : '🔔 Enable reminders')}
+            {loading ? '...' : (isIt ? '🔔 Attiva avvisi nell’app' : '🔔 Enable in-app reminders')}
           </button>
           <button onClick={() => finish(false)} disabled={loading} className="w-full py-3 text-sm text-muted">
             {isIt ? 'Non ora, entra nell’app' : 'Not now, open the app'}

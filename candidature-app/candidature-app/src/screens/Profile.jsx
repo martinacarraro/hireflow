@@ -168,7 +168,7 @@ export default function Profile() {
     const ws = wb.Sheets[wb.SheetNames[0]]
     const data = XLSX.utils.sheet_to_json(ws)
 
-    await addBulkCandidature(data)
+    try { await addBulkCandidature(data) } catch(error) { showToast(error.message || (isIt?'Importazione non riuscita.':'Import failed.'),'error'); return }
 
     if (fileRef.current) {
       fileRef.current.value = ''
@@ -302,6 +302,13 @@ export default function Profile() {
           )}
         </div>
 
+        <div className="card">
+          <label className="flex items-center justify-between gap-3 text-sm font-semibold">
+            {isIt?'Avvisi dentro l’app':'In-app reminders'}
+            <input type="checkbox" className="w-5 h-5" checked={profile?.reminders_enabled!==false} onChange={e=>updateProfile({reminders_enabled:e.target.checked}).catch(()=>{})}/>
+          </label>
+          <p className="text-xs text-muted mt-2">{isIt?'Visibili nella campanella quando apri l’app. Per gli avvisi ad app chiusa, esporta gli appuntamenti nel calendario del telefono.':'Shown in the bell when you open the app. Export appointments to your phone calendar for alerts while this app is closed.'}</p>
+        </div>
         <div className="card">
           <SectionLabel>LANGUAGE / LINGUA</SectionLabel>
 

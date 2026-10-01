@@ -1,7 +1,7 @@
 // ─── STATUS SYSTEM ───────────────────────────────────────────────
 
-export const STATI = ['Inviata','Spontanea','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta']
-// NOTA: 'Assunta' è escluso da STATI — viene impostato automaticamente quando si accetta un'offerta
+export const STATI = ['Inviata','Vista','Prima call','Colloquio','Secondo colloquio','In attesa risposta','Non mi piace','Rifiutata','GHOSTED','Offerta ricevuta','Offerta rifiutata','Assunta']
+// Legacy Spontanea is retained in display config; new applications store it as a type.
 export const PRIORITA = ['Alta','Media','Bassa']
 export const FONTI = ['LinkedIn','Indeed','InfoJobs','Glassdoor','Email','Referral','Sito aziendale','Spontanea','Altro']
 
@@ -24,6 +24,7 @@ export const STATUS_CONFIG = {
   'Colloquio':          { color: '#22C55E', bg: 'rgba(34,197,94,0.15)',   emoji: '🎙️', label: 'Colloquio' },
   'In attesa risposta': { color: '#EAB308', bg: 'rgba(234,179,8,0.15)',   emoji: '⏳', label: 'In attesa' },
   'Secondo colloquio':  { color: '#16A34A', bg: 'rgba(22,163,74,0.15)',   emoji: '🎙️🎙️', label: '2° Colloquio' },
+  'Offerta rifiutata':  { color: '#A78BFA', bg: 'rgba(167,139,250,0.15)', emoji: '↩️', label: 'Offerta rifiutata' },
   'Rifiutata':          { color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   emoji: '❌', label: 'Rifiutata' },
   'Non mi piace':       { color: '#6D28D9', bg: 'rgba(109,40,217,0.15)',  emoji: '😕', label: 'Non mi piace' },
   'GHOSTED':            { color: '#6B7280', bg: 'rgba(107,114,128,0.15)', emoji: '👻', label: 'GHOSTED' },
@@ -36,7 +37,7 @@ export const PRIORITA_CONFIG = {
   'Bassa': { emoji: '🌱', color: '#34D399' },
 }
 
-export const STATUS_GROUP_ORDER = ['Assunta','Offerta ricevuta','Secondo colloquio','Colloquio','Prima call','In attesa risposta','Vista','Inviata','Spontanea','Non mi piace','Rifiutata','GHOSTED', 'Archiviate']
+export const STATUS_GROUP_ORDER = ['Assunta','Offerta ricevuta','Secondo colloquio','Colloquio','Prima call','In attesa risposta','Vista','Inviata','Spontanea','Non mi piace','Offerta rifiutata','Rifiutata','GHOSTED', 'Archiviate']
 
 // ─── DATE HELPERS ────────────────────────────────────────────────
 
@@ -113,7 +114,7 @@ export const LEVELS = [
 ];
 
 export function getLevel(xp = 0) {
-  return LEVELS.find(l => xp >= l.min && xp <= l.max) || LEVELS[0]
+  return LEVELS.find(l => xp >= l.min && xp <= l.max) || (xp > LEVELS.at(-1).max ? LEVELS.at(-1) : LEVELS[0])
 }
 
 export function getXpProgress(xp = 0) {

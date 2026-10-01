@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { CompanyAvatar, StatusBadge } from '../components/UI'
 import { STATUS_CONFIG, formatDate } from '../lib/utils'
+import { agendaEvents, interviewLabel, parseDay } from '../lib/applicationFlow'
 import { useTranslation } from 'react-i18next'
 
 const MESI_IT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
@@ -16,6 +17,49 @@ export default function Calendar({ onDetail }) {
 
   const MESI = i18n.language === 'en' ? MESI_EN : MESI_IT
   const MESI_FULL = i18n.language === 'en' ? MESI_FULL_EN : MESI_FULL_IT
+
+  const now = new Date()
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth())
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear())
+
+  const eventi = useMemo(() => candidature.flatMap(c => agendaEvents(c).map(e => ({
+    ...c, _application:c, _id:c.id+'-'+e.id, _event:e,
+    data_colloquio:e.date, ora_colloquio:e.time,
+    _date:parseDay(e.date), _month:parseDay(e.date).getMonth(), _year:parseDay(e.date).getFullYear(),
+  }))).sort((a,b)=>a._date-b._date || (a.ora_colloquio || '').localeCompare(b.ora_colloquio || '')), [candidature])
+
+  const monthStats = useMemo(() => {
+    const stats = []
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const m = d.getMonth(), y = d.getFullYear()
+      const count = eventi.filter(e => e._event.category === "interview" && e._month === m && e._year === y).length
+      stats.push({ m, y, label: MESI[m], count, isSelected: m === selectedMonth && y === selectedYear })
+    }
+    return stats
+  }, [eventi, selectedMonth, selectedYear, MESI])
+
+  const maxCount = Math.max(...monthStats.map(s => s.count), 1)
+
+  const eventiMese = useMemo(() =>
+    eventi.filter(e => e._month === selectedMonth && e._year === selectedYear),
+    [eventi, selectedMonth, selectedYear]
+  )
+
+  const upcoming = useMemo(() => {
+    const today = new Date(); today.setHours(0,0,0,0)
+    const in30 = new Date(today); in30.setDate(in30.getDate() + 30)
+    return eventi.filter(e => e._event.upcoming && e._date >= today && e._date <= in30)
+  }, [eventi])
+
+  const prevMonth = () => {
+    if (selectedMonth === 0) { setSelectedMonth(11); setSelectedYear(y => y - 1) }
+    else setSelectedMonth(m => m - 1)
+  }
+  const nextMonth = () => {
+    if (selectedMonth === 11) { setSelectedMonth(0); setSelectedYear(y => y + 1) }
+    else setSelectedMonth(m => m + 1)
+  }
 
   if (showNotifs) return (
     <div className="screen">
@@ -39,55 +83,6 @@ export default function Calendar({ onDetail }) {
       </div>
     </div>
   )
-
-  const now = new Date()
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth())
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear())
-
-  const eventi = useMemo(() => {
-    return candidature
-      .filter(c => c.data_colloquio)
-      .map(c => ({
-        ...c,
-        _date: new Date(c.data_colloquio),
-        _month: new Date(c.data_colloquio).getMonth(),
-        _year: new Date(c.data_colloquio).getFullYear(),
-      }))
-      .sort((a, b) => a._date - b._date)
-  }, [candidature])
-
-  const monthStats = useMemo(() => {
-    const stats = []
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const m = d.getMonth(), y = d.getFullYear()
-      const count = eventi.filter(e => e._month === m && e._year === y).length
-      stats.push({ m, y, label: MESI[m], count, isSelected: m === selectedMonth && y === selectedYear })
-    }
-    return stats
-  }, [eventi, selectedMonth, selectedYear, MESI])
-
-  const maxCount = Math.max(...monthStats.map(s => s.count), 1)
-
-  const eventiMese = useMemo(() =>
-    eventi.filter(e => e._month === selectedMonth && e._year === selectedYear),
-    [eventi, selectedMonth, selectedYear]
-  )
-
-  const upcoming = useMemo(() => {
-    const today = new Date(); today.setHours(0,0,0,0)
-    const in30 = new Date(today); in30.setDate(in30.getDate() + 30)
-    return eventi.filter(e => e._date >= today && e._date <= in30)
-  }, [eventi])
-
-  const prevMonth = () => {
-    if (selectedMonth === 0) { setSelectedMonth(11); setSelectedYear(y => y - 1) }
-    else setSelectedMonth(m => m - 1)
-  }
-  const nextMonth = () => {
-    if (selectedMonth === 11) { setSelectedMonth(0); setSelectedYear(y => y + 1) }
-    else setSelectedMonth(m => m + 1)
-  }
 
   return (
     <div className="screen">
@@ -114,7 +109,7 @@ export default function Calendar({ onDetail }) {
             </p>
             <div className="space-y-2">
               {upcoming.map(c => (
-                <UpcomingCard key={c.id} c={c} onPress={() => onDetail(c)} />
+                <UpcomingCard key={c._id} c={c} onPress={() => onDetail(c._application)} />
               ))}
             </div>
           </div>
@@ -169,7 +164,7 @@ export default function Calendar({ onDetail }) {
         ) : (
           <div className="space-y-2">
             {eventiMese.map(c => (
-              <EventCard key={c.id} c={c} onPress={() => onDetail(c)} />
+              <EventCard key={c._id} c={c} onPress={() => onDetail(c._application)} />
             ))}
           </div>
         )}
@@ -179,9 +174,9 @@ export default function Calendar({ onDetail }) {
 }
 
 function UpcomingCard({ c, onPress }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Colloquio']
-  const date = new Date(c.data_colloquio)
+  const date = parseDay(c.data_colloquio)
   const today = new Date(); today.setHours(0,0,0,0)
   const diff = Math.round((date - today) / 86400000)
   const label = diff === 0 ? t('cal.oggi') : diff === 1 ? t('cal.domani') : t('cal.fraGiorni', { giorni: diff })
@@ -190,7 +185,7 @@ function UpcomingCard({ c, onPress }) {
       <CompanyAvatar name={c.azienda} size={36} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-txt truncate">{c.azienda}</p>
-        <p className="text-xs text-muted truncate">{c.ruolo}</p>
+        <p className="text-xs text-muted">{eventLabel(c._event,i18n.language==='en')}</p>
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-xs font-semibold" style={{ color: cfg.color }}>{label}</p>
@@ -203,7 +198,7 @@ function UpcomingCard({ c, onPress }) {
 function EventCard({ c, onPress }) {
   const { i18n } = useTranslation()
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Colloquio']
-  const date = new Date(c.data_colloquio)
+  const date = parseDay(c.data_colloquio)
   const day = date.getDate()
   const DAY_NAMES_IT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab']
   const DAY_NAMES_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -220,12 +215,18 @@ function EventCard({ c, onPress }) {
       <CompanyAvatar name={c.azienda} size={32} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-txt truncate">{c.azienda}</p>
-        <p className="text-xs text-muted truncate">{c.ruolo}</p>
+        <p className="text-xs text-muted">{eventLabel(c._event,i18n.language==='en')}</p>
       </div>
       <div className="flex-shrink-0">
-        <StatusBadge stato={c.stato} />
+        <span className="text-xs text-muted">{c._event.status==='completed'?(i18n.language==='en'?'Completed':'Svolto'):c._date<parseDay(new Date().toLocaleDateString('sv-SE'))?(i18n.language==='en'?'Past · verify':'Passato · da verificare'):(i18n.language==='en'?'Scheduled':'Programmato')}</span>
         {c.ora_colloquio && <p className="text-xs text-muted text-right mt-0.5">{c.ora_colloquio}</p>}
       </div>
     </button>
   )
+}
+
+function eventLabel(e,en) {
+  if(e.category==='reminder')return (en?'Reminder':'Promemoria')+(e.notes?' · '+e.notes:'')
+  if(e.category==='offer')return en?'Reply to offer by':'Rispondi all’offerta entro'
+  return interviewLabel(e,en)
 }

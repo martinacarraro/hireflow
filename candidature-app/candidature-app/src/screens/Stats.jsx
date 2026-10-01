@@ -1,13 +1,68 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
+import { flowStats, hasResponse, waitingSince, elapsedDays, CLOSED } from '../lib/applicationFlow'
 import { STATUS_CONFIG, daysSince } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
 export default function Stats({ onOpenCandidatura }) {
   const { candidature = [], unreadCount, notifications, markAllNotificationsRead } = useApp()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const en = i18n.language === 'en'
   const [showNotifs, setShowNotifs] = useState(false)
   const [expandedAzienda, setExpandedAzienda] = useState(null)
+
+  const stats = useMemo(() => {
+    // 1. Totale ASSOLUTO (Tutte quelle nel DB)
+    const total = candidature.length
+    
+    // Helper per contare stati (ignorando logicamente 'Archiviate' come stato)
+    const byStato = (s) => candidature.filter(c => c && c.stato === s).length
+
+    const summary = flowStats(candidature)
+    const colloqui = summary.colloqui
+    const ghosted = summary.ghosted
+    const offerte = summary.offerte
+    const tasso = total ? Math.round(summary.risposte / total * 100) : 0
+    const inAttesa = candidature.filter(c => c.stato==='In attesa risposta' && !c.archiviata && waitingSince(c))
+    const avgAttesa = inAttesa.length ? Math.round(inAttesa.reduce((n,c)=>n+elapsedDays(waitingSince(c)),0)/inAttesa.length) : 0
+
+    // Distribuzione (Mostriamo solo gli stati REALI, non la cartella 'Archiviate')
+    const STATI_ORDER = ['Inviata', 'Spontanea', 'Vista', 'Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Rifiutata', 'Non mi piace', 'GHOSTED', 'Offerta ricevuta', 'Offerta rifiutata', 'Assunta']
+    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
+
+    // Ghosted List
+    const ghostedList = candidature
+      .filter(c => c && c.stato === 'GHOSTED')
+      .map(c => ({ ...c, giorni: elapsedDays(waitingSince(c)) }))
+      .sort((a, b) => b.giorni - a.giorni)
+
+    // Top Aziende
+    const aziendaMap = {}
+    candidature.forEach(c => {
+      if (!c || !c.azienda) return
+      if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
+      // Contiamo solo i contatti reali
+      if (hasResponse(c)) {
+        aziendaMap[c.azienda].count++
+        aziendaMap[c.azienda].cands.push(c)
+      }
+    })
+    const topAziende = Object.entries(aziendaMap)
+      .filter(([_, data]) => data.count > 0)
+      .sort((a,b) => b[1].count - a[1].count)
+      .slice(0, 3)
+
+    return { ...summary, total, colloqui, ghosted, offerte, tasso, avgAttesa, statoDistrib, ghostedList, topAziende }
+  }, [candidature])
+
+  const kpis = [
+    { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total, color: '#60A5FA' },
+    { emoji: '🎙️', label: en?'Completed meetings':'Incontri svolti', value: stats.colloqui, color: '#34D399' },
+    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`, color: '#8B5CF6' },
+    { emoji: '⏱️', label: en?'Average current wait':'Attesa media attuale', value: `${stats.avgAttesa} ${en?'days':'gg'}`, color: '#FBBF24' },
+    { emoji: '📅', label: en?'Scheduled meetings':'Incontri programmati', value:stats.programmati,color:'#34D399' },
+    { emoji: '🏆', label: en?'Offers received':'Offerte ricevute', value:stats.offerte,color:'#FFD700' },
+  ]
 
   // Gestione Notifiche (Invariata)
   if (showNotifs) return (
@@ -32,66 +87,6 @@ export default function Stats({ onOpenCandidatura }) {
       </div>
     </div>
   )
-
-  const stats = useMemo(() => {
-    // 1. Totale ASSOLUTO (Tutte quelle nel DB)
-    const total = candidature.length
-    
-    // Helper per contare stati (ignorando logicamente 'Archiviate' come stato)
-    const byStato = (s) => candidature.filter(c => c && c.stato === s).length
-
-    // 2. Logica Colloqui: Stato avanzato O data compilata (anche se archiviata/rifiutata)
-    const colloqui = candidature.filter(c => {
-      if (!c) return false
-      const haData = c.data_colloquio || c.data_secondo_colloquio
-      const statoAvanzato = ['Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Offerta ricevuta', 'Assunta'].includes(c.stato)
-      return haData || statoAvanzato
-    }).length
-
-    const ghosted = byStato('GHOSTED')
-    const offerte = candidature.filter(c => c && (c.stato === 'Offerta ricevuta' || c.stato === 'Assunta')).length
-    const tasso = total > 0 ? Math.round((colloqui / total) * 100) : 0
-    
-    const inAttesa = candidature.filter(c => c && c.stato === 'In attesa risposta')
-    const avgAttesa = inAttesa.length
-      ? Math.round(inAttesa.reduce((s, c) => s + (daysSince(c.data_invio) || 0), 0) / inAttesa.length)
-      : 0
-
-    // Distribuzione (Mostriamo solo gli stati REALI, non la cartella 'Archiviate')
-    const STATI_ORDER = ['Inviata', 'Spontanea', 'Vista', 'Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Rifiutata', 'Non mi piace', 'GHOSTED', 'Offerta ricevuta']
-    const statoDistrib = STATI_ORDER.map(s => ({ stato: s, count: byStato(s) })).filter(s => s.count > 0)
-
-    // Ghosted List
-    const ghostedList = candidature
-      .filter(c => c && c.stato === 'GHOSTED')
-      .map(c => ({ ...c, giorni: daysSince(c.data_invio) || 0 }))
-      .sort((a, b) => b.giorni - a.giorni)
-
-    // Top Aziende
-    const aziendaMap = {}
-    candidature.forEach(c => {
-      if (!c || !c.azienda) return
-      if (!aziendaMap[c.azienda]) aziendaMap[c.azienda] = { count: 0, cands: [] }
-      // Contiamo solo i contatti reali
-      if (c.data_colloquio || ['Colloquio','Prima call','Secondo colloquio','In attesa risposta','Offerta ricevuta','Assunta'].includes(c.stato)) {
-        aziendaMap[c.azienda].count++
-        aziendaMap[c.azienda].cands.push(c)
-      }
-    })
-    const topAziende = Object.entries(aziendaMap)
-      .filter(([_, data]) => data.count > 0)
-      .sort((a,b) => b[1].count - a[1].count)
-      .slice(0, 3)
-
-    return { total, colloqui, ghosted, offerte, tasso, avgAttesa, statoDistrib, ghostedList, topAziende }
-  }, [candidature])
-
-  const kpis = [
-    { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total, color: '#60A5FA' },
-    { emoji: '🎙️', label: t('stats.colloqui'), value: stats.colloqui, color: '#34D399' },
-    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`, color: '#8B5CF6' },
-    { emoji: '⏱️', label: t('stats.mediaAttesa'), value: `${stats.avgAttesa} gg`, color: '#FBBF24' },
-  ]
 
   return (
     <div className="screen">
@@ -122,6 +117,7 @@ export default function Stats({ onOpenCandidatura }) {
               ))}
             </div>
 
+            <p className="text-xs text-muted">{en?'Response rate counts recorded replies, including rejections. Completed meetings count only those marked as completed.':'Il tasso considera le risposte registrate, inclusi i rifiuti. Gli incontri svolti sono solo quelli segnati come svolti.'}</p>
             {/* DISTRIBUZIONE */}
             <div className="card">
               <p className="section-label">{t('stats.distribuzione')}</p>
@@ -132,7 +128,7 @@ export default function Stats({ onOpenCandidatura }) {
                   return (
                     <div key={item.stato}>
                       <div className="flex justify-between text-xs mb-1">
-                        <span style={{ color: cfg.color }}>{cfg.emoji} {item.stato}</span>
+                        <span style={{ color: cfg.color }}>{cfg.emoji} {t('add.stati.'+item.stato,item.stato)}</span>
                         <span className="text-muted">{item.count} ({pct}%)</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -147,15 +143,16 @@ export default function Stats({ onOpenCandidatura }) {
             {/* AZIENDE ATTIVE */}
             {stats.topAziende.length > 0 && (
               <div className="card">
-                <p className="section-label">🏢 {t('stats.aziendeAttive')}</p>
+                <p className="section-label">🏢 {en?'Companies that replied':'Aziende che hanno risposto'}</p>
                 <div className="space-y-2 mt-2">
                   {stats.topAziende.map(([nome, data], i) => (
                     <div key={nome}>
                       <button onClick={() => setExpandedAzienda(expandedAzienda === nome ? null : nome)} className="flex items-center gap-3 py-1 w-full text-left">
                         <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
                         <span className="flex-1 text-sm font-medium text-txt">{nome}</span>
-                        <span className="text-xs text-purple-soft font-semibold">{data.count} step</span>
+                        <span className="text-xs text-purple-soft font-semibold">{data.count} {en?'candidatures':'candidature'}</span>
                       </button>
+                      {expandedAzienda === nome && <div className="pl-8">{data.cands.map(c=><button key={c.id} className="block text-sm text-purple-soft py-2" onClick={()=>onOpenCandidatura(c)}>{c.ruolo}</button>)}</div>}
                     </div>
                   ))}
                 </div>
@@ -165,7 +162,7 @@ export default function Stats({ onOpenCandidatura }) {
             {/* HALL OF SHAME (GHOSTED) */}
             {stats.ghostedList.length > 0 && (
               <div className="card">
-                <p className="section-label">👻 Hall of Shame</p>
+                <p className="section-label">👻 {en?'Marked as no response':'Segnate senza risposta'}</p>
                 <div className="space-y-2 mt-2">
                   {stats.ghostedList.slice(0, 5).map(cand => (
                     <div key={cand.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
@@ -173,7 +170,7 @@ export default function Stats({ onOpenCandidatura }) {
                         <p className="text-sm font-medium text-txt">{cand.azienda}</p>
                         <p className="text-xs text-muted">{cand.ruolo}</p>
                       </div>
-                      <span className="text-xs text-red font-bold">{cand.giorni} gg silenzio</span>
+                      <span className="text-xs text-red font-bold">{cand.giorni} {en?'days since last contact':'gg dall’ultimo contatto'}</span>
                     </div>
                   ))}
                 </div>
