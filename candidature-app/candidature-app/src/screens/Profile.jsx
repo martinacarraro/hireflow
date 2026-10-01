@@ -246,7 +246,8 @@ export default function Profile() {
       </div>
 
       <div className="flex-1 scrollable px-4 pb-8 space-y-4">
-        <div className="card flex items-center gap-4">
+        <div className="card">
+          <div className="flex items-center gap-3 mb-3">
           {foto ? (
             <img
               src={foto}
@@ -292,111 +293,15 @@ export default function Profile() {
 
             <p className="text-xs text-muted truncate">{isIt ? 'Dati salvati sul dispositivo' : 'Data stored on this device'}</p>
           </div>
-        </div>
-
-        <div className="card">
-          <SectionLabel>{isIt ? 'LIVELLO' : 'LEVEL'}</SectionLabel>
+          </div>
 
           <XpBar xp={xp} genere={profile?.genere} />
 
-          <div className="flex items-center mt-3">
-            {streak > 1 && (
-              <p className="text-sm font-bold text-amber">
+          {streak > 1 && (
+              <p className="text-xs font-bold text-amber mt-2">
                 🔥 {streak} {isIt ? 'giorni di fila' : 'day streak'}
               </p>
-            )}
-
-            <div className="ml-auto text-right">
-              <p className="text-lg font-bold text-gold">{xp}</p>
-              <p className="text-[10px] text-muted">XP TOTALI</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
-          <div className="flex-1">
-            <p className="text-[10px] font-bold text-purple-soft uppercase tracking-widest mb-0.5">
-              {isIt ? "Ti piace l'app?" : 'Enjoying the app?'}
-            </p>
-            <p className="text-sm font-bold text-txt">
-              {isIt ? 'Offrimi un caffè' : 'Buy me a coffee'}
-            </p>
-          </div>
-
-          <a
-            href="https://ko-fi.com/lefaremosapere"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-purple text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-lg shadow-purple/20"
-          >
-            ☕ {isIt ? 'Sostieni' : 'Support'}
-          </a>
-        </div>
-
-        <div className="card">
-          <SectionLabel>{isIt ? 'I TUOI BADGE' : 'YOUR BADGES'}</SectionLabel>
-
-          <div className="grid grid-cols-4 gap-2 mt-3">
-            {BADGES.map((badge) => {
-              const isEarned = earned.includes(badge.id)
-
-              return (
-                <div
-                  key={badge.id}
-                  className={`p-2 rounded-xl text-center flex flex-col items-center ${
-                    isEarned ? 'bg-purple/20' : 'opacity-20'
-                  }`}
-                >
-                  {isEarned ? (
-                    <div
-                      className="w-8 h-8 mb-1"
-                      dangerouslySetInnerHTML={{ __html: badge.svg }}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 mb-1 flex items-center justify-center text-xl font-bold text-muted">
-                      ?
-                    </div>
-                  )}
-
-                  <p className="text-[7px] uppercase font-bold leading-tight">
-                    {isEarned ? t(`badges.${badge.id}`) : '???'}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="card">
-          <SectionLabel>📁 {t('profile.import_title')}</SectionLabel>
-
-          <p className="text-[11px] text-muted mb-3 leading-relaxed">
-            {t('profile.import_description')}
-          </p>
-
-          <div className="space-y-2">
-            <button
-              onClick={downloadTemplate}
-              className="w-full py-2 bg-white/5 rounded-xl text-xs font-semibold border border-white/10"
-            >
-              1. {isIt ? 'Scarica template Excel' : 'Download Excel template'}
-            </button>
-
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full py-2 bg-purple rounded-xl text-xs font-bold text-white"
-            >
-              2. {isIt ? 'Carica il tuo file Excel' : 'Upload your Excel file'}
-            </button>
-
-            <input
-              ref={fileRef}
-              type="file"
-              className="hidden"
-              onChange={handleImport}
-              accept=".xlsx"
-            />
-          </div>
+          )}
         </div>
 
         <div className="card">
@@ -497,6 +402,95 @@ export default function Profile() {
             {isIt ? '🗑️ Elimina tutti i dati locali' : '🗑️ Delete all local data'}
           </button>
         </div>
+
+        <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-purple-soft uppercase tracking-widest mb-0.5">
+              {isIt ? "Ti piace l'app?" : 'Enjoying the app?'}
+            </p>
+            <p className="text-sm font-bold text-txt">
+              {isIt ? 'Offrimi un caffè' : 'Buy me a coffee'}
+            </p>
+          </div>
+
+          <a
+            href="https://ko-fi.com/lefaremosapere"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-purple text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-lg shadow-purple/20"
+          >
+            ☕ {isIt ? 'Sostieni' : 'Support'}
+          </a>
+        </div>
+
+        <details className="card">
+          <summary className="cursor-pointer text-sm font-semibold text-txt">
+            {isIt ? 'I tuoi badge' : 'Your badges'}
+            <span className="text-xs text-muted ml-2">{earned.length}/{BADGES.length}</span>
+          </summary>
+
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            {BADGES.map((badge) => {
+              const isEarned = earned.includes(badge.id)
+
+              return (
+                <div
+                  key={badge.id}
+                  className={`p-2 rounded-xl text-center flex flex-col items-center ${
+                    isEarned ? 'bg-purple/20' : 'opacity-20'
+                  }`}
+                >
+                  {isEarned ? (
+                    <div
+                      className="w-8 h-8 mb-1"
+                      dangerouslySetInnerHTML={{ __html: badge.svg }}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 mb-1 flex items-center justify-center text-xl font-bold text-muted">
+                      ?
+                    </div>
+                  )}
+
+                  <p className="text-[7px] uppercase font-bold leading-tight">
+                    {isEarned ? t(`badges.${badge.id}`) : '???'}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </details>
+
+        <details className="card">
+          <summary className="cursor-pointer text-sm font-semibold text-txt mb-2">📁 {t('profile.import_title')}</summary>
+
+          <p className="text-[11px] text-muted mb-3 leading-relaxed">
+            {t('profile.import_description')}
+          </p>
+
+          <div className="space-y-2">
+            <button
+              onClick={downloadTemplate}
+              className="w-full py-2 bg-white/5 rounded-xl text-xs font-semibold border border-white/10"
+            >
+              1. {isIt ? 'Scarica template Excel' : 'Download Excel template'}
+            </button>
+
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="w-full py-2 bg-purple rounded-xl text-xs font-bold text-white"
+            >
+              2. {isIt ? 'Carica il tuo file Excel' : 'Upload your Excel file'}
+            </button>
+
+            <input
+              ref={fileRef}
+              type="file"
+              className="hidden"
+              onChange={handleImport}
+              accept=".xlsx"
+            />
+          </div>
+        </details>
 
         <div className="pt-4 space-y-2">
           <div className="flex justify-center gap-4 mt-3 flex-wrap">
