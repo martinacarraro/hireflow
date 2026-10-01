@@ -6,22 +6,56 @@ import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
 import JobFields, { RoleInput } from '../components/JobFields'
 
-const TODAY = new Date().toISOString().split('T')[0]
+const DRAFT_KEY = 'lfs_application_draft_v1'
+const emptyForm = () => ({
+  azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
+  sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
+  stipendio_min: '', stipendio_max: '', note: '', notifiche_push: true,
+  data_invio: new Date().toLocaleDateString('sv-SE'), data_colloquio: '',
+  orario_lavoro: '', tipo_contratto: '', modalita_lavoro: '', livello_ruolo: '',
+})
+function readDraft() {
+  const defaults = emptyForm()
+  try {
+    const saved = JSON.parse(localStorage.getItem(DRAFT_KEY))
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return defaults
+    for (const key of Object.keys(defaults)) {
+      if (typeof saved[key] === typeof defaults[key]) defaults[key] = saved[key]
+    }
+  } catch {}
+  return defaults
+}
 
 export default function AddCandidatura({ onBack, onDone }) {
   const { addCandidatura, showToast } = useApp()
   const { t, i18n } = useTranslation()
   const isIt = i18n.language !== 'en'
-  const [form, setForm] = useState({
-    azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
-    sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
-    stipendio_min: '', stipendio_max: '',
-    note: '', notifiche_push: true, data_invio: TODAY, data_colloquio: '',
+  const [form, setForm] = useState(readDraft)
+  const [draftStatus, setDraftStatus] = useState(() => {
+    try { return localStorage.getItem(DRAFT_KEY) ? 'saved' : '' } catch { return '' }
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
-  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })) }
+  const set = (k, v) => {
+    const next = { ...form, [k]: v }
+    setForm(next)
+    setErrors(e => ({ ...e, [k]: '' }))
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(next))
+      setDraftStatus('saved')
+    } catch { setDraftStatus('error') }
+  }
+  const clearDraft = () => {
+    if (!window.confirm(isIt ? 'Vuoi cancellare la bozza e ricominciare?' : 'Discard this draft and start again?')) return
+    try { localStorage.removeItem(DRAFT_KEY) } catch {
+      showToast(isIt ? 'Impossibile cancellare la bozza. Riprova.' : 'Could not discard the draft. Try again.', 'error')
+      return
+    }
+    setForm(emptyForm())
+    setErrors({})
+    setDraftStatus('')
+  }
 
   const validate = () => {
     const e = {}
@@ -48,7 +82,12 @@ export default function AddCandidatura({ onBack, onDone }) {
       data_colloquio: form.data_colloquio || null,
     }
     const result = await addCandidatura(payload)
-    if (result) onDone?.()
+    if (result) {
+      try { localStorage.removeItem(DRAFT_KEY) } catch {}
+      setForm(emptyForm())
+      setDraftStatus('')
+      onDone?.()
+    }
     } catch {
       showToast(isIt ? 'Salvataggio non riuscito. Riprova: i campi sono ancora qui.' : 'Could not save. Try again: your entries are still here.', 'error')
     } finally { setLoading(false) }
@@ -65,6 +104,18 @@ export default function AddCandidatura({ onBack, onDone }) {
       </div>
 
       <div className="flex-1 scrollable px-5 py-4 space-y-1">
+        {draftStatus && (
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2 mb-4">
+            <p role="status" className="text-xs text-muted">
+              {draftStatus === 'saved'
+                ? (isIt ? 'Bozza salvata su questo dispositivo' : 'Draft saved on this device')
+                : (isIt ? 'Bozza non salvata: tieni aperta questa schermata.' : 'Draft not saved: keep this screen open.')}
+            </p>
+            <button type="button" disabled={loading} onClick={clearDraft} className="text-xs text-purple-soft font-semibold py-2">
+              {isIt ? 'Ricomincia' : 'Start over'}
+            </button>
+          </div>
+        )}
 
         <div data-application-fields className="text-xs text-muted mb-3">{isIt ? '1. A quale opportunità ti candidi?' : '1. Which opportunity are you applying for?'}</div>
 
