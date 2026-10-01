@@ -451,7 +451,6 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
           <div>
             {/* Rimosso il tasto caffè da qui */}
             <h1 className="text-lg font-bold text-txt">{greet}</h1>
-            {profile && <div className="mt-0.5"><LevelBadge xp={profile.xp_points || 0} genere={profile.genere} /></div>}
           </div>
           <div className="flex items-center gap-1">
             <button onClick={onToggleSearch}

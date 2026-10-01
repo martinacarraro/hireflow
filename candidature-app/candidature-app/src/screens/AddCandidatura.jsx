@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { Field, ChoicePicker, Spinner, SectionLabel } from '../components/UI'
-import { STATI, PRIORITA, FONTI } from '../lib/utils'
+import { Field, Spinner } from '../components/UI'
+import { STATI } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
-import JobFields, { RoleInput } from '../components/JobFields'
+import { RoleInput } from '../components/JobFields'
+import EssentialDetails from '../components/EssentialDetails'
 import InterviewFields from '../components/InterviewFields'
 import { ensureStageInterview, getInterviews, validationIssues, validationMessage } from '../lib/applicationFlow'
 
@@ -63,6 +64,7 @@ export default function AddCandidatura({ onBack, onDone }) {
       return
     }
     setForm(emptyForm())
+    setFormError('')
     setErrors({})
     setDraftStatus('')
   }
@@ -130,7 +132,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           </div>
         )}
 
-        <div data-application-fields className="text-xs text-muted mb-3">{isIt ? '1. A quale opportunità ti candidi?' : '1. Which opportunity are you applying for?'}</div>
+        <div data-application-fields />
 
         <Field label={t('add.azienda')}>
           <CompanyAutocomplete
@@ -150,106 +152,16 @@ export default function AddCandidatura({ onBack, onDone }) {
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
-        <p className="text-xs text-muted pt-3 pb-2">{isIt ? '2. A che punto sei?' : '2. Where are you in the process?'}</p>
         <Field label={t('add.stato')}>
           <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
             {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{t(`add.stati.${s}`, s)}</option>)}
           </select>
         </Field>
 
-        <Field label={isIt ? 'Tipo di candidatura' : 'Application type'}>
-          <select className="input-field" value={form.tipo_candidatura} onChange={e=>set('tipo_candidatura',e.target.value)}>
-            <option value="annuncio">{isIt?'Risposta a un annuncio':'Job posting'}</option>
-            <option value="spontanea">{isIt?'Candidatura spontanea':'Unsolicited application'}</option>
-          </select>
-        </Field>
-        <Field label={t('add.dataCandidatura')}>
-          <input className="input-field" type="date"
-            value={form.data_invio} onChange={e => set('data_invio', e.target.value)} />
-        </Field>
-
-        {(statiConColloquio.includes(form.stato) || form.interviews.length > 0) && (
-          <div className="card my-4"><InterviewFields form={form} onChange={set}/></div>
-        )}
-        {form.stato === 'In attesa risposta' && <Field label={isIt?'In attesa dal · facoltativo':'Waiting since · optional'}>
-          <input className="input-field" type="date" value={form.attesa_dal} onChange={e=>set('attesa_dal',e.target.value)}/>
-        </Field>}
+        {statiConColloquio.includes(form.stato) && <div className="py-3"><InterviewFields form={form} onChange={set}/></div>}
         <details className="card mt-4">
-          <summary className="cursor-pointer font-semibold text-purple-soft py-1">{isIt ? 'Altri dettagli · facoltativi' : 'More details · optional'}</summary>
-          <p className="text-xs text-muted mt-2 mb-4">{isIt ? 'Luogo, link, stipendio e appunti: aggiungi solo ciò che ti serve.' : 'Location, link, salary and notes: add only what you need.'}</p>
-        <SectionLabel>{t('add.dove')}</SectionLabel>
-        <JobFields form={form} onChange={set} />
-        <div className="flex gap-3">
-          <Field label={t('add.sede')}>
-            <input className="input-field" placeholder={t('add.sedePlaceholder')}
-              value={form.sede} onChange={e => set('sede', e.target.value)} />
-          </Field>
-          <Field label={t('add.paese')}>
-            <input className="input-field" placeholder="Italia"
-              value={form.paese} onChange={e => set('paese', e.target.value)} />
-          </Field>
-        </div>
-
-        <SectionLabel>{t('add.dettagli')}</SectionLabel>
-
-        <Field label={t('add.fonte')}>
-          <select aria-label={t('add.fonte')} className="input-field" value={form.fonte} onChange={e => set('fonte', e.target.value)}>
-            <option value="">{isIt ? 'Non specificata' : 'Not specified'}</option>
-            {FONTI.map(f => <option key={f} value={f}>{t(`add.fonti.${f}`, f)}</option>)}
-          </select>
-        </Field>
-
-        <Field label={t('add.linkAnnuncio')}>
-          <div className="flex gap-2">
-            <input className="input-field flex-1 text-sm" type="url"
-              placeholder={t('add.linkPlaceholder')}
-              value={form.link_annuncio} onChange={e => set('link_annuncio', e.target.value)} />
-            {form.link_annuncio && (
-              <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
-                className="flex-shrink-0 px-3 py-2 rounded-xl border border-border text-muted text-sm active:scale-95 transition-all">↗</a>
-            )}
-          </div>
-        </Field>
-
-        <Field label={t('add.prioritaLabel', t('detail.priorita'))}>
-          <ChoicePicker value={form.priorita} options={PRIORITA} onChange={v => set('priorita', v)}
-  labelFn={v => t(`add.priorita.${v}`, v)} />
-        </Field>
-
-        <Field label={isIt ? 'RAL annua lorda · euro' : 'Gross annual salary · euros'}>
-          <div className="flex gap-2 items-center">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-              <input aria-label={isIt ? 'Stipendio minimo in euro' : 'Minimum salary in euros'} className="input-field pl-7" type="number" placeholder="28000"
-                value={form.stipendio_min} onChange={e => set('stipendio_min', e.target.value)} />
-            </div>
-            <span className="text-muted">–</span>
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-              <input aria-label={isIt ? 'Stipendio massimo in euro' : 'Maximum salary in euros'} className="input-field pl-7" type="number" placeholder="35000"
-                value={form.stipendio_max} onChange={e => set('stipendio_max', e.target.value)} />
-            </div>
-          </div>
-        </Field>
-
-        <SectionLabel>{t('add.primeImpressioni')}</SectionLabel>
-        <Field>
-          <textarea className="input-field resize-none" rows={3}
-            placeholder={t('add.notePlaceholder')}
-            value={form.note} onChange={e => set('note', e.target.value)} />
-        </Field>
-
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <p className="text-sm font-medium text-txt">🔔 {isIt?'Avvisi dentro l’app':'In-app reminders'}</p>
-            <p className="text-xs text-muted">{isIt?'Visibili nella campanella quando apri l’app.':'Shown in the notification bell when you open the app.'}</p>
-          </div>
-          <button onClick={() => set('notifiche_push', !form.notifiche_push)}
-            className={`w-12 h-6 rounded-full transition-all duration-200 relative ${form.notifiche_push ? 'bg-purple' : 'bg-border'}`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push ? 'left-[26px]' : 'left-0.5'}`} />
-          </button>
-        </div>
-
+          <summary>{isIt?'Altri dettagli · facoltativi':'More details · optional'}</summary>
+          <EssentialDetails form={form} onChange={set} includeNotes/>
         </details>
       </div>
         <div className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>

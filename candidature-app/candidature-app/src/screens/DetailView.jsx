@@ -1,143 +1,69 @@
-import { useState, useEffect, useRef } from 'react'
-import { useApp } from '../contexts/AppContext'
-import {
-  StatusBadge, CompanyAvatar, SectionLabel, ConfirmDialog, Spinner
-} from '../components/UI'
-import {
-  STATI, PRIORITA, FEELING_OPTIONS, STATUS_CONFIG, PRIORITA_CONFIG,
-  TIPI_COLLOQUIO, FONTI, WELFARE_OPTIONS, daysSince, formatDate
-} from '../lib/utils'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useApp } from '../contexts/AppContext'
+import { CompanyAvatar, Spinner, ConfirmDialog } from '../components/UI'
+import { RoleInput } from '../components/JobFields'
 import CompanyAutocomplete from '../components/CompanyAutocomplete'
-import JobFields, { RoleInput } from '../components/JobFields'
+import EssentialDetails from '../components/EssentialDetails'
 import InterviewFields from '../components/InterviewFields'
-import { getInterviews, ensureStageInterview, upcomingInterviews, interviewLabel, localDay, CLOSED, waitingSince, elapsedDays } from '../lib/applicationFlow'
-import { downloadCalendar } from '../lib/calendarExport'
+import { STATI } from '../lib/utils'
+import { ensureStageInterview, getInterviews, INTERVIEW_STATES, localDay } from '../lib/applicationFlow'
 
-const STATI_CON_COLLOQUIO = ['Prima call','Colloquio','Secondo colloquio']
-const STATI_CON_FEELING = ['In attesa risposta','Rifiutata','Non mi piace','GHOSTED']
-
-export default function DetailView({ candidatura: c, onBack, onUpdate, celebrateOnOpen = false }) {
-  const { updateCandidatura, deleteCandidatura, getChecklist, toggleChecklistItem, profile, triggerConfetti, showToast } = useApp()
-  const { t, i18n } = useTranslation()
-  const trStatus = (status) => t(`add.stati.${status}`, status)
-  const trPriority = (priority) => t(`add.priorita.${priority}`, priority)
-  const trFonte = (fonte) => t(`add.fonti.${fonte}`, fonte)
-  const interviewTypeKey = (tipo) => tipo === '📞 Telefonico' ? 'phone' : tipo === '💻 Video' ? 'video' : 'onsite'
-  const trInterviewType = (tipo) => t(`detail.interviewTypes.${interviewTypeKey(tipo)}`, tipo)
-  const trWelfare = (opt) => t(`detail.welfareOptions.${opt}`, opt)
-  const [form, setForm] = useState({ ...c, stato:c.stato==='Spontanea'?'Inviata':c.stato, tipo_candidatura:c.tipo_candidatura || (c.stato==='Spontanea'?'spontanea':'annuncio'), interviews:ensureStageInterview(c) })
-  const [saveError, setSaveError] = useState('')
-  const saveLock = useRef(false)
-  const persisted = useRef(c)
-  const [isDirty, setIsDirty] = useState(false)
-  const [checklist, setChecklist] = useState([])
-  const [loadingChecklist, setLoadingChecklist] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [editingAzienda, setEditingAzienda] = useState(false)
-
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [interviewMode, setInterviewMode] = useState(false)
-  const [showAssuntaCelebration, setShowAssuntaCelebration] = useState(celebrateOnOpen)
-  const [showCoffeePrompt, setShowCoffeePrompt] = useState(false)
-  const [editingDataInizio, setEditingDataInizio] = useState(false)
-  const [savingDataInizio, setSavingDataInizio] = useState(false)
-
-  const days = daysSince(c.data_invio)
-  const nextMeeting = upcomingInterviews(form)[0]
-  const isColloquioOggi = nextMeeting?.date === localDay()
-  const checklistMeeting = getInterviews(form).find(e=>e.order === ({'Prima call':0,'Colloquio':1,'Secondo colloquio':2}[form.stato]) && e.status!=='cancelled') || nextMeeting
-
-  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSaved(false); setSaveError(''); setIsDirty(true) }
-
-  useEffect(() => {
-    if (STATI_CON_COLLOQUIO.includes(form.stato)) loadChecklist()
-  }, [form.stato, checklistMeeting?.id])
-
-  useEffect(() => {
-    if (!showAssuntaCelebration) return
-    const timer = setTimeout(() => {
-      setShowAssuntaCelebration(false)
-      try { localStorage.setItem('lfs_support_shown_at',new Date().toISOString()) } catch {}
-      setShowCoffeePrompt(true)
-    }, 2500)
-    return () => clearTimeout(timer)
-  }, [showAssuntaCelebration])
-
-  const loadChecklist = async () => {
-  setLoadingChecklist(true)
-  let items
-  try { items = await getChecklist(c.id, checklistMeeting?.id) } catch { setLoadingChecklist(false); setSaveError(i18n.language==='en'?'Could not load checklist.':'Impossibile caricare la checklist.'); return }
-  
-  // FILTRO ANTI-DUPLICATI:
-  // Filtriamo gli items basandoci sul testo del 'task' per evitare doppioni visivi
-  const uniqueItems = items.filter((item, index, self) =>
-    index === self.findIndex((t) => t.task === item.task)
-  )
-  
-  setChecklist(uniqueItems)
-  setLoadingChecklist(false)
-}
-
-  const handleSave = async (patch = {}) => {
-    if (saveLock.current) return null
-    saveLock.current = true; setSaving(true); setSaveError('')
-    try {
-      const draft = { ...form, ...patch }
-      draft.interviews = ensureStageInterview(draft)
-      const result = await updateCandidatura(c.id, draft)
-      const celebrate = persisted.current.stato !== 'Assunta' && result.stato === 'Assunta' && !persisted.current.hire_celebrated
-      persisted.current = result
-      setForm(result); setSaved(true); setIsDirty(false); onUpdate?.()
-      if (celebrate) setShowAssuntaCelebration(true)
-      setTimeout(() => setSaved(false),2000)
+export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateOnOpen=false }) {
+  const { updateCandidatura, deleteCandidatura, profile } = useApp()
+  const { t,i18n } = useTranslation()
+  const en=i18n.language==='en'
+  const [form,setForm]=useState(()=>({...c,stato:c.stato==='Spontanea'?'Inviata':c.stato,interviews:ensureStageInterview(c)}))
+  const [dirty,setDirty]=useState(false)
+  const [saving,setSaving]=useState(false)
+  const [saved,setSaved]=useState(false)
+  const [error,setError]=useState('')
+  const [confirmDelete,setConfirmDelete]=useState(false)
+  const [showAssuntaCelebration,setShowAssuntaCelebration]=useState(celebrateOnOpen)
+  const [showCoffeePrompt,setShowCoffeePrompt]=useState(false)
+  const lock=useRef(false),persisted=useRef(c)
+  const set=(key,value)=>{setForm(f=>({...f,[key]:value}));setDirty(true);setSaved(false);setError('')}
+  useEffect(()=>{
+    if(!showAssuntaCelebration)return
+    const timer=setTimeout(()=>{setShowAssuntaCelebration(false);setShowCoffeePrompt(true);try{localStorage.setItem('lfs_support_shown_at',new Date().toISOString())}catch{}},2500)
+    return()=>clearTimeout(timer)
+  },[showAssuntaCelebration])
+  const closeCoffeePrompt=()=>setShowCoffeePrompt(false)
+  const save=async(patch={})=>{
+    if(lock.current)return null
+    lock.current=true;setSaving(true);setError('')
+    try{
+      const draft={...form,...patch}
+      draft.interviews=ensureStageInterview(draft)
+      // A past appointment becomes history when the user moves on; no extra
+      // meeting-status form is needed and future appointments are not guessed.
+      if(patch.stato && patch.stato!==form.stato && INTERVIEW_STATES.includes(form.stato)){
+        const order={'Prima call':0,'Colloquio':1,'Secondo colloquio':2}[form.stato]
+        if(['In attesa risposta','Secondo colloquio','Offerta ricevuta','Assunta'].includes(patch.stato)){
+          draft.interviews=draft.interviews.map(e=>e.order===order && e.date && e.date<=localDay() && e.status==='scheduled'?{...e,status:'completed'}:e)
+        }
+      }
+      const result=await updateCandidatura(c.id,draft)
+      const celebrate=result.stato==='Assunta' && persisted.current.stato!=='Assunta' && !persisted.current.hire_celebrated
+      persisted.current=result;setForm(result);setDirty(false);setSaved(true);onUpdate?.()
+      if(celebrate)setShowAssuntaCelebration(true)
       return result
-    } catch (error) {
-      setSaveError(error.message || (i18n.language==='en'?'Could not save. Try again.':'Salvataggio non riuscito. Riprova.'))
-      return null
-    } finally { saveLock.current=false; setSaving(false) }
+    }catch(e){setError(e.message || (en?'Could not save. Try again.':'Salvataggio non riuscito. Riprova.'));return null}
+    finally{setSaving(false);lock.current=false}
   }
-  const handleBack = async () => {
-    if (saving) return
-    if (isDirty && window.confirm(i18n.language==='en'?'Save your changes before leaving? Cancel leaves without saving.':'Salvare le modifiche prima di uscire? Annulla esce senza salvare.')) {
-      if (!await handleSave()) return
-    }
+  const back=async()=>{
+    if(saving)return
+    if(dirty && window.confirm(en?'Save changes before leaving? Cancel leaves without saving.':'Salvare prima di uscire? Annulla esce senza salvare.')){if(!await save())return}
     onBack()
   }
-  const statusControl = <Section expanded label={i18n.language==='en'?'Application stage':'Stato della candidatura'}>
-    <select className="input-field" value={form.stato} disabled={saving} onChange={e=>handleSave({stato:e.target.value})}>
-      {STATI.map(state=><option value={state} key={state}>{trStatus(state)}</option>)}
-    </select>
-    {saveError && <p role="alert" className="text-sm text-red mt-2">{saveError}</p>}
-  </Section>
-  const previousDetails = <Section label={i18n.language==='en'?'Application details and meetings':'Dati candidatura e incontri'}>
-    <label className="block text-xs text-muted mb-3">{i18n.language==='en'?'Company':'Azienda'}<input className="input-field mt-1" value={form.azienda} onChange={e=>set('azienda',e.target.value)}/></label>
-    <RoleInput value={form.ruolo} onChange={v=>set('ruolo',v)}/>
-    <JobFields form={form} onChange={set}/>
-    <label className="block text-xs text-muted my-3">{i18n.language==='en'?'Application date':'Data candidatura'}<input className="input-field mt-1" type="date" value={form.data_invio || ''} onChange={e=>set('data_invio',e.target.value)}/></label>
-    <InterviewFields form={form} onChange={set}/>
-    <label className="block text-xs text-muted mt-3">{i18n.language==='en'?'Notes':'Appunti'}<textarea className="input-field mt-1" value={form.note || ''} onChange={e=>set('note',e.target.value)}/></label>
-  </Section>
-
-  const handleToggleChecklist = async (item) => {
-    const newFatto = !item.fatto
-    try { const items = await toggleChecklistItem(item.id, newFatto); setChecklist(items) } catch { setSaveError(i18n.language==='en'?'Could not save checklist.':'Impossibile salvare la checklist.') }
-  }
-
-  const handleDelete = async () => {
-    try { await deleteCandidatura(c.id); onBack() } catch { setSaveError(i18n.language==='en'?'Could not delete.':'Eliminazione non riuscita.') }
-  }
-
-  const closeCoffeePrompt = () => {
-    setShowCoffeePrompt(false)
-    onUpdate?.()
-  }
-
-  const doneCount = checklist.filter(i => i.fatto).length
-  const checklistPct = checklist.length ? (doneCount / checklist.length) * 100 : 0
-  const cfg = STATUS_CONFIG[form.stato] || STATUS_CONFIG['Inviata']
-
+  const legacy = [
+    [en?'Priority':'Priorità',form.priorita],
+    [en?'Source':'Fonte',form.fonte],
+    [en?'Seniority':'Livello',form.livello_ruolo],
+    [en?'Benefits':'Benefit',[...(Array.isArray(form.welfare)?form.welfare:[]),form.welfare_note].filter(Boolean).join(', ')],
+    [en?'Impressions':'Impressioni',form.feeling],
+    [en?'Questions':'Domande',[form.domande_mie,form.domande_fatte].filter(Boolean).join('\n')],
+  ].filter(([,value])=>value)
   const CelebrationOverlay = showAssuntaCelebration ? (() => {
     const pieces = Array.from({ length: 60 }, (_, i) => ({
       id: i, left: Math.random() * 100, delay: Math.random() * 1.5,
@@ -210,627 +136,59 @@ export default function DetailView({ candidatura: c, onBack, onUpdate, celebrate
     </div>
   ) : null
 
-  if (interviewMode) return (
-    <div className="screen" style={{ background:'#0a0a1a' }}>
-      <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 flex-shrink-0">
-        <button onClick={() => setInterviewMode(false)} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
-        <p className="text-sm font-bold text-purple-soft">🎙️ {t('detail.modalitaIntervista')}</p>
-        <div />
-      </div>
-      <div className="flex-1 scrollable px-5 py-4 space-y-4">
-        <div className="text-center py-4">
-          <p className="text-5xl mb-3">🎙️</p>
-          <h2 className="text-2xl font-bold text-txt">{form.azienda}</h2>
-          <p className="text-muted text-sm mt-1">{form.ruolo}</p>
-          {nextMeeting?.time && <p className="text-purple-soft font-bold text-lg mt-2">⏰ {nextMeeting.time}</p>}
-          {nextMeeting?.notes && <p className="text-sm text-muted mt-3 whitespace-pre-wrap">{nextMeeting.notes}</p>}
+
+  return <div className="screen">
+    <header className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
+      <button className="nav-arrow" onClick={back} aria-label={en?'Back':'Indietro'}>←</button>
+      <CompanyAvatar name={form.azienda} size={40}/>
+      <div className="min-w-0"><h1 className="font-bold text-base truncate">{form.azienda}</h1><p className="text-sm text-muted truncate">{form.ruolo}</p></div>
+    </header>
+    <div className="flex-1 scrollable px-5 py-4 space-y-4">
+      {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
+      <label className="block text-sm font-semibold">{en?'Where are you now?':'A che punto sei?'}
+        <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>save({stato:e.target.value})}>
+          {STATI.map(state=><option key={state} value={state}>{t('add.stati.'+state,state)}</option>)}
+        </select>
+      </label>
+      {INTERVIEW_STATES.includes(form.stato) && <InterviewFields form={form} onChange={set}/>}
+      {form.stato==='Offerta ricevuta' && <div className="flex gap-3">
+        <button className="btn-primary flex-1" disabled={saving} onClick={()=>save({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
+        <button className="btn-secondary flex-1" disabled={saving} onClick={()=>save({stato:'Offerta rifiutata',offerta_risposta:'no'})}>{en?'Decline':'Rifiuta'}</button>
+      </div>}
+      <label className="block text-sm font-semibold">{en?'Notes':'Note'}
+        <textarea className="input-field mt-2 resize-y" rows={3} placeholder={en?'Anything worth remembering…':'Cosa vuoi ricordarti?'} value={form.note || ''} onChange={e=>set('note',e.target.value)}/>
+      </label>
+      <details className="card">
+        <summary>{en?'Edit details':'Modifica dettagli'}</summary>
+        <div className="pt-3 space-y-4">
+          <label className="block text-xs text-muted">{en?'Company':'Azienda'}<CompanyAutocomplete className="input-field mt-1" value={form.azienda} onChange={v=>set('azienda',v)} onSelect={company=>set('azienda',company.name)}/></label>
+          <label className="block text-xs text-muted">{en?'Role':'Ruolo'}<RoleInput className="input-field mt-1" value={form.ruolo} onChange={v=>set('ruolo',v)}/></label>
+          <EssentialDetails form={form} onChange={set}/>
+          {form.data_scadenza_responso && <label className="block text-xs text-muted">{en?'Expected reply date':'Risposta prevista entro'}<input className="input-field mt-1" type="date" value={form.data_scadenza_responso} onChange={e=>set('data_scadenza_responso',e.target.value)}/></label>}
+          {form.reminder_date && <details><summary>{en?'Saved reminder':'Promemoria salvato'}</summary><div className="pt-2 space-y-3">
+            <input aria-label={en?'Reminder date':'Data promemoria'} className="input-field" type="date" value={form.reminder_date} onChange={e=>set('reminder_date',e.target.value)}/>
+            <input aria-label={en?'Reminder time':'Ora promemoria'} className="input-field" type="time" value={form.reminder_time || ''} onChange={e=>set('reminder_time',e.target.value)}/>
+            <p className="text-sm text-muted">{form.reminder_note}</p>
+            <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={!!form.reminder_done} onChange={e=>set('reminder_done',e.target.checked)}/>{en?'Done':'Fatto'}</label>
+          </div></details>}
+          {['Offerta ricevuta','Offerta rifiutata','Assunta'].includes(form.stato) && <div className="space-y-3">
+            <label className="block text-xs text-muted">{en?'Offered gross annual salary · euros':'RAL offerta · euro'}<input className="input-field mt-1" type="number" value={form.offerta_ral ?? ''} onChange={e=>set('offerta_ral',e.target.value)}/></label>
+            {form.stato==='Offerta ricevuta' && <label className="block text-xs text-muted">{en?'Reply by · optional':'Rispondi entro · facoltativo'}<input className="input-field mt-1" type="date" value={form.offerta_scadenza || ''} onChange={e=>set('offerta_scadenza',e.target.value)}/></label>}
+            <label className="block text-xs text-muted">{en?'Start date · optional':'Data inizio · facoltativa'}<input className="input-field mt-1" type="date" value={form.data_inizio || ''} onChange={e=>set('data_inizio',e.target.value)}/></label>
+            {form.offerta_note && <p className="text-sm text-muted whitespace-pre-wrap">{form.offerta_note}</p>}
+          </div>}
+          {legacy.length>0 && <details><summary>{en?'Previously saved information':'Informazioni già salvate'}</summary><dl className="pt-2 space-y-2">{legacy.map(([label,value])=><div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="text-sm whitespace-pre-wrap">{value}</dd></div>)}</dl></details>}
+          <button className="text-sm text-muted py-2" disabled={saving} onClick={()=>save({archiviata:!form.archiviata})}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
+          <button className="block text-sm text-red py-2" onClick={()=>setConfirmDelete(true)}>{en?'Delete application':'Elimina candidatura'}</button>
         </div>
-        {checklist.length > 0 && (
-  <div className="card" style={{ borderColor:'rgba(139,92,246,0.3)' }}>
-    <p className="text-xs font-bold text-purple-soft mb-3 uppercase tracking-wider">✅ {t('detail.checklistPre')}</p>
-    <div className="space-y-2">
-      {checklist.map(item => (
-        <button key={item.id} onClick={() => handleToggleChecklist(item)}
-          className="w-full flex items-center gap-3 py-2 text-left active:scale-95 transition-all">
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${item.fatto ? 'bg-green-500 border-green-500' : 'border-border'}`}>
-            {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
-          </div>
-          <span className={`text-sm ${item.fatto ? 'line-through text-muted' : 'text-txt'}`}>{item.task}</span>
-        </button>
-      ))}
+      </details>
     </div>
+    <footer className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{paddingBottom:'max(16px, env(safe-area-inset-bottom))'}}>
+      {error && <p role="alert" className="text-sm text-red mb-3">{error}</p>}
+      <button className="btn-primary w-full py-3 flex items-center justify-center gap-2" disabled={saving} onClick={()=>save()}>{saving?<Spinner size={20}/>:saved?(en?'Saved':'Salvato'):(en?'Save':'Salva')}</button>
+    </footer>
+    <ConfirmDialog isOpen={confirmDelete} title={t('detail.eliminaTitolo')} message={t('detail.eliminaMessaggio',{azienda:form.azienda})} danger onCancel={()=>setConfirmDelete(false)} onConfirm={async()=>{try{await deleteCandidatura(c.id);onBack()}catch(e){setConfirmDelete(false);setError(e.message)}}}/>
+    {CelebrationOverlay}
+    {CoffeePrompt}
   </div>
-)}
-          
-        {form.domande_mie && (
-          <div className="card" style={{ borderColor:'rgba(34,197,94,0.3)' }}>
-            <p className="text-xs font-bold text-green-400 mb-2 uppercase tracking-wider">🙋 {t('detail.mieDomande')}</p>
-            <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.domande_mie}</p>
-          </div>
-        )}
-        {form.note && (
-          <div className="card">
-            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">📝 {t('detail.mieNote')}</p>
-            <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
-          </div>
-        )}
-        {(nextMeeting?.contact || form.contatto_hr) && (
-          <div className="card">
-            <p className="text-xs font-bold text-muted mb-2 uppercase tracking-wider">👤 {t('detail.nomeReferente')}</p>
-            <p className="text-sm text-txt font-semibold">{nextMeeting?.contact || form.contatto_hr}</p>
-          </div>
-        )}
-        {form.sede && (
-          <a href={profile?.indirizzo_home
-              ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`
-              : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
-            target="_blank" rel="noopener noreferrer"
-            className="card flex items-center gap-3 active:scale-95 transition-all">
-            <span className="text-2xl">🗺️</span>
-            <p className="text-sm font-semibold text-txt">{t('detail.scopriTragitto')}</p>
-            <span className="ml-auto text-muted">→</span>
-          </a>
-        )}
-        <div className="pb-8">
-          <p className="text-center text-xs text-muted">💜 {t('detail.respira')} {profile?.genere === 'f' ? t('detail.prontaF') : profile?.genere === 'm' ? t('detail.prontoM') : t('detail.prontoNB')}. {t('detail.inBoccaLupo')}</p>
-        </div>
-      </div>
-      {CelebrationOverlay}
-      {CoffeePrompt}
-    </div>
-  )
-
-  if (form.stato === 'Offerta ricevuta') {
-    const welfareList = Array.isArray(form.welfare) ? form.welfare : []
-    const toggleWelfare = (opt) => {
-      const updated = welfareList.includes(opt) ? welfareList.filter(w => w !== opt) : [...welfareList, opt]
-      set('welfare', updated)
-    }
-    const FEELING_OFFERTA = [
-      { v: '🤩', label: t('detail.feelingNonVedo') },
-      { v: '😊', label: t('detail.feelingContento') },
-      { v: '🤔', label: t('detail.feelingCiPenso') },
-      { v: '😬', label: t('detail.feelingDubbi') },
-      { v: '😕', label: t('detail.feelingNonConvince') },
-    ]
-    return (
-      <div className="screen" style={{ background:'#0E0E1A' }}>
-        <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
-          <button onClick={handleBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <CompanyAvatar name={form.azienda} size={36} domain={form.azienda_domain} />
-              <div className="min-w-0">
-                <p className="font-bold text-txt text-sm truncate">{form.azienda}</p>
-                <p className="text-muted text-xs truncate">{form.ruolo}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex-1 scrollable px-4 pb-10 space-y-4">
-          <div className="rounded-3xl p-6 text-center" style={{ background:'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(16,185,129,0.1))', border:'1px solid rgba(245,158,11,0.3)' }}>
-            <div className="text-6xl mb-3">🏆</div>
-            <h2 className="text-2xl font-bold mb-1" style={{ background:'linear-gradient(135deg,#F59E0B,#10B981)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              {t('detail.offertaRicevuta')}
-            </h2>
-            <p className="text-muted text-sm">{t('detail.offertaDesc')}</p>
-          </div>
-          <div className="card space-y-3">
-            <p className="text-xs font-bold text-muted uppercase tracking-wider">🫀 {t('detail.comeTiSenti')}</p>
-            <div className="flex gap-2 flex-wrap">
-              {FEELING_OFFERTA.map(f => (
-                <button key={f.v} onClick={() => set('offerta_feeling', form.offerta_feeling === f.v ? null : f.v)}
-                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all active:scale-95"
-                  style={{ background:form.offerta_feeling===f.v?'rgba(123,47,255,0.2)':'transparent', borderColor:form.offerta_feeling===f.v?'rgba(123,47,255,0.6)':'rgba(255,255,255,0.08)' }}>
-                  <span className="text-2xl">{f.v}</span>
-                  <span className="text-xs text-muted" style={{ fontSize:'10px', whiteSpace:'nowrap' }}>{f.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="card space-y-3" style={{ borderColor:'rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.03)' }}>
-            <p className="text-sm font-bold text-txt text-center">🤝 {t('detail.accettiOfferta')}</p>
-            <p className="text-xs text-muted text-center">{t('detail.accettiDesc')}</p>
-            <div className="flex gap-3">
-              <button disabled={saving} onClick={() => handleSave({stato:"Assunta",offerta_risposta:"si"})} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
-                style={{ background:'transparent', borderColor:'rgba(16,185,129,0.5)', color:'#10B981' }}>
-                ✅ {t('detail.si')}
-              </button>
-              <button disabled={saving} onClick={() => handleSave({stato:"Offerta rifiutata",offerta_risposta:"no"})} className="flex-1 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all border"
-  style={{ background:'transparent', borderColor:'rgba(255,71,87,0.5)', color:'#FF4757' }}>
-  ❌ {t('detail.no')}
-</button>
-            </div>
-          </div>
-          <div className="card space-y-3" style={{ borderColor:'rgba(16,185,129,0.2)' }}>
-            <p className="text-xs font-bold text-green-400 uppercase tracking-wider">💰 {t('detail.dettagliOfferta')}</p>
-            <div>
-              <p className="text-xs text-muted mb-1">{t('detail.ralOfferta')}</p>
-              <input className="input-field text-sm" type="number" placeholder="Es: 35000"
-                value={form.offerta_ral||''} onChange={e => set('offerta_ral', e.target.value)} />
-            </div>
-            <div>
-              <p className="text-xs text-muted mb-1">⏰ {t('detail.risponderEntro')}</p>
-              <input className="input-field text-sm" type="date"
-                value={form.offerta_scadenza||''} onChange={e => set('offerta_scadenza', e.target.value)} />
-            </div>
-            <div>
-              <p className="text-xs text-muted mb-1">📅 {t('detail.dataInizio')}</p>
-              <input className="input-field text-sm" type="date"
-                value={form.data_inizio||''} onChange={e => set('data_inizio', e.target.value)} />
-            </div>
-            <div>
-              <p className="text-xs text-muted mb-1">📋 {t('detail.noteOfferta')}</p>
-              <textarea className="input-field text-sm" rows={3}
-                placeholder={t('detail.noteOffertaPlaceholder')}
-                value={form.offerta_note||''} onChange={e => set('offerta_note', e.target.value)} />
-            </div>
-          </div>
-          <div className="card space-y-3">
-            <p className="text-xs font-bold text-muted uppercase tracking-wider">🎁 {t('detail.benefit')}</p>
-            <div className="flex flex-wrap gap-2">
-              {WELFARE_OPTIONS.map(opt => {
-                const active = welfareList.includes(opt)
-                return (
-                  <button key={opt} onClick={() => toggleWelfare(opt)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95"
-                    style={{ background:active?'rgba(123,47,255,0.2)':'transparent', borderColor:active?'rgba(123,47,255,0.6)':'rgba(255,255,255,0.08)', color:active?'#c4b5fd':'rgba(240,240,255,0.4)' }}>
-                    {active?'✓ ':''}{trWelfare(opt)}
-                  </button>
-                )
-              })}
-            </div>
-            <div>
-              <p className="text-xs text-muted mb-1">{t('detail.benefitPersonalizzati')}</p>
-              <input className="input-field text-sm" type="text"
-                placeholder={t('detail.benefitPlaceholder')}
-                value={form.welfare_note||''} onChange={e => set('welfare_note', e.target.value)} />
-            </div>
-          </div>
-          {form.note && (
-            <div className="card">
-              <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">📝 {t('detail.mieNote')}</p>
-              <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
-            </div>
-          )}
-          {statusControl}
-          {previousDetails}
-          <button onClick={() => handleSave()} disabled={saving}
-            className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
-            style={{ background:'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity:saving?0.6:1 }}>
-            {saving ? t('detail.salvataggio') : saved ? t('detail.salvato') : t('detail.salvaOfferta')}
-          </button>
-        </div>
-        {CelebrationOverlay}
-        {CoffeePrompt}
-      </div>
-    )
-  }
-
-  if (form.stato === 'Assunta') {
-    const colloquiCount = getInterviews(form).filter(e=>e.status==='completed').length
-    return (
-      <div className="screen" style={{ background:'#0E0E1A' }}>
-        <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
-          <button onClick={handleBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
-        </div>
-        <div className="flex-1 scrollable px-4 pb-8 space-y-4">
-          <div className="rounded-3xl p-6 text-center" style={{ background:'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(123,47,255,0.15))', border:'1px solid rgba(16,185,129,0.3)' }}>
-            <div className="text-6xl mb-3">🏆</div>
-            <h2 className="text-2xl font-bold mb-1" style={{ color:'#34D399' }}>{t('detail.celaHaiFatta')}</h2>
-            <p className="text-muted text-sm">{t('detail.accettatoDesc')}</p>
-          </div>
-          <div className="card flex items-center gap-4">
-            <CompanyAvatar name={form.azienda} size={52} domain={form.azienda_domain} />
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-txt text-lg truncate">{form.azienda}</h3>
-              <p className="text-muted text-sm truncate">{form.ruolo}</p>
-              <div className="mt-1"><StatusBadge stato="Assunta" size="sm" genere={profile?.genere} /></div>
-            </div>
-          </div>
-          <div className="card space-y-0">
-            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{t('detail.dettagli')}</p>
-            <div className="flex justify-between items-center py-3 border-b border-border">
-              <span className="text-sm text-muted">📅 {t('detail.dataInizio')}</span>
-              {editingDataInizio ? (
-                <div className="flex items-center gap-2">
-                  <input type="date" className="input-field text-sm py-1 px-2 w-36"
-                    value={form.data_inizio||''} onChange={e => set('data_inizio', e.target.value)} autoFocus />
-                  <button onClick={async () => {
-                    setSavingDataInizio(true)
-                    const result = await handleSave()
-                    setSavingDataInizio(false); if(result)setEditingDataInizio(false)
-                  }} className="text-green-400 font-bold text-sm active:scale-90">
-                    {savingDataInizio ? '...' : '✓'}
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => setEditingDataInizio(true)} className="text-right active:scale-95">
-                  {form.data_inizio
-                    ? <span className="text-sm font-semibold text-purple-soft">{new Date(form.data_inizio+'T00:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</span>
-                    : <span className="text-sm text-purple underline">+ {t('detail.aggiungiData')}</span>
-                  }
-                </button>
-              )}
-            </div>
-            {form.sede && (
-              <div className="flex justify-between items-center py-3 border-b border-border">
-                <span className="text-sm text-muted">📍 {t('detail.sede')}</span>
-                <span className="text-sm font-semibold text-txt">{form.sede}</span>
-              </div>
-            )}
-            {(form.offerta_ral || form.stipendio_min) && (
-              <div className="flex justify-between items-center py-3 border-b border-border">
-                <span className="text-sm text-muted">💰 {t('detail.stipendio')}</span>
-                <span className="text-sm font-bold" style={{ color:'#10B981' }}>
-                  €{parseInt(form.offerta_ral||form.stipendio_min).toLocaleString('it-IT')}
-                </span>
-              </div>
-            )}
-            {colloquiCount > 0 && (
-              <div className="flex justify-between items-center py-3">
-                <span className="text-sm text-muted">🎙️ {i18n.language==='en'?'Completed meetings':'Incontri svolti'}</span>
-                <span className="text-sm font-semibold text-txt">{colloquiCount}</span>
-              </div>
-            )}
-          </div>
-          {form.note && (
-            <div className="card">
-              <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">📝 {t('detail.mieNote')}</p>
-              <p className="text-sm text-txt leading-relaxed whitespace-pre-wrap">{form.note}</p>
-            </div>
-          )}
-          <button onClick={() => handleSave()} disabled={saving}
-            className="w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition-all"
-            style={{ background:saved?'linear-gradient(135deg, #10B981, #059669)':'linear-gradient(135deg, #7B2FFF, #FF2D8B)', opacity:saving?0.6:1 }}>
-            {saving ? t('detail.salvataggio') : saved ? t('detail.salvato') : t('detail.salva')}
-          </button>
-          {statusControl}
-          {previousDetails}
-          <button
-            onClick={async () => {
-              const nextValue = !form.archiviata
-              if (!await handleSave({archiviata:nextValue})) return
-              showToast(
-                i18n.language === 'en'
-                  ? (nextValue ? '🏆 Saved among your successes' : 'Removed from archive')
-                  : (nextValue ? '🏆 Salvata tra i tuoi successi' : 'Rimossa dall’archivio'),
-                'success'
-              )
-            }}
-            className="w-full py-3 rounded-2xl border border-border text-sm font-semibold text-muted active:scale-95 transition-all"
-          >
-            {form.archiviata
-              ? (i18n.language === 'en' ? '↩ Remove from archive' : '↩ Rimuovi dall’archivio')
-              : (i18n.language === 'en' ? '📦 Archive as a success' : '📦 Archivia come successo')}
-          </button>
-        </div>
-        {CelebrationOverlay}
-        {CoffeePrompt}
-      </div>
-    )
-  }
-
-  return (
-    <div className="screen">
-      <div className="flex-shrink-0" style={{ background:'linear-gradient(180deg, #1F1F38 0%, #0E0E1A 100%)' }}>
-        <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-2">
-          <button onClick={handleBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <CompanyAvatar name={form.azienda} size={44} domain={form.azienda_domain} />
-              <div className="min-w-0 flex-1">
-                {editingAzienda ? (
-                  <div className="relative z-50">
-                    <CompanyAutocomplete
-                      className="input-field text-sm font-bold py-1"
-                      value={form.azienda}
-                      autoFocus
-                      onChange={value => { set('azienda', value); set('azienda_domain', '') }}
-                      onSelect={company => {
-                        set('azienda', company.name)
-                      }}
-                      onBlur={() => setEditingAzienda(false)} />
-                  </div>
-                ) : (
-                  <button onClick={() => setEditingAzienda(true)} className="text-left w-full">
-                    <h2 className="font-bold text-txt text-lg truncate">{form.azienda} <span className="text-xs text-muted">✏️</span></h2>
-                  </button>
-                )}
-                <p className="text-muted text-sm truncate">{form.ruolo}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 px-5 pb-4">
-          <StatusBadge stato={form.stato} size="lg" genere={profile?.genere} />
-          {isColloquioOggi && (
-            <button onClick={() => setInterviewMode(true)}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"
-              style={{ background:'linear-gradient(135deg, #7B2FFF, #FF2D8B)', color:'white' }}>
-              🎙️ {t('detail.modalitaIntervista')}
-            </button>
-          )}
-          {form.priorita && <span className="text-sm">{PRIORITA_CONFIG[form.priorita]?.emoji}</span>}
-          <span className="text-xs text-muted ml-auto">{days}{t('home.ggFa')}</span>
-          {form.fonte && <span className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">{form.fonte}</span>}
-        </div>
-      </div>
-
-      <div className="flex-1 scrollable px-4 py-4 space-y-4">
-        {statusControl}
-
-        <Section label={i18n.language === 'en' ? '💼 Role and contract' : '💼 Ruolo e contratto'}>
-          <div className="mb-3"><RoleInput className="input-field" value={form.ruolo} onChange={value => set('ruolo', value)} /></div>
-          <JobFields form={form} onChange={set} />
-        </Section>
-        <Section label={`⚡ ${t('detail.priorita')}`}>
-          <div className="flex gap-2">
-            {PRIORITA.map(p => {
-              const pc = PRIORITA_CONFIG[p]; const active = form.priorita === p
-              return (
-                <button key={p} onClick={() => set('priorita', p)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all active:scale-95 ${active?'text-white border-transparent bg-purple':'text-muted border-border'}`}>
-                  {pc.emoji} {trPriority(p)}
-                </button>
-              )
-            })}
-          </div>
-        </Section>
-
-        <Section expanded={STATI_CON_COLLOQUIO.includes(form.stato)} label={i18n.language==='en'?'Meetings':'Incontri'}>
-          <InterviewFields form={form} onChange={set}/>
-          {checklistMeeting?.date && checklistMeeting.date <= localDay() && checklistMeeting.status==='scheduled' && <button disabled={saving} className="btn-primary w-full mt-3" onClick={()=>handleSave({stato:'In attesa risposta',attesa_dal:checklistMeeting.date,interviews:getInterviews(form).map(e=>e.id===checklistMeeting.id?{...e,status:'completed'}:e)})}>{i18n.language==='en'?'Meeting completed · wait for reply':'Incontro svolto · passa in attesa'}</button>}
-        </Section>
-
-        {!CLOSED.has(form.stato) && (
-          <Section expanded={!!form.reminder_date} label={`⏰ ${t('detail.promemoria')}`}>
-            <p className="text-xs text-muted mb-3">{i18n.language==='en'?'Shown inside the app. Export to your calendar for alerts when the app is closed.':'Visibile dentro l’app. Esporta nel calendario per gli avvisi ad app chiusa.'}</p>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input className="input-field text-sm flex-1" type="date" value={form.reminder_date||''} onChange={e => {set('reminder_date', e.target.value);set('reminder_done',false)}} />
-                <input className="input-field text-sm w-24" type="time" value={form.reminder_time||''} onChange={e => {set('reminder_time', e.target.value);set('reminder_done',false)}} />
-              </div>
-              <input className="input-field text-sm w-full" placeholder={t('detail.promemoriaNota')}
-                value={form.reminder_note||''} onChange={e => set('reminder_note', e.target.value)} />
-              {form.reminder_date && <div className="flex flex-wrap gap-2">
-                <button className="btn-secondary" onClick={()=>downloadCalendar({id:c.id+'-reminder',title:form.azienda+' · '+(form.reminder_note || 'Promemoria'),date:form.reminder_date,time:form.reminder_time})}>{i18n.language==='en'?'Export to calendar':'Esporta nel calendario'}</button>
-                <button className="btn-secondary" onClick={()=>set('reminder_done',!form.reminder_done)}>{form.reminder_done?(i18n.language==='en'?'Reactivate':'Riattiva'):(i18n.language==='en'?'Mark as done':'Segna come fatto')}</button>
-              </div>}
-              {form.reminder_date && (
-                <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background:'rgba(123,47,255,0.1)' }}>
-                  <span className="text-sm">⏰</span>
-                  <p className="text-xs text-purple-soft">
-                    {t('detail.promemoriImpostato')} {form.reminder_date}
-                    {form.reminder_time ? ` ${t('detail.alle')} ${form.reminder_time}` : ''}
-                    {form.reminder_note ? ` — ${form.reminder_note}` : ''}
-                  </p>
-                  <button onClick={() => { set('reminder_date',null); set('reminder_time',null); set('reminder_note','') }}
-                    className="ml-auto text-muted text-xs active:scale-90">✕</button>
-                </div>
-              )}
-            </div>
-          </Section>
-        )}
-
-        {STATI_CON_COLLOQUIO.includes(form.stato) && (
-          <Section expanded label={`✅ ${t('detail.checklistPre')}`}>
-            {loadingChecklist ? <div className="flex justify-center py-4"><Spinner /></div> : (
-              <>
-                {checklist.length > 0 && (
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-muted">{doneCount}/{checklist.length} {t('detail.completati')}</span>
-                    <div className="w-32 h-1.5 bg-border rounded-full overflow-hidden">
-                      <div className="h-full bg-green rounded-full transition-all" style={{ width:`${checklistPct}%` }} />
-                    </div>
-                  </div>
-                )}
-                {checklist.length === 0 && (
-                  <div className="text-center py-3">
-                    <p className="text-sm text-muted mb-2">{t('detail.nessunChecklist')}</p>
-                    <p className="text-xs text-muted">{t('detail.nessunChecklistDesc')}</p>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  {checklist.map(item => (
-                    <button key={item.id} onClick={() => handleToggleChecklist(item)}
-                      className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl bg-surface border border-border active:scale-[0.98] transition-all text-left">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${item.fatto?'bg-green border-green':'border-border'}`}>
-                        {item.fatto && <span className="text-white text-xs font-bold">✓</span>}
-                      </div>
-                      <span className={`text-sm ${item.fatto?'line-through text-muted':'text-txt'}`}>{item.task}</span>
-                    </button>
-                  ))}
-                </div>
-                {checklist.length > 0 && checklistPct === 100 && (
-                  <div className="mt-3 p-3 bg-green/10 border border-green/20 rounded-xl text-center">
-                    <span className="text-green text-sm font-semibold">🎉 {t('detail.tuttoProonto')}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </Section>
-        )}
-
-        <Section label={`📍 ${t('detail.sede')}`}>
-          <div className="space-y-2">
-            <input className="input-field text-sm" placeholder={t('detail.sedePlaceholder')}
-              value={form.sede||''} onChange={e => set('sede', e.target.value)} />
-            {form.sede && (
-              <a href={profile?.indirizzo_home
-                  ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(profile.indirizzo_home)}&destination=${encodeURIComponent(form.sede)}&travelmode=transit`
-                  : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.sede)}&travelmode=transit`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 text-xs text-txt border border-border px-3 py-2.5 rounded-xl active:scale-95 w-full">
-                🗺️ {t('detail.scopriTragitto')}
-              </a>
-            )}
-          </div>
-        </Section>
-
-        {form.stato !== 'Offerta ricevuta' && (
-          <Section label={i18n.language==='en'?'Gross annual salary · euros':'RAL annua lorda · euro'}>
-            <div className="flex gap-2 items-center">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-                <input className="input-field pl-7 text-sm" type="number" placeholder="28000"
-                  value={form.stipendio_min||''} onChange={e => set('stipendio_min', e.target.value?parseInt(e.target.value):null)} />
-              </div>
-              <span className="text-muted">–</span>
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">€</span>
-                <input className="input-field pl-7 text-sm" type="number" placeholder="35000"
-                  value={form.stipendio_max||''} onChange={e => set('stipendio_max', e.target.value?parseInt(e.target.value):null)} />
-              </div>
-            </div>
-          </Section>
-        )}
-
-        <Section label={`🎁 ${t('detail.benefitWelfare')}`}>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {WELFARE_OPTIONS.map(opt => {
-              const selected = (form.welfare||[]).includes(opt)
-              return (
-                <button key={opt}
-                  onClick={() => { const cur=form.welfare||[]; set('welfare', selected?cur.filter(w=>w!==opt):[...cur,opt]) }}
-                  className={`px-3 py-1.5 rounded-full text-xs border transition-all active:scale-95 ${selected?'bg-green-500/20 border-green-500/60 text-green-400':'border-border text-muted'}`}>
-                  {selected?'✓ ':''}{trWelfare(opt)}
-                </button>
-              )
-            })}
-          </div>
-          <input className="input-field text-sm" placeholder={t('detail.altriBenefit')}
-            value={form.welfare_note||''} onChange={e => set('welfare_note', e.target.value)} />
-        </Section>
-
-        {STATI_CON_FEELING.includes(form.stato) && (
-          <Section label={`😊 ${t('detail.comEAndata')}`}>
-            <div className="flex justify-around py-1">
-              {FEELING_OPTIONS.map(f => (
-                <button key={f} onClick={() => set('feeling', f)}
-                  className={`text-3xl transition-all active:scale-110 ${form.feeling===f?'scale-125':'opacity-40'}`}
-                  style={form.feeling===f?{ filter:'drop-shadow(0 0 8px rgba(139,92,246,0.6))' }:{}}>
-                  {f}
-                </button>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {!CLOSED.has(form.stato) && form.stato !== 'Offerta ricevuta' && (
-          <Section expanded label={`📅 ${t('detail.entroQuandoRisposta')}`}>
-            <input className="input-field" type="date"
-              value={form.data_scadenza_responso||''} onChange={e => set('data_scadenza_responso', e.target.value)} />
-            <p className="text-xs text-muted mt-1">{t('detail.entroQuandoDesc')}</p>
-          </Section>
-        )}
-
-        <Section label={i18n.language==='en'?'Application and contact dates':'Date candidatura e contatti'}>
-          <label className="block text-xs text-muted mb-3">{i18n.language==='en'?'Application date':'Data candidatura'}<input className="input-field mt-1" type="date" value={form.data_invio || ''} onChange={e=>set('data_invio',e.target.value)}/></label>
-          <label className="block text-xs text-muted mb-3">{i18n.language==='en'?'Last contact · optional':'Ultimo contatto · facoltativo'}<input className="input-field mt-1" type="date" value={form.ultimo_contatto || ''} onChange={e=>set('ultimo_contatto',e.target.value)}/></label>
-          {form.stato==='In attesa risposta' && <label className="block text-xs text-muted">{i18n.language==='en'?'Waiting since':'In attesa dal'}<input className="input-field mt-1" type="date" value={form.attesa_dal || ''} onChange={e=>set('attesa_dal',e.target.value)}/></label>}
-          <label className="block text-xs text-muted mt-3">{i18n.language==='en'?'Application type':'Tipo candidatura'}<select className="input-field mt-1" value={form.tipo_candidatura} onChange={e=>set('tipo_candidatura',e.target.value)}><option value="annuncio">{i18n.language==='en'?'Job posting':'Annuncio'}</option><option value="spontanea">{i18n.language==='en'?'Unsolicited':'Spontanea'}</option></select></label>
-        </Section>
-        <Section expanded label={`📝 ${t('detail.mieNote')}`}>
-          <textarea className="input-field resize-none" rows={4}
-            placeholder={t('detail.notePlaceholder')}
-            value={form.note||''} onChange={e => set('note', e.target.value)} />
-        </Section>
-
-        {form.stato !== 'Offerta ricevuta' && (
-          <Section label={`❓ ${t('detail.domandeFatte')}`}>
-            <textarea className="input-field resize-none" rows={3}
-              placeholder={t('detail.domandeFattePlaceholder')}
-              value={form.domande_fatte||''} onChange={e => set('domande_fatte', e.target.value)} />
-          </Section>
-        )}
-
-        {form.stato !== 'Offerta ricevuta' && (
-          <Section label={`🙋 ${t('detail.domandeMie')}`}>
-            <textarea className="input-field resize-none" rows={3}
-              placeholder={t('detail.domandeMiePlaceholder')}
-              value={form.domande_mie||''} onChange={e => set('domande_mie', e.target.value)} />
-          </Section>
-        )}
-
-        <Section label={`📌 ${t('detail.fontELink')}`}>
-          <div className="space-y-2">
-            <div>
-              <p className="text-xs text-muted mb-1">{t('detail.doveTrovato')}</p>
-              <div className="flex flex-wrap gap-2">
-                {FONTI.map(f => (
-                  <button key={f} onPointerDown={e => { e.preventDefault(); set('fonte', f) }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95 ${form.fonte===f?'bg-purple border-purple text-white':'bg-surface border-border text-muted'}`}>
-                    {trFonte(f)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs text-muted mb-1">{t('detail.linkAnnuncio')}</p>
-              <input className="input-field text-sm" placeholder="https://..."
-                value={form.link_annuncio||''} onChange={e => set('link_annuncio', e.target.value)} />
-              {form.link_annuncio && (
-                <a href={form.link_annuncio} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 text-xs text-purple-soft border border-purple/30 px-3 py-2 rounded-xl mt-1 active:scale-95">
-                  🔗 {t('detail.apriAnnuncio')}
-                </a>
-              )}
-            </div>
-          </div>
-        </Section>
-
-        {!CLOSED.has(form.stato) && <div className="flex items-center justify-between card">
-          <div>
-            <p className="text-sm font-medium text-txt">🔔 {i18n.language==='en'?'In-app reminders':'Avvisi dentro l’app'}</p>
-            <p className="text-xs text-muted">{i18n.language==='en'?'Shown in the bell when you open the app.':'Visibili nella campanella quando apri l’app.'}</p>
-          </div>
-          <button onClick={() => set('notifiche_push', !form.notifiche_push)}
-            className={`w-12 h-6 rounded-full transition-all duration-200 relative ${form.notifiche_push?'bg-purple':'bg-border'}`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${form.notifiche_push?'left-[26px]':'left-0.5'}`} />
-          </button>
-        </div>}
-
-        <div className="pt-2">
-          {saveError && <p role="alert" className="text-sm text-red mb-3">{saveError}</p>}
-          <button onClick={() => handleSave()} disabled={saving}
-            className="btn-primary w-full py-4 text-base flex items-center justify-center gap-2">
-            {saving ? <><Spinner size={20} /> {t('detail.salvataggio')}</> : saved ? t('detail.salvato') : t('detail.salvaModifiche')}
-          </button>
-        </div>
-
-        <div className="pb-8">
-          <button onClick={() => setConfirmDelete(true)} className="btn-danger w-full py-3">
-            🗑️ {t('detail.eliminaCandidatura')}
-          </button>
-        </div>
-      </div>
-
-      <ConfirmDialog
-        isOpen={confirmDelete}
-        title={t('detail.eliminaTitolo')}
-        message={t('detail.eliminaMessaggio', { azienda: c.azienda })}
-        onConfirm={handleDelete}
-        onCancel={() => setConfirmDelete(false)}
-        danger
-      />
-      {CelebrationOverlay}
-      {CoffeePrompt}
-    </div>
-  )
-}
-
-function Section({ label, children, expanded = false }) {
-  if (!expanded) return (
-    <details className="card">
-      <summary className="cursor-pointer text-sm font-semibold text-muted py-1">{label}</summary>
-      <div className="pt-3">{children}</div>
-    </details>
-  )
-  return (
-    <div className="card">
-      <SectionLabel>{label}</SectionLabel>
-      {children}
-    </div>
-  )
 }

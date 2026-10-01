@@ -12,7 +12,7 @@ export function RoleInput({ value, onChange, className, placeholder }) {
   </>
 }
 
-export default function JobFields({ form, onChange }) {
+export default function JobFields({ form, onChange, compact = false }) {
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
   const fields = [
@@ -22,7 +22,7 @@ export default function JobFields({ form, onChange }) {
     ['livello_ruolo', en ? 'Seniority' : 'Livello', [['entry','Prima esperienza','Entry-level'],['junior','Junior','Junior'],['mid','Intermedio','Mid-level'],['senior','Senior','Senior'],['lead','Responsabile','Lead']]],
   ]
   return <div className="space-y-3">
-    {fields.map(([key, label, options]) => <label key={key} className="block text-xs text-muted">{label}
+    {fields.filter(([key])=>!compact || key!=='livello_ruolo').map(([key, label, options]) => <label key={key} className="block text-xs text-muted">{label}
       <select className="input-field w-full mt-1" value={form[key] || ''} onChange={e => onChange(key, e.target.value)}>
         <option value="">{en ? 'Not specified' : 'Non specificato'}</option>
         {options.map(([value,it,english]) => <option key={value} value={value}>{en ? english : it}</option>)}
