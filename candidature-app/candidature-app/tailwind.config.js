@@ -13,7 +13,7 @@ export default {
         'purple-dark': '#6D28D9',
         'purple-soft': '#C4B5FD',
         txt:      '#EEEEFF',
-        muted:    '#8888AA',
+        muted:    '#A8A8C4',
         disabled: '#44446A',
         blue:     '#60A5FA',
         green:    '#34D399',

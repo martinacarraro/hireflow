@@ -122,7 +122,7 @@ export function XpBar({ xp = 0, genere }) {
 
   return (
     <div>
-      <div className="flex justify-between text-[10px] text-muted mb-1 uppercase font-bold tracking-wider">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 justify-between text-xs text-muted mb-1 font-semibold">
         <span>{lv.emoji} Lv.{lv.lv} — {displayName}</span>
         <span>{xp} {t('profile.levels.total_xp')}</span>
       </div>
@@ -133,7 +133,7 @@ export function XpBar({ xp = 0, genere }) {
       </div>
 
       <div className="flex justify-end">
-        <button onClick={() => setShowLog(v => !v)} className="text-[10px] text-purple-soft font-medium">
+        <button onClick={() => setShowLog(v => !v)} className="text-xs text-purple-soft font-semibold min-h-[44px] px-2">
           {xp} / {next} XP {showLog ? '▴' : '▾'}
         </button>
       </div>
@@ -141,7 +141,7 @@ export function XpBar({ xp = 0, genere }) {
       {showLog && (
         <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border-t border-border pt-1">
           {log.length === 0 ? (
-            <p className="text-xs text-disabled text-center py-1">No XP yet</p>
+            <p className="text-xs text-muted text-center py-1">No XP yet</p>
           ) : log.map((e, i) => (
             <div key={i} className="flex justify-between items-center text-xs py-0.5">
               <span className="text-muted">{e.label}</span>
@@ -277,30 +277,30 @@ export function TabBar({ active, onChange, unread = 0 }) {
   ]
   return (
     <div data-tutorial="tabbar" className="bg-surface border-t border-border flex-shrink-0 overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex items-end h-16">
+      <div className="flex items-end min-h-[72px]">
         {tabs.map(tab => (
           <button key={tab.id} aria-label={tab.label} aria-current={active === tab.id ? 'page' : undefined} onClick={() => onChange(tab.id)}
-            className={`flex-1 flex flex-col items-center justify-end pb-2 gap-0.5 transition-all active:scale-95
-              ${active === tab.id && !tab.special ? 'text-purple' : 'text-disabled'}`}>
+            className={`flex-1 min-w-0 min-h-[48px] flex flex-col items-center justify-end pb-2 gap-0.5 transition-all active:scale-95
+              ${active === tab.id && !tab.special ? 'text-purple' : 'text-muted'}`}>
             {tab.special ? (
               <div className="flex flex-col items-center" style={{ marginBottom: '4px' }}>
                 <span data-tutorial="add-btn" className="flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold text-white shadow-btn"
                   style={{ marginTop: '-28px', background: 'linear-gradient(135deg, #7B2FFF, #FF2D8B)', boxShadow: '0 6px 24px rgba(255,45,139,0.4)' }}>
                   {tab.icon}
                 </span>
-                <span className="text-[10px] mt-1 text-muted">{tab.label}</span>
+                <span className="text-xs mt-1 text-muted font-medium">{tab.label}</span>
               </div>
             ) : (
               <>
                 <span className="text-xl leading-none relative">
                   {tab.icon}
                   {tab.id === 'profile' && unread > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red text-white text-[8px] rounded-full flex items-center justify-center font-bold px-1">
+                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] leading-none">{tab.label}</span>
+                <span className="text-xs leading-tight font-medium">{tab.label}</span>
               </>
             )}
           </button>

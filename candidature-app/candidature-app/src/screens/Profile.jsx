@@ -197,10 +197,8 @@ export default function Profile() {
               setShowNotifs(false)
               markAllNotificationsRead()
             }}
-            className="text-muted text-lg"
-          >
-            ←
-          </button>
+            className="nav-arrow"
+           aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
 
           <h2 className="font-bold text-txt">
             {isIt ? 'Notifiche' : 'Notifications'}
@@ -238,7 +236,7 @@ export default function Profile() {
         >
           🔔
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
+            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
               {unreadCount}
             </span>
           )}
@@ -334,7 +332,7 @@ export default function Profile() {
 
         <div className="card">
           <SectionLabel>🔒 {isIt ? 'Privacy e dati' : 'Privacy & data'}</SectionLabel>
-          <p className="text-[11px] text-muted leading-relaxed mb-3">
+          <p className="text-xs text-muted leading-relaxed mb-3">
             {isIt
               ? 'Candidature, profilo, XP e checklist vengono salvati solo su questo dispositivo. Nessun account e nessuna sincronizzazione cloud.'
               : 'Applications, profile, XP and checklists are stored only on this device. No account and no cloud sync.'}
@@ -363,7 +361,7 @@ export default function Profile() {
           </button>
           {showLegacyRecovery && (
             <div className="rounded-2xl border border-border bg-black/10 p-3 mb-3 space-y-2">
-              <p className="text-[10px] text-muted leading-relaxed">
+              <p className="text-xs text-muted leading-relaxed">
                 {isIt
                   ? 'Solo se usavi un account: accedi una volta per copiare candidature e checklist sul telefono. Le credenziali non vengono salvate.'
                   : 'Only if you previously used an account: sign in once to copy applications and checklists to this device. Credentials are not stored.'}
@@ -384,7 +382,7 @@ export default function Profile() {
                 value={legacyPassword}
                 onChange={e => setLegacyPassword(e.target.value)}
               />
-              {legacyError && <p className="text-[11px] text-red-400">{legacyError}</p>}
+              {legacyError && <p className="text-xs text-red-400">{legacyError}</p>}
               <button
                 onClick={handleLegacyRecovery}
                 disabled={legacyLoading || !legacyEmail.trim() || !legacyPassword}
@@ -405,7 +403,7 @@ export default function Profile() {
 
         <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
           <div className="flex-1">
-            <p className="text-[10px] font-bold text-purple-soft uppercase tracking-widest mb-0.5">
+            <p className="text-xs font-bold text-purple-soft uppercase tracking-widest mb-0.5">
               {isIt ? "Ti piace l'app?" : 'Enjoying the app?'}
             </p>
             <p className="text-sm font-bold text-txt">
@@ -429,7 +427,7 @@ export default function Profile() {
             <span className="text-xs text-muted ml-2">{earned.length}/{BADGES.length}</span>
           </summary>
 
-          <div className="grid grid-cols-4 gap-2 mt-3">
+          <div className="grid grid-cols-3 gap-2 mt-3">
             {BADGES.map((badge) => {
               const isEarned = earned.includes(badge.id)
 
@@ -451,7 +449,7 @@ export default function Profile() {
                     </div>
                   )}
 
-                  <p className="text-[7px] uppercase font-bold leading-tight">
+                  <p className="text-xs font-semibold leading-snug break-words">
                     {isEarned ? t(`badges.${badge.id}`) : '???'}
                   </p>
                 </div>
@@ -463,7 +461,7 @@ export default function Profile() {
         <details className="card">
           <summary className="cursor-pointer text-sm font-semibold text-txt mb-2">📁 {t('profile.import_title')}</summary>
 
-          <p className="text-[11px] text-muted mb-3 leading-relaxed">
+          <p className="text-xs text-muted mb-3 leading-relaxed">
             {t('profile.import_description')}
           </p>
 
@@ -498,7 +496,7 @@ export default function Profile() {
               href="https://lefaremosapere.vercel.app/privacy.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-white/50 hover:text-white/80"
+              className="text-xs text-muted hover:text-txt"
             >
               {isIt ? 'Privacy' : 'Privacy Policy'}
             </a>
@@ -507,14 +505,14 @@ export default function Profile() {
               href="https://lefaremosapere.vercel.app/terms.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-white/50 hover:text-white/80"
+              className="text-xs text-muted hover:text-txt"
             >
               {isIt ? 'Termini' : 'Terms'}
             </a>
 
             <a
               href="mailto:lefaremosapereapp@gmail.com?subject=Supporto%20Le%20faremo%20sapere"
-              className="text-[11px] text-white/50 hover:text-white/80"
+              className="text-xs text-muted hover:text-txt"
             >
               {isIt ? 'Supporto' : 'Support'}
             </a>

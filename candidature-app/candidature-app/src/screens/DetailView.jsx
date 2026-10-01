@@ -186,7 +186,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         >
           ☕ {i18n.language === 'en' ? 'Buy me a coffee' : 'Offrimi un caffè'}
         </a>
-        <button onClick={closeCoffeePrompt} className="w-full py-2 text-xs text-disabled">
+        <button onClick={closeCoffeePrompt} className="w-full py-2 text-xs text-muted">
           {i18n.language === 'en' ? 'Not now' : 'Non ora'}
         </button>
       </div>
@@ -196,7 +196,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
   if (interviewMode) return (
     <div className="screen" style={{ background:'#0a0a1a' }}>
       <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 flex-shrink-0">
-        <button onClick={() => setInterviewMode(false)} className="text-muted text-lg">←</button>
+        <button onClick={() => setInterviewMode(false)} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
         <p className="text-sm font-bold text-purple-soft">🎙️ {t('detail.modalitaIntervista')}</p>
         <div />
       </div>
@@ -284,7 +284,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               if (choice) await handleSave()
             }
             setIsDirty(false); onBack()
-          }} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+          }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <CompanyAvatar name={form.azienda} size={36} domain={form.azienda_domain} />
@@ -418,7 +418,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
     return (
       <div className="screen" style={{ background:'#0E0E1A' }}>
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 flex-shrink-0">
-          <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+          <button onClick={onBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
         </div>
         <div className="flex-1 scrollable px-4 pb-8 space-y-4">
           <div className="rounded-3xl p-6 text-center" style={{ background:'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(123,47,255,0.15))', border:'1px solid rgba(16,185,129,0.3)' }}>
@@ -525,7 +525,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
               if (choice) { await handleSave() }
             }
             setIsDirty(false); onBack()
-          }} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+          }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <CompanyAvatar name={form.azienda} size={44} domain={form.azienda_domain} />
@@ -601,7 +601,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
         {form.stato !== 'Offerta ricevuta' && (
           <Section expanded={STATI_CON_COLLOQUIO.includes(form.stato)} label={`🎙️ ${t('detail.dettagliColloquio')}`}>
             <div className="space-y-3">
-              <p className="text-xs text-disabled font-semibold uppercase tracking-wide">{t('detail.primoColloquio')}</p>
+              <p className="text-xs text-muted font-semibold uppercase tracking-wide">{t('detail.primoColloquio')}</p>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <p className="text-xs text-muted mb-1">{t('detail.data')}</p>
@@ -612,7 +612,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
                   <input className="input-field text-sm" type="time" value={form.ora_colloquio||''} onChange={e => set('ora_colloquio', e.target.value)} />
                 </div>
               </div>
-              <p className="text-xs text-disabled font-semibold uppercase tracking-wide mt-2">{t('detail.secondoColloquio')}</p>
+              <p className="text-xs text-muted font-semibold uppercase tracking-wide mt-2">{t('detail.secondoColloquio')}</p>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <p className="text-xs text-muted mb-1">{t('detail.data')}</p>
@@ -776,7 +776,7 @@ export default function DetailView({ candidatura: c, onBack, onUpdate }) {
           <Section expanded label={`📅 ${t('detail.entroQuandoRisposta')}`}>
             <input className="input-field" type="date"
               value={form.data_scadenza_responso||''} onChange={e => set('data_scadenza_responso', e.target.value)} />
-            <p className="text-[10px] text-disabled mt-1">{t('detail.entroQuandoDesc')}</p>
+            <p className="text-xs text-muted mt-1">{t('detail.entroQuandoDesc')}</p>
           </Section>
         )}
 

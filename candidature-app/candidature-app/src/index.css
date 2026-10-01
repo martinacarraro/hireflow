@@ -44,9 +44,33 @@
   }
   .input-field {
     @apply w-full bg-surface border border-border rounded-xl px-4 py-3 text-txt 
-           placeholder-disabled text-sm outline-none
+           placeholder-muted text-base outline-none
            focus:border-purple focus:ring-1 focus:ring-purple/30
            transition-all duration-150;
+  }
+  .nav-arrow {
+    @apply inline-flex items-center justify-center w-11 h-11 flex-shrink-0 rounded-xl border border-border text-txt text-3xl font-bold leading-none active:scale-95 transition-transform;
+  }
+  .screen summary {
+    @apply relative min-h-[44px] flex items-center flex-wrap gap-1 pr-8 text-sm font-semibold;
+    list-style: none;
+  }
+  .screen summary::-webkit-details-marker { display: none; }
+  .screen summary::after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    top: 15px;
+    width: 10px;
+    height: 10px;
+    border-right: 3px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    transform: rotate(45deg);
+  }
+  .screen details[open] > summary::after { transform: rotate(225deg); top: 20px; }
+  button:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 2px solid #C4B5FD;
+    outline-offset: 3px;
   }
   .section-label {
     @apply text-xs uppercase tracking-widest text-muted font-semibold mb-2;

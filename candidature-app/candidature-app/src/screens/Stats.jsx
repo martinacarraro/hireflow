@@ -13,7 +13,7 @@ export default function Stats({ onOpenCandidatura }) {
   if (showNotifs) return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
+        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
         <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
       </div>
       <div className="flex-1 scrollable px-4 py-4">
@@ -102,7 +102,7 @@ export default function Stats({ onOpenCandidatura }) {
         </div>
         <button onClick={() => setShowNotifs(true)} className="relative p-2">
           <span className="text-2xl">🔔</span>
-          {unreadCount > 0 && <span className="absolute top-0 right-0 bg-red text-white text-[9px] rounded-full px-1">{unreadCount}</span>}
+          {unreadCount > 0 && <span className="absolute top-0 right-0 bg-red text-white text-xs rounded-full px-1">{unreadCount}</span>}
         </button>
       </div>
 

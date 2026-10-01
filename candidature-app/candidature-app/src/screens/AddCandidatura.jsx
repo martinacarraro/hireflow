@@ -96,7 +96,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={onBack} className="text-muted text-lg active:scale-90 transition-transform">←</button>
+        <button onClick={onBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
         <div>
           <h2 className="font-bold text-txt text-base">{t('add.titolo')}</h2>
           <p className="text-xs text-muted">{isIt ? 'Bastano azienda e ruolo. Il resto puoi aggiungerlo dopo.' : 'Company and role are enough. Add the rest later.'}</p>

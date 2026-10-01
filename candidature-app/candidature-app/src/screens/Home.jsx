@@ -223,7 +223,7 @@ const candidatureFiltrate = useMemo(() => {
     return (
       <div className="screen">
         <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-          <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
+          <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
           <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
         </div>
         <div className="flex-1 scrollable px-4 py-4">
@@ -245,7 +245,7 @@ const candidatureFiltrate = useMemo(() => {
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium ${n.read ? 'text-muted' : 'text-txt'}`}>{n.title}</p>
                 <p className="text-xs text-muted mt-0.5">{n.body}</p>
-                <p className="text-[10px] text-disabled mt-1">
+                <p className="text-xs text-muted mt-1">
                   {new Date(n.time).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -336,7 +336,7 @@ const candidatureFiltrate = useMemo(() => {
               >
                 <div className="text-lg mb-1">{item.emoji}</div>
                 <div className="text-lg font-black text-txt leading-none">{item.value}</div>
-                <div className="text-[9px] text-muted mt-1 leading-tight">
+                <div className="text-xs text-muted mt-1 leading-tight">
                   {i18n.language === 'en' ? item.en : item.it}
                 </div>
               </button>
@@ -392,7 +392,7 @@ const candidatureFiltrate = useMemo(() => {
                   </span>
                 </div>
                 {!selectMode && (
-                  <span className="text-muted text-sm" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>▾</span>
+                  <span className="text-muted text-xl font-bold" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>▾</span>
                 )}
               </button>
               {(!isCollapsed || selectMode) && items.map(c => (
@@ -447,13 +447,13 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
             <button onClick={onArchiveSelected}
               disabled={selectedCount === 0}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
-                ${selectedCount > 0 ? 'bg-surface border border-border text-muted active:scale-95' : 'bg-border text-disabled'}`}>
+                ${selectedCount > 0 ? 'bg-surface border border-border text-muted active:scale-95' : 'bg-border text-muted'}`}>
               📦 {t('home.archivia')} ({selectedCount})
             </button>
             <button onClick={onDeleteSelected}
               disabled={selectedCount === 0}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
-                ${selectedCount > 0 ? 'bg-red text-white active:scale-95' : 'bg-border text-disabled'}`}>
+                ${selectedCount > 0 ? 'bg-red text-white active:scale-95' : 'bg-border text-muted'}`}>
               🗑️ ({selectedCount})
             </button>
           </div>
@@ -473,7 +473,7 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
             <button onClick={onBell} className="relative p-2 active:scale-90 transition-transform">
               <span className="text-2xl">🔔</span>
               {unread > 0 && (
-                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
+                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -511,7 +511,7 @@ function DeadlineRow({ scadenza }) {
           {giorni <= 3 ? '⚠️' : '🚨'} {t('home.dovevanoRispondere', { giorni, label: giorni === 1 ? t('home.giorno') : t('home.giorni') })}
         </p>
         {giorni > 3 && (
-          <p className="text-[10px] font-medium mt-0.5" style={{ color: '#F87171' }}>
+          <p className="text-xs font-medium mt-0.5" style={{ color: '#F87171' }}>
             💬 {t('home.consideraRicontattare')}
           </p>
         )}

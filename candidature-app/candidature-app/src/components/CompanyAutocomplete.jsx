@@ -64,7 +64,7 @@ export default function CompanyAutocomplete({
       />
       {isOpen && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl">
-          <p className="border-b border-border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-disabled">
+          <p className="border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted">
             Suggerimenti sul dispositivo
           </p>
           {suggestions.map((company, index) => (

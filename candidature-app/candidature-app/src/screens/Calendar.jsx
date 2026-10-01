@@ -20,7 +20,7 @@ export default function Calendar({ onDetail }) {
   if (showNotifs) return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="text-muted text-lg">←</button>
+        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
         <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
       </div>
       <div className="flex-1 scrollable px-4 py-4">
@@ -99,7 +99,7 @@ export default function Calendar({ onDetail }) {
         <button onClick={() => setShowNotifs(true)} className="relative p-2 active:scale-90 transition-transform">
           <span className="text-2xl">🔔</span>
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-[9px] rounded-full flex items-center justify-center font-bold px-1">
+            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-red text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -144,7 +144,7 @@ export default function Calendar({ onDetail }) {
                     height: `${Math.max((s.count / maxCount) * 56, s.count > 0 ? 8 : 3)}px`,
                     background: s.isSelected ? '#8B5CF6' : s.count > 0 ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.05)',
                   }} />
-                <span className="text-[10px]" style={{ color: s.isSelected ? '#8B5CF6' : '#6B7280' }}>
+                <span className="text-xs" style={{ color: s.isSelected ? '#8B5CF6' : '#A8A8C4' }}>
                   {s.label}
                 </span>
               </button>
@@ -153,12 +153,12 @@ export default function Calendar({ onDetail }) {
         </div>
 
         <div className="flex items-center justify-between">
-          <button onClick={prevMonth} className="text-muted px-2 py-1 active:scale-90 transition-transform">‹</button>
+          <button onClick={prevMonth} className="nav-arrow" aria-label={t('cal.previousMonth', 'Mese precedente / Previous month')}>‹</button>
           <h3 className="text-base font-bold text-txt">
             {MESI_FULL[selectedMonth]} {selectedYear}
             <span className="text-xs text-muted font-normal ml-2">{eventiMese.length} {t('cal.eventi')}</span>
           </h3>
-          <button onClick={nextMonth} className="text-muted px-2 py-1 active:scale-90 transition-transform">›</button>
+          <button onClick={nextMonth} className="nav-arrow" aria-label={t('cal.nextMonth', 'Mese successivo / Next month')}>›</button>
         </div>
 
         {eventiMese.length === 0 ? (
@@ -194,7 +194,7 @@ function UpcomingCard({ c, onPress }) {
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-xs font-semibold" style={{ color: cfg.color }}>{label}</p>
-        <p className="text-[10px] text-muted">{c.ora_colloquio || formatDate(c.data_colloquio)}</p>
+        <p className="text-xs text-muted">{c.ora_colloquio || formatDate(c.data_colloquio)}</p>
       </div>
     </button>
   )
@@ -213,7 +213,7 @@ function EventCard({ c, onPress }) {
     <button onClick={onPress}
       className="w-full card flex items-center gap-3 text-left active:scale-[0.98] transition-transform p-3">
       <div className="w-10 flex-shrink-0 flex flex-col items-center">
-        <span className="text-[10px] text-muted uppercase">{dayName}</span>
+        <span className="text-xs text-muted uppercase">{dayName}</span>
         <span className="text-lg font-bold text-txt leading-tight">{day}</span>
       </div>
       <div className="w-px h-8 bg-border flex-shrink-0" />
@@ -224,7 +224,7 @@ function EventCard({ c, onPress }) {
       </div>
       <div className="flex-shrink-0">
         <StatusBadge stato={c.stato} />
-        {c.ora_colloquio && <p className="text-[10px] text-muted text-right mt-0.5">{c.ora_colloquio}</p>}
+        {c.ora_colloquio && <p className="text-xs text-muted text-right mt-0.5">{c.ora_colloquio}</p>}
       </div>
     </button>
   )
