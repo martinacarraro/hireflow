@@ -512,5 +512,27 @@
     "streak3": "Consistent",
     "secondcol": "Finalist",
     "pioneer": "Pioniere"
-  }
+  },
+  "badgeRequirements": {
+    "first": "You added your first application.",
+    "ten": "You added 10 applications.",
+    "twentyfive": "You added 25 applications.",
+    "fifty": "You added 50 applications.",
+    "colloquio1": "You completed your first interview.",
+    "fire": "You completed at least 3 interviews in the same month.",
+    "resilient": "You marked 3 applications as GHOSTED and added other applications.",
+    "offer": "You recorded a job offer.",
+    "assunta": "You recorded getting hired.",
+    "ghosthunter": "You marked 5 applications as GHOSTED.",
+    "writer": "You added notes to 10 applications.",
+    "dates": "You added dates to 5 interviews.",
+    "world": "You recorded applications in at least 3 countries.",
+    "checklist": "You completed an interview checklist.",
+    "hundred": "You added 100 applications.",
+    "speed": "You added 5 applications in one day.",
+    "linked": "You added job posting links to 5 applications.",
+    "streak3": "You added at least one application a week for 3 consecutive weeks.",
+    "secondcol": "You reached the second interview.",
+    "pioneer": "You added your first speculative application."
+}
 }

@@ -29,6 +29,7 @@ export default function Profile() {
   }
 
   const [showNotifs, setShowNotifs] = useState(false)
+  const [selectedBadge, setSelectedBadge] = useState(null)
   const [editNome, setEditNome] = useState(false)
   const [nomeEdit, setNomeEdit] = useState(profile?.nome || '')
   const [showLegacyRecovery, setShowLegacyRecovery] = useState(false)
@@ -302,6 +303,27 @@ export default function Profile() {
           )}
         </div>
 
+        <section className="card" aria-label={isIt ? 'I tuoi badge' : 'Your badges'}>
+          <h2 className="text-sm font-semibold">{isIt ? 'I tuoi badge' : 'Your badges'} <span className="text-muted ml-2">{earned.length}/{BADGES.length}</span></h2>
+          <p className="text-xs text-muted mt-1">{isIt ? 'Tocca un badge per scoprire il traguardo.' : 'Tap a badge to see the achievement.'}</p>
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            {BADGES.map(badge => {
+              const unlocked = earned.includes(badge.id)
+              return <button key={badge.id} type="button" onClick={() => setSelectedBadge(selectedBadge === badge.id ? null : badge.id)} aria-expanded={selectedBadge === badge.id} aria-controls="badge-description" aria-label={`${t(`badges.${badge.id}`)} — ${unlocked ? (isIt ? 'sbloccato' : 'unlocked') : (isIt ? 'da sbloccare' : 'locked')}`} className={`p-2 rounded-xl flex flex-col items-center gap-2 min-h-[72px] border ${selectedBadge === badge.id ? 'border-purple bg-purple/20' : 'border-transparent bg-white/5'}`}>
+                <span aria-hidden="true" className={`w-10 h-10 ${unlocked ? '' : 'opacity-30 grayscale'}`} dangerouslySetInnerHTML={{__html:badge.svg}} />
+                <span className="text-xs font-semibold leading-snug">{unlocked ? t(`badges.${badge.id}`) : (isIt ? 'Da sbloccare' : 'Locked')}</span>
+              </button>
+            })}
+          </div>
+          <div id="badge-description" aria-live="polite">
+            {selectedBadge && <div className="mt-3 p-3 rounded-xl bg-purple/10 border border-purple/20">
+              <p className="font-semibold text-sm">{t(`badges.${selectedBadge}`)}</p>
+              <p className="text-xs text-muted mt-1">{earned.includes(selectedBadge) ? (isIt ? 'Come lo hai guadagnato' : 'How you earned it') : (isIt ? 'Come si sblocca' : 'How to unlock it')}</p>
+              <p className="text-sm mt-2">{t(`badgeRequirements.${selectedBadge}`)}</p>
+            </div>}
+          </div>
+        </section>
+
         <div className="card">
           <label className="flex items-center justify-between gap-3 text-sm font-semibold">
             {isIt?'Avvisi dentro l’app':'In-app reminders'}
@@ -428,42 +450,6 @@ export default function Profile() {
           </a>
         </div>
 
-        <details className="card">
-          <summary className="cursor-pointer text-sm font-semibold text-txt">
-            {isIt ? 'I tuoi badge' : 'Your badges'}
-            <span className="text-xs text-muted ml-2">{earned.length}/{BADGES.length}</span>
-          </summary>
-
-          <div className="grid grid-cols-3 gap-2 mt-3">
-            {BADGES.map((badge) => {
-              const isEarned = earned.includes(badge.id)
-
-              return (
-                <div
-                  key={badge.id}
-                  className={`p-2 rounded-xl text-center flex flex-col items-center ${
-                    isEarned ? 'bg-purple/20' : 'opacity-20'
-                  }`}
-                >
-                  {isEarned ? (
-                    <div
-                      className="w-8 h-8 mb-1"
-                      dangerouslySetInnerHTML={{ __html: badge.svg }}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 mb-1 flex items-center justify-center text-xl font-bold text-muted">
-                      ?
-                    </div>
-                  )}
-
-                  <p className="text-xs font-semibold leading-snug break-words">
-                    {isEarned ? t(`badges.${badge.id}`) : '???'}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </details>
 
         <details className="card">
           <summary className="cursor-pointer text-sm font-semibold text-txt mb-2">📁 {t('profile.import_title')}</summary>

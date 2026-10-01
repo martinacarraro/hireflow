@@ -512,5 +512,27 @@
     "streak3": "Costante",
     "secondcol": "Finalista",
     "pioneer": "Pioniere"
-  }
+  },
+  "badgeRequirements": {
+    "first": "Hai aggiunto la tua prima candidatura.",
+    "ten": "Hai aggiunto 10 candidature.",
+    "twentyfive": "Hai aggiunto 25 candidature.",
+    "fifty": "Hai aggiunto 50 candidature.",
+    "colloquio1": "Hai completato il tuo primo colloquio.",
+    "fire": "Hai completato almeno 3 colloqui nello stesso mese.",
+    "resilient": "Hai segnato 3 candidature come GHOSTED e ne hai aggiunte altre.",
+    "offer": "Hai registrato un’offerta di lavoro.",
+    "assunta": "Hai registrato un’assunzione.",
+    "ghosthunter": "Hai segnato 5 candidature come GHOSTED.",
+    "writer": "Hai aggiunto note a 10 candidature.",
+    "dates": "Hai indicato la data di 5 colloqui.",
+    "world": "Hai registrato candidature in almeno 3 paesi.",
+    "checklist": "Hai completato una checklist per un colloquio.",
+    "hundred": "Hai aggiunto 100 candidature.",
+    "speed": "Hai aggiunto 5 candidature nello stesso giorno.",
+    "linked": "Hai aggiunto il link dell’annuncio a 5 candidature.",
+    "streak3": "Hai aggiunto almeno una candidatura a settimana per 3 settimane consecutive.",
+    "secondcol": "Hai raggiunto il secondo colloquio.",
+    "pioneer": "Hai aggiunto la tua prima candidatura spontanea."
+}
 }
