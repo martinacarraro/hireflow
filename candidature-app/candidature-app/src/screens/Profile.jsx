@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as XLSX from 'xlsx'
 import { useApp } from '../contexts/AppContext'
@@ -309,19 +309,14 @@ export default function Profile() {
           <div className="grid grid-cols-4 gap-2 mt-3">
             {BADGES.map(badge => {
               const unlocked = earned.includes(badge.id)
-              return <button key={badge.id} type="button" onClick={() => setSelectedBadge(selectedBadge === badge.id ? null : badge.id)} aria-expanded={selectedBadge === badge.id} aria-controls="badge-description" aria-label={`${t(`badges.${badge.id}`)} — ${unlocked ? (isIt ? 'sbloccato' : 'unlocked') : (isIt ? 'da sbloccare' : 'locked')}`} className={`p-2 rounded-xl flex flex-col items-center gap-2 min-h-[72px] border ${selectedBadge === badge.id ? 'border-purple bg-purple/20' : 'border-transparent bg-white/5'}`}>
+              return <button key={badge.id} type="button" onClick={() => setSelectedBadge(selectedBadge === badge.id ? null : badge.id)} aria-expanded={selectedBadge === badge.id} aria-haspopup="dialog" aria-label={`${t(`badges.${badge.id}`)} — ${unlocked ? (isIt ? 'sbloccato' : 'unlocked') : (isIt ? 'da sbloccare' : 'locked')}`} className={`p-2 rounded-xl flex flex-col items-center gap-2 min-h-[72px] border ${selectedBadge === badge.id ? 'border-purple bg-purple/20' : 'border-transparent bg-white/5'}`}>
                 <span aria-hidden="true" className={`w-10 h-10 ${unlocked ? '' : 'opacity-30 grayscale'}`} dangerouslySetInnerHTML={{__html:badge.svg}} />
                 <span className="text-xs font-semibold leading-snug">{unlocked ? t(`badges.${badge.id}`) : (isIt ? 'Da sbloccare' : 'Locked')}</span>
               </button>
             })}
           </div>
-          <div id="badge-description" aria-live="polite">
-            {selectedBadge && <div className="mt-3 p-3 rounded-xl bg-purple/10 border border-purple/20">
-              <p className="font-semibold text-sm">{t(`badges.${selectedBadge}`)}</p>
-              <p className="text-xs text-muted mt-1">{earned.includes(selectedBadge) ? (isIt ? 'Come lo hai guadagnato' : 'How you earned it') : (isIt ? 'Come si sblocca' : 'How to unlock it')}</p>
-              <p className="text-sm mt-2">{t(`badgeRequirements.${selectedBadge}`)}</p>
-            </div>}
-          </div>
+          {selectedBadge && <BadgePopup badge={BADGES.find(b => b.id === selectedBadge)} earned={earned.includes(selectedBadge)} isIt={isIt} t={t} onClose={() => setSelectedBadge(null)} />}
+
         </section>
 
         <div className="card">
@@ -514,4 +509,24 @@ export default function Profile() {
       </div>
     </div>
   )
+}
+
+function BadgePopup({ badge, earned, isIt, t, onClose }) {
+  const dialogRef = useRef(null)
+  useEffect(() => {
+    const dialog = dialogRef.current
+    const previousFocus = document.activeElement
+    dialog.showModal()
+    return () => { dialog.close(); previousFocus?.focus() }
+  }, [])
+  return <dialog ref={dialogRef} onCancel={onClose} onClick={e => { if (e.target === e.currentTarget) onClose() }} aria-labelledby="badge-popup-title" aria-describedby="badge-popup-description" className="rounded-3xl border border-border bg-surface text-txt p-0 backdrop:bg-black/70" style={{margin:'auto',width:'calc(100% - 40px)',maxWidth:360,maxHeight:'85dvh'}}>
+    <div className="p-6 text-center relative">
+      <button type="button" onClick={onClose} aria-label={isIt ? 'Chiudi' : 'Close'} className="absolute right-2 top-2 w-11 h-11 text-2xl rounded-full text-muted">×</button>
+      <div aria-hidden="true" className={`w-20 h-20 mx-auto mb-4 ${earned ? '' : 'opacity-40 grayscale'}`} dangerouslySetInnerHTML={{__html:badge.svg}} />
+      <h2 id="badge-popup-title" className="text-xl font-bold">{t(`badges.${badge.id}`)}</h2>
+      <p className="text-sm text-purple-soft mt-2 font-semibold">{earned ? (isIt ? 'Come lo hai guadagnato' : 'How you earned it') : (isIt ? 'Come si sblocca' : 'How to unlock it')}</p>
+      <p id="badge-popup-description" className="text-base mt-3 leading-relaxed">{t(`badgeRequirements.${badge.id}`)}</p>
+      <button type="button" autoFocus onClick={onClose} className="btn-primary w-full mt-6">{isIt ? 'Ho capito' : 'Got it'}</button>
+    </div>
+  </dialog>
 }
