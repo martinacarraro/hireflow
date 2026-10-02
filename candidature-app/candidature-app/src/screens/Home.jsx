@@ -398,10 +398,6 @@ const candidatureFiltrate = useMemo(() => {
               {(!isCollapsed || selectMode) && items.map(c => (
                 <CandidaturaCard
                   key={c.id} c={c}
-                  onStatus={async stato => {
-                    const result = await updateCandidatura(c.id, { stato })
-                    if(stato==='Assunta' && c.stato!=='Assunta' && !c.hire_celebrated) onDetail(result,true)
-                  }}
                   onArchive={() => updateCandidatura(c.id, { archiviata: true })}
                   onKeep={() => updateCandidatura(c.id, { archive_suggestion_dismissed_for: waitingSince(c) })}
                   genere={profile?.genere}
@@ -416,7 +412,6 @@ const candidatureFiltrate = useMemo(() => {
         })}
       </div>
 
-      {!selectMode && <div className="px-4 py-2 flex-shrink-0 border-t border-border bg-surface"><button onClick={onAdd} className="btn-primary w-full py-3">{i18n.language==='en'?'+ Application':'+ Candidatura'}</button></div>}
       <ConfirmDialog
         isOpen={confirmBulkDelete}
         title={t('home.eliminaTitle', { count: selected.size })}
@@ -526,7 +521,7 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onStatus, onArchive, onKeep, onPress, onLongPress, selectMode, isSelected, genere }) {
+function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMode, isSelected, genere }) {
   const [archiveBusy, setArchiveBusy] = useState(false)
   const archiveAction = async action => {
     if (archiveBusy) return
@@ -604,11 +599,7 @@ function CandidaturaCard({ c, onStatus, onArchive, onKeep, onPress, onLongPress,
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <div className="flex-shrink-0">
-              {selectMode ? <StatusBadge stato={c.stato} genere={genere} /> : <div onClick={e=>e.stopPropagation()} onMouseDown={e=>e.stopPropagation()} onTouchStart={e=>e.stopPropagation()}>
-                <select aria-label={`${i18n.language==='en'?'Status':'Stato'} ${c.azienda}`} className="bg-surface border border-border rounded-xl text-xs font-semibold p-2 min-h-[44px] max-w-[145px]" value={c.stato} disabled={archiveBusy} onChange={e=>archiveAction(()=>onStatus(e.target.value))}>
-                  {STATI.filter(state=>state!=='Archiviate').map(state=><option key={state} value={state}>{t('add.stati.'+state,state)}</option>)}
-                </select>
-              </div>}
+              <StatusBadge stato={c.stato} genere={genere} />
             </div>
           </div>
           {upcomingInterviews(c)[0] && <p className="text-xs text-amber mt-1.5">📅 {interviewLabel(upcomingInterviews(c)[0],i18n.language==='en')} · {formatDateTime(upcomingInterviews(c)[0].date,upcomingInterviews(c)[0].time)}</p>}
