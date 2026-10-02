@@ -440,27 +440,23 @@ function HomeHeader({ greet, profile, unread, onBell, selectMode, onSelectMode, 
   return (
     <div className="px-5 pt-safe pt-4 pb-3 flex items-center justify-between flex-shrink-0">
       {selectMode ? (
-        <>
-          <div className="flex items-center gap-3">
-            <button onClick={onExitSelect} className="text-muted text-sm active:scale-90">✕ {t('home.annulla')}</button>
-            <span className="text-sm font-semibold text-txt">{selectedCount} {t('home.selezionate')}</span>
+        <div className="w-full min-w-0 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={onExitSelect} className="min-h-[44px] text-sm text-muted whitespace-nowrap">✕ {t('home.annulla')}</button>
+            <span className="text-sm font-semibold text-txt text-center">{selectedCount} {t('home.selezionate')}</span>
+            <button onClick={onSelectAll} className="min-h-[44px] text-sm text-purple-soft font-semibold whitespace-nowrap">{t('home.tutte')}</button>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={onSelectAll} className="text-xs text-purple-soft font-medium">{t('home.tutte')}</button>
-            <button onClick={onArchiveSelected}
-              disabled={selectedCount === 0}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
-                ${selectedCount > 0 ? 'bg-surface border border-border text-muted active:scale-95' : 'bg-border text-muted'}`}>
-              📦 {t('home.archivia')} ({selectedCount})
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={onArchiveSelected} disabled={selectedCount === 0}
+              className="min-h-[48px] w-full flex items-center justify-center gap-2 px-3 py-3 rounded-2xl border border-border bg-surface text-txt text-sm font-semibold disabled:opacity-40 active:scale-95">
+              <span aria-hidden="true">📦</span><span>{t('home.archivia')}</span>
             </button>
-            <button onClick={onDeleteSelected}
-              disabled={selectedCount === 0}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all
-                ${selectedCount > 0 ? 'bg-red text-white active:scale-95' : 'bg-border text-muted'}`}>
-              🗑️ ({selectedCount})
+            <button onClick={onDeleteSelected} disabled={selectedCount === 0}
+              className="min-h-[48px] w-full flex items-center justify-center gap-2 px-3 py-3 rounded-2xl border border-transparent bg-red text-white text-sm font-semibold disabled:opacity-40 active:scale-95">
+              <span aria-hidden="true">🗑️</span><span>{i18n.language === 'en' ? 'Delete' : 'Elimina'}</span>
             </button>
           </div>
-        </>
+        </div>
       ) : (
         <>
           <div>
