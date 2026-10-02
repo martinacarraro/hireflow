@@ -1,14 +1,15 @@
 import { hiredLabel } from '../lib/utils'
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { averageWaitingDays, flowStats, hasResponse, waitingSince, elapsedDays, CLOSED } from '../lib/applicationFlow'
-import { STATUS_CONFIG, daysSince } from '../lib/utils'
+import { averageWaitingDays, flowStats, hasResponse, waitingSince, elapsedDays, countedInterviews, upcomingInterviews, hasOffer } from '../lib/applicationFlow'
+import { STATUS_CONFIG } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
 export default function Stats({ onOpenCandidatura }) {
   const { profile, candidature = [], unreadCount, notifications, markAllNotificationsRead } = useApp()
   const { t, i18n } = useTranslation()
   const en = i18n.language === 'en'
+  const [selectedCount, setSelectedCount] = useState(null)
   const [showNotifs, setShowNotifs] = useState(false)
   const [expandedAzienda, setExpandedAzienda] = useState(null)
 
@@ -56,13 +57,52 @@ export default function Stats({ onOpenCandidatura }) {
   }, [candidature])
 
   const kpis = [
-    { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total, color: '#60A5FA' },
-    { emoji: '🎙️', label: en?'Completed interviews':'Colloqui svolti', value: stats.colloqui, color: '#34D399' },
-    { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`, color: '#8B5CF6' },
-    { emoji: '⏱️', label: en?'Average current wait':'Attesa media attuale', value: stats.avgAttesa === null ? '—' : `${stats.avgAttesa} ${en?'days':'gg'}`, color: '#FBBF24' },
-    { emoji: '📅', label: en?'Scheduled meetings':'Incontri programmati', value:stats.programmati,color:'#34D399' },
-    { emoji: '🏆', label: en?'Offers received':'Offerte ricevute', value:stats.offerte,color:'#FFD700' },
+    { id: 'total', emoji: '📤', label: t('stats.totaleInviate'), value: stats.total, color: '#60A5FA' },
+    { id: 'interviews', emoji: '🎙️', label: en?'Completed interviews':'Colloqui svolti', value: stats.colloqui, color: '#34D399' },
+    { id: 'responses', emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`, color: '#8B5CF6' },
+    { id: 'waiting', emoji: '⏱️', label: en?'Average current wait':'Attesa media attuale', value: stats.avgAttesa === null ? '—' : `${stats.avgAttesa} ${en?'days':'gg'}`, color: '#FBBF24' },
+    { id: 'scheduled', emoji: '📅', label: en?'Scheduled meetings':'Incontri programmati', value:stats.programmati,color:'#34D399' },
+    { id: 'offers', emoji: '🏆', label: en?'Offers received':'Offerte ricevute', value:stats.offerte,color:'#FFD700' },
   ]
+
+  if (selectedCount) {
+    const selected = kpis.find(k => k.id === selectedCount)
+    const rows = candidature.map(c => {
+      let detail = ''
+      let included = true
+      if (selectedCount === 'interviews' || selectedCount === 'scheduled') {
+        const count = selectedCount === 'interviews' ? countedInterviews(c).length : upcomingInterviews(c, new Date(), 36500).length
+        included = count > 0
+        detail = `${count} ${en ? 'interview(s)' : 'colloqui'}`
+      } else if (selectedCount === 'responses') included = hasResponse(c)
+      else if (selectedCount === 'offers') included = hasOffer(c)
+      else if (selectedCount === 'waiting') {
+        const days = averageWaitingDays([c])
+        included = days !== null
+        detail = `${days} ${en ? 'days' : 'gg'}`
+      } else if (selectedCount.startsWith('state:')) included = c.stato === selectedCount.slice(6)
+      return included ? { c, detail } : null
+    }).filter(Boolean)
+    const title = selected?.label || t('add.stati.' + selectedCount.slice(6), selectedCount.slice(6))
+    return <div className="screen">
+      <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border">
+        <button className="nav-arrow" onClick={() => setSelectedCount(null)} aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
+        <div><h2 className="font-bold text-txt">{title}</h2>
+          <p className="text-sm text-muted">{selectedCount === 'responses' ? `${rows.length} / ${stats.total} · ${selected.value}` : `${rows.length} ${en ? 'applications' : 'candidature'}`}</p>
+        </div>
+      </div>
+      <div className="flex-1 scrollable px-4 py-4 space-y-3">
+        {rows.length === 0 && <p className="text-center text-muted py-12">{en ? 'No applications counted.' : 'Nessuna candidatura conteggiata.'}</p>}
+        {rows.map(({c, detail}) => <button key={c.id} onClick={() => onOpenCandidatura(c)} className="card w-full text-left flex items-center gap-3 min-h-[64px]">
+          <div className="flex-1 min-w-0"><p className="font-bold text-txt break-words">{c.azienda}</p><p className="text-sm text-muted break-words">{c.ruolo}</p>
+            {c.archiviata && <span className="text-xs text-muted">{en ? 'Archived' : 'Archiviata'}</span>}
+          </div>
+          {detail && <span className="text-sm text-purple-soft shrink-0">{detail}</span>}
+          <span aria-hidden="true" className="text-xl">›</span>
+        </button>)}
+      </div>
+    </div>
+  }
 
   // Gestione Notifiche (Invariata)
   if (showNotifs) return (
@@ -109,15 +149,14 @@ export default function Stats({ onOpenCandidatura }) {
             {/* KPI GRID */}
             <div className="grid grid-cols-2 gap-3">
               {kpis.map(k => (
-                <div key={k.label} className="card flex flex-col items-center text-center gap-2">
+                <button key={k.id} onClick={() => setSelectedCount(k.id)} className="card flex flex-col items-center text-center gap-2 active:scale-95 transition-transform" aria-label={`${k.label}: ${k.value}. ${en ? 'View applications' : 'Vedi candidature'}`}>
                   <span aria-hidden="true" className="h-9 w-9 flex items-center justify-center text-2xl leading-none">{k.emoji}</span>
                   <span className="text-2xl font-bold leading-none tabular-nums" style={{ color: k.color }}>{k.value}</span>
                   <span className="text-xs text-muted leading-snug">{k.label}</span>
-                </div>
+                </button>
               ))}
             </div>
 
-            <p className="text-xs text-muted">{en?'Response rate counts recorded replies, including rejections. Average wait covers sent, viewed and awaiting-response applications, from the latest contact or submission. Interviews count as held when marked completed or dated before today, unless cancelled.':'Il tasso considera le risposte registrate, inclusi i rifiuti. L’attesa media considera inviate, viste e in attesa risposta, dall’ultimo contatto o dall’invio. Contiamo i colloqui segnati come svolti e quelli con data precedente a oggi, esclusi gli annullati.'}</p>
             {/* DISTRIBUZIONE */}
             <div className="card">
               <p className="section-label">{t('stats.distribuzione')}</p>
@@ -126,7 +165,7 @@ export default function Stats({ onOpenCandidatura }) {
                   const cfg = STATUS_CONFIG[item.stato] || { color: '#8B5CF6', emoji: '📝' }
                   const pct = Math.round((item.count / stats.total) * 100)
                   return (
-                    <div key={item.stato}>
+                    <button className="block w-full text-left min-h-[44px]" key={item.stato} onClick={() => setSelectedCount(`state:${item.stato}`)}>
                       <div className="flex justify-between text-xs mb-1">
                         <span style={{ color: cfg.color }}>{cfg.emoji} {item.stato==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+item.stato,item.stato)}</span>
                         <span className="text-muted">{item.count} ({pct}%)</span>
@@ -134,7 +173,7 @@ export default function Stats({ onOpenCandidatura }) {
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
                         <div className="h-full transition-all" style={{ width: `${pct}%`, background: cfg.color }} />
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
