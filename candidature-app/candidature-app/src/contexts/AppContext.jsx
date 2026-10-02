@@ -8,6 +8,7 @@ const AppContext = createContext(null)
 const CANDIDATURE_KEY = 'lfs_candidature'
 const PROFILE_KEY = 'lfs_profile'
 const NOTIFICATIONS_KEY = 'lfs_notifications'
+const MIGRATION_ERROR_DISMISSED_KEY = 'lfs_migration_error_dismissed_v1'
 function readLocalJson(key, legacy, fallback) {
   try { const raw = localStorage.getItem(key) ?? (legacy ? localStorage.getItem(legacy) : null); return raw ? JSON.parse(raw) : fallback } catch { return fallback }
 }
@@ -63,7 +64,7 @@ export function AppProvider({ children }) {
         try {
           const migrated=await migrateStoredLegacySession(list,prof)
           if(migrated){list=migrated.candidature;prof=migrated.profile;if(active)setMigrationNotice({type:'success',...migrated})}
-        } catch { if(active)setMigrationNotice({type:'error'}) }
+        } catch { if(active && localStorage.getItem(MIGRATION_ERROR_DISMISSED_KEY)!=='1')setMigrationNotice({type:'error'}) }
         if(!active)return
         const today=localDay()
         if(prof.ultimo_accesso!==today) prof={...prof,ultimo_accesso:today,streak_giorni:elapsedDays(prof.ultimo_accesso)===1?(prof.streak_giorni || 0)+1:1}
@@ -194,11 +195,18 @@ export function AppProvider({ children }) {
     commit(migrated.candidature,withBadges(migrated.candidature,migrated.profile))
     setMigrationNotice({type:'success',...migrated});return migrated
   }
+  const dismissMigrationNotice=()=>{
+    if(migrationNotice?.type==='error') {
+      try { localStorage.setItem(MIGRATION_ERROR_DISMISSED_KEY,'1') }
+      catch { showToast(en()?'Could not remember this choice on this device.':'Impossibile memorizzare questa scelta sul dispositivo.','error') }
+    }
+    setMigrationNotice(null)
+  }
   return <AppContext.Provider value={{
     candidature,profile,notifications,toast,confetti,loading,loadError,migrationNotice,unreadCount:notifications.filter(n=>!n.read).length,
     addCandidatura,updateCandidatura,deleteCandidatura,addBulkCandidature,getChecklist,toggleChecklistItem,
     addXP,removeXP,updateProfile,computeStats,checkBadges,triggerConfetti,showToast,markOnboarded,
-    pushNotification,recoverLegacyData,markAllNotificationsRead,dismissMigrationNotice:()=>setMigrationNotice(null),
+    pushNotification,recoverLegacyData,markAllNotificationsRead,dismissMigrationNotice,
   }}>{children}</AppContext.Provider>
 }
 export const useApp=()=>useContext(AppContext)
