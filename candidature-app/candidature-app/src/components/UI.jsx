@@ -168,7 +168,8 @@ export function Toast({ toast }) {
       bg-raised border rounded-full px-5 py-2.5 text-sm font-medium
       shadow-glow-lg animate-pop whitespace-nowrap max-w-xs text-center
       ${colors[toast.type] || colors.success}`}>
-      {toast.message}
+      <span role="status">{toast.message}</span>
+      {toast.action && <button className="ml-3 underline font-bold min-h-[44px]" onClick={async e=>{const button=e.currentTarget;button.disabled=true;try{await toast.action.run()}catch{button.disabled=false}}}>{toast.action.label}</button>}
     </div>
   )
 }

@@ -102,15 +102,15 @@ export default function App() {
     </Suspense>
   )
 
-  if (view?.type === 'detail') return <Suspense fallback={null}><DetailView key={view.data.id} candidatura={view.data} celebrateOnOpen={view.celebrate} onBack={() => setView(null)} restoreScroll={true} /></Suspense>
+  if (view?.type === 'detail') return <Suspense fallback={null}><DetailView key={view.data.id} candidatura={view.data} celebrateOnOpen={view.celebrate} onBack={() => setView(null)} restoreScroll={true} /><Toast toast={toast} /></Suspense>
   if (view?.type === 'add') return <Suspense fallback={null}><AddCandidatura onBack={() => setView(null)} onDone={row => setView(row?.stato==='Assunta'?{type:'detail',data:row,celebrate:true}:null)} /></Suspense>
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden flex flex-col animate-fade-in">
-        {tab === 'home' && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c) => setView({ type: 'detail', data: c })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
+        {tab === 'home' && <Home onAdd={() => setView({ type: 'add' })} onDetail={(c, celebrate=false) => setView({ type: 'detail', data: c, celebrate })} scrollPos={homeScrollPos} onScrollChange={setHomeScrollPos} scrollToTop={scrollToTopTrigger} />}
         <Suspense fallback={null}>
-          {tab === 'calendar' && <Calendar onDetail={(c) => setView({ type: 'detail', data: c })} />}
+          {tab === 'calendar' && <Calendar onDetail={(c, celebrate=false) => setView({ type: 'detail', data: c, celebrate })} />}
           {tab === 'stats' && <Stats onOpenCandidatura={(cand) => setView({ type: 'detail', data: cand })} />}
           {tab === 'profile' && <Profile />}
         </Suspense>

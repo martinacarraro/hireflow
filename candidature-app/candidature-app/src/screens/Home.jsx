@@ -19,7 +19,7 @@ function isUpcoming(candidatura) { return plannedInterviews(candidatura).length 
 function isWaiting(candidatura) { return !candidatura.archiviata && candidatura.stato === 'In attesa risposta' }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
-  const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
+  const { candidature, profile, showToast, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
   const { t, i18n } = useTranslation()
 
   // --- AGGIUNGI QUESTA RIGA ---
@@ -27,6 +27,14 @@ export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, s
   const candidatureAttive = candidature.filter(c => !c.archiviata)
   // ----------------------------
 
+  const nextMeeting = candidature.flatMap(c => plannedInterviews(c).map(event => ({c,event}))).sort((a,b) => `${a.event.date}${a.event.time || '23:59'}`.localeCompare(`${b.event.date}${b.event.time || '23:59'}`))[0]
+  const meetingDateLabel = event => {
+    const date = new Date(event.date+'T12:00:00')
+    const today = new Date(); today.setHours(12,0,0,0)
+    const days = Math.round((date-today)/86400000)
+    const label = days===0 ? (i18n.language==='en'?'Today':'Oggi') : days===1 ? (i18n.language==='en'?'Tomorrow':'Domani') : date.toLocaleDateString(i18n.language==='en'?'en-GB':'it-IT',{weekday:'short',day:'numeric',month:'short'})
+    return label + (event.time ? ` · ${event.time}` : '')
+  }
   const nome = profile?.nome || ''
   const scrollRef = useRef(null)
 
@@ -187,12 +195,17 @@ const candidatureFiltrate = useMemo(() => {
   const [confirmBulkArchive, setConfirmBulkArchive] = useState(false)
 
   const handleBulkArchive = async () => {
+  const archivedIds = [...selected].filter(id => !candidature.find(c=>c.id===id)?.archiviata)
   for (const id of selected) {
     await updateCandidatura(id, { archiviata: true }); // CAMBIA SOLO IL BOOLEAN
   }
   setSelected(new Set());
   setSelectMode(false);
   setConfirmBulkArchive(false);
+  showToast(i18n.language==='en'?'Applications archived':'Candidature archiviate','success',{
+    label:i18n.language==='en'?'Undo':'Annulla',
+    run:async()=>{for(const id of archivedIds)await updateCandidatura(id,{archiviata:false})}
+  });
 }
 
   const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()) }
@@ -298,6 +311,11 @@ const candidatureFiltrate = useMemo(() => {
           </div>
         )}
 
+        {!selectMode && nextMeeting && <button onClick={()=>onDetail(nextMeeting.c)} className="card w-full text-left mb-4 border border-purple/40">
+          <p className="text-xs font-semibold text-purple-soft">{i18n.language==='en'?'Next interview':'Prossimo colloquio'}</p>
+          <p className="font-bold text-lg mt-1">{meetingDateLabel(nextMeeting.event)}</p>
+          <p className="text-sm mt-1">{nextMeeting.c.azienda} · {nextMeeting.c.ruolo} →</p>
+        </button>}
         {!selectMode && (
           <div className="grid grid-cols-4 gap-2 mb-4">
             {dashboardStats.map(item => (
@@ -345,6 +363,10 @@ const candidatureFiltrate = useMemo(() => {
 
 
 
+        {(filtroStato || searchQuery) && <div className="flex items-center justify-between gap-3 rounded-xl bg-purple/15 border border-purple/40 p-3 mb-3">
+          <p className="text-sm font-semibold">{searchQuery ? `“${searchQuery}” · ` : ''}{dashboardStats.find(item=>item.filter===filtroStato)?.[i18n.language==='en'?'en':'it'] || (filtroStato ? t('add.stati.'+filtroStato,filtroStato) : (i18n.language==='en'?'Search':'Ricerca'))} · {candidatureFiltrate.length}</p>
+          <button className="text-sm font-bold text-purple-soft min-h-[44px]" onClick={()=>{setFiltroStato(null);setSearchQuery('')}}>{i18n.language==='en'?'Show all':'Mostra tutte'}</button>
+        </div>}
         {candidatureFiltrate.length === 0 && <div className="card text-center py-8">
           <p className="text-sm text-muted mb-3">{i18n.language === 'en' ? 'No applications match these filters.' : 'Nessuna candidatura corrisponde a questi filtri.'}</p>
           <button className="text-purple-soft font-semibold text-sm" onClick={() => { setFiltroStato(null); setSearchQuery('') }}>{i18n.language === 'en' ? 'Show all applications' : 'Mostra tutte le candidature'}</button>
@@ -376,6 +398,10 @@ const candidatureFiltrate = useMemo(() => {
               {(!isCollapsed || selectMode) && items.map(c => (
                 <CandidaturaCard
                   key={c.id} c={c}
+                  onStatus={async stato => {
+                    const result = await updateCandidatura(c.id, { stato })
+                    if(stato==='Assunta' && c.stato!=='Assunta' && !c.hire_celebrated) onDetail(result,true)
+                  }}
                   onArchive={() => updateCandidatura(c.id, { archiviata: true })}
                   onKeep={() => updateCandidatura(c.id, { archive_suggestion_dismissed_for: waitingSince(c) })}
                   genere={profile?.genere}
@@ -390,6 +416,7 @@ const candidatureFiltrate = useMemo(() => {
         })}
       </div>
 
+      {!selectMode && <div className="px-4 py-2 flex-shrink-0 border-t border-border bg-surface"><button onClick={onAdd} className="btn-primary w-full py-3">{i18n.language==='en'?'+ Application':'+ Candidatura'}</button></div>}
       <ConfirmDialog
         isOpen={confirmBulkDelete}
         title={t('home.eliminaTitle', { count: selected.size })}
@@ -499,7 +526,7 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMode, isSelected, genere }) {
+function CandidaturaCard({ c, onStatus, onArchive, onKeep, onPress, onLongPress, selectMode, isSelected, genere }) {
   const [archiveBusy, setArchiveBusy] = useState(false)
   const archiveAction = async action => {
     if (archiveBusy) return
@@ -577,7 +604,11 @@ function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMod
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
             <div className="flex-shrink-0">
-              <StatusBadge stato={c.stato} genere={genere} />
+              {selectMode ? <StatusBadge stato={c.stato} genere={genere} /> : <div onClick={e=>e.stopPropagation()} onMouseDown={e=>e.stopPropagation()} onTouchStart={e=>e.stopPropagation()}>
+                <select aria-label={`${i18n.language==='en'?'Status':'Stato'} ${c.azienda}`} className="bg-surface border border-border rounded-xl text-xs font-semibold p-2 min-h-[44px] max-w-[145px]" value={c.stato} disabled={archiveBusy} onChange={e=>archiveAction(()=>onStatus(e.target.value))}>
+                  {STATI.filter(state=>state!=='Archiviate').map(state=><option key={state} value={state}>{t('add.stati.'+state,state)}</option>)}
+                </select>
+              </div>}
             </div>
           </div>
           {upcomingInterviews(c)[0] && <p className="text-xs text-amber mt-1.5">📅 {interviewLabel(upcomingInterviews(c)[0],i18n.language==='en')} · {formatDateTime(upcomingInterviews(c)[0].date,upcomingInterviews(c)[0].time)}</p>}

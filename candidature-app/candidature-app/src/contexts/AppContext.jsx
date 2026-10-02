@@ -35,9 +35,9 @@ export function AppProvider({ children }) {
   const [migrationNotice,setMigrationNotice] = useState(null)
   const dataRef = useRef(candidature), profileRef = useRef(profile), notifRef = useRef(notifications)
   const en = () => i18n.language === 'en'
-  const showToast = (message,type='success') => {
-    const id = Date.now(); setToast({message,type,id})
-    setTimeout(() => setToast(t => t?.id === id ? null : t),3000)
+  const showToast = (message,type='success',action=null) => {
+    const id = Date.now(); setToast({message,type,id,action})
+    setTimeout(() => setToast(t => t?.id === id ? null : t),action ? 8000 : 3000)
   }
   const triggerConfetti = () => { setConfetti(true); setTimeout(()=>setConfetti(false),2000) }
   const commit = (list,prof,extra={}) => {
@@ -113,6 +113,12 @@ export function AppProvider({ children }) {
     const reward=rewards(row,prev);row=reward.row
     const list=dataRef.current.map(c=>c.id===id?row:c)
     commit(list,withBadges(list,{...profileRef.current,xp_points:(profileRef.current?.xp_points || 0)+reward.amount}))
+    if (updates.archiviata === true && !prev.archiviata) {
+      showToast(en()?'Application archived':'Candidatura archiviata','success',{
+        label:en()?'Undo':'Annulla',
+        run:async()=>{await updateCandidatura(id,{archiviata:false})}
+      })
+    } else showToast(en()?'Changes saved ✓':'Modifiche salvate ✓')
     return row
   }
   const deleteCandidatura=async(id)=>{

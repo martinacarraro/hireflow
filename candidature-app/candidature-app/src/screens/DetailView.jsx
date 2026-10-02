@@ -178,7 +178,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
             {form.offerta_note && <p className="text-sm text-muted whitespace-pre-wrap">{form.offerta_note}</p>}
           </div>}
           {legacy.length>0 && <details><summary>{en?'Previously saved information':'Informazioni già salvate'}</summary><dl className="pt-2 space-y-2">{legacy.map(([label,value])=><div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="text-sm whitespace-pre-wrap">{value}</dd></div>)}</dl></details>}
-          <button className="text-sm text-muted py-2" disabled={saving} onClick={()=>save({archiviata:!form.archiviata})}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
+          <button className="text-sm text-muted py-2" disabled={saving} onClick={async()=>{if(await save({archiviata:!form.archiviata}))onBack()}}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
           <button className="block text-sm text-red py-2" onClick={()=>setConfirmDelete(true)}>{en?'Delete application':'Elimina candidatura'}</button>
         </div>
       </details>
