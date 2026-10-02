@@ -2,28 +2,21 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
-import { CLOSED, upcomingInterviews, needsFollowUp as flowFollowUp, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays } from '../lib/applicationFlow'
+import { CLOSED, upcomingInterviews, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays } from '../lib/applicationFlow'
 import { useTranslation } from 'react-i18next'
 
 const DASHBOARD_FILTERS = {
   ACTIVE: '__active__',
   UPCOMING: '__upcoming__',
-  FOLLOW_UP: '__follow_up__',
+  WAITING: '__waiting__',
   HIRED: '__hired__',
 }
 
 const CLOSED_STATUSES = CLOSED
 
-function getDashboardDates() {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const inSevenDays = new Date(today)
-  inSevenDays.setDate(today.getDate() + 7)
-  return { today, inSevenDays }
-}
-
-function isUpcoming(candidatura) { return upcomingInterviews(candidatura,new Date(),7).length>0 }
-function needsFollowUp(candidatura) { return flowFollowUp(candidatura) }
+function plannedInterviews(candidatura) { return upcomingInterviews(candidatura, new Date(), 36500) }
+function isUpcoming(candidatura) { return plannedInterviews(candidatura).length > 0 }
+function isWaiting(candidatura) { return !candidatura.archiviata && candidatura.stato === 'In attesa risposta' }
 
 export default function Home({ onAdd, onDetail, scrollPos = 0, onScrollChange, scrollToTop = 0 }) {
   const { candidature, profile, unreadCount, notifications, markAllNotificationsRead, deleteCandidatura, updateCandidatura, addCandidatura } = useApp()
@@ -89,15 +82,14 @@ const stats = useMemo(() => [
 .filter(s => s.count > 0), [candidature, t]);
 
   const dashboardStats = useMemo(() => {
-    const { today, inSevenDays } = getDashboardDates()
     const active = candidature.filter(c => !c.archiviata && !CLOSED_STATUSES.has(c.stato)).length
-    const upcoming = candidature.filter(c => isUpcoming(c, today, inSevenDays)).length
-    const followUps = candidature.filter(c => needsFollowUp(c, today)).length
+    const upcoming = candidature.reduce((total, c) => total + plannedInterviews(c).length, 0)
+    const waiting = candidature.filter(isWaiting).length
     const hired = candidature.filter(c => c.stato === 'Assunta').length
     return [
       { emoji: '🚀', value: active, it: 'Attive', en: 'Active', filter: DASHBOARD_FILTERS.ACTIVE },
-      { emoji: '🎙️', value: upcoming, it: 'Prossimi 7 gg', en: 'Next 7 days', filter: DASHBOARD_FILTERS.UPCOMING },
-      { emoji: '📞', value: followUps, it: 'Da ricontattare', en: 'Follow up', filter: DASHBOARD_FILTERS.FOLLOW_UP },
+      { emoji: '🎙️', value: upcoming, it: 'Colloqui pianificati', en: 'Scheduled interviews', filter: DASHBOARD_FILTERS.UPCOMING },
+      { emoji: '⏳', value: waiting, it: 'In attesa', en: 'Awaiting reply', filter: DASHBOARD_FILTERS.WAITING },
       { emoji: '🏆', value: hired, it: 'Successi', en: 'Successes', filter: DASHBOARD_FILTERS.HIRED },
     ]
   }, [candidature])
@@ -109,12 +101,10 @@ const candidatureFiltrate = useMemo(() => {
       list = list.filter(c => !c.archiviata && !CLOSED_STATUSES.has(c.stato))
     }
     else if (filtroStato === DASHBOARD_FILTERS.UPCOMING) {
-      const { today, inSevenDays } = getDashboardDates()
-      list = list.filter(c => isUpcoming(c, today, inSevenDays))
+      list = list.filter(isUpcoming)
     }
-    else if (filtroStato === DASHBOARD_FILTERS.FOLLOW_UP) {
-      const { today } = getDashboardDates()
-      list = list.filter(c => needsFollowUp(c, today))
+    else if (filtroStato === DASHBOARD_FILTERS.WAITING) {
+      list = list.filter(isWaiting)
     }
     else if (filtroStato === DASHBOARD_FILTERS.HIRED) {
       list = list.filter(c => c.stato === 'Assunta')
