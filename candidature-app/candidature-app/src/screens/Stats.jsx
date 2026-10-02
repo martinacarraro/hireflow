@@ -1,7 +1,7 @@
 import { hiredLabel } from '../lib/utils'
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { flowStats, hasResponse, waitingSince, elapsedDays, CLOSED } from '../lib/applicationFlow'
+import { averageWaitingDays, flowStats, hasResponse, waitingSince, elapsedDays, CLOSED } from '../lib/applicationFlow'
 import { STATUS_CONFIG, daysSince } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
@@ -24,8 +24,7 @@ export default function Stats({ onOpenCandidatura }) {
     const ghosted = summary.ghosted
     const offerte = summary.offerte
     const tasso = total ? Math.round(summary.risposte / total * 100) : 0
-    const inAttesa = candidature.filter(c => c.stato==='In attesa risposta' && !c.archiviata && waitingSince(c))
-    const avgAttesa = inAttesa.length ? Math.round(inAttesa.reduce((n,c)=>n+elapsedDays(waitingSince(c)),0)/inAttesa.length) : 0
+    const avgAttesa = averageWaitingDays(candidature)
 
     // Distribuzione (Mostriamo solo gli stati REALI, non la cartella 'Archiviate')
     const STATI_ORDER = ['Inviata', 'Spontanea', 'Vista', 'Prima call', 'Colloquio', 'Secondo colloquio', 'In attesa risposta', 'Rifiutata', 'Non mi piace', 'GHOSTED', 'Offerta ricevuta', 'Offerta rifiutata', 'Assunta']
@@ -58,9 +57,9 @@ export default function Stats({ onOpenCandidatura }) {
 
   const kpis = [
     { emoji: '📤', label: t('stats.totaleInviate'), value: stats.total, color: '#60A5FA' },
-    { emoji: '🎙️', label: en?'Completed meetings':'Incontri svolti', value: stats.colloqui, color: '#34D399' },
+    { emoji: '🎙️', label: en?'Completed interviews':'Colloqui svolti', value: stats.colloqui, color: '#34D399' },
     { emoji: '📈', label: t('stats.tassoRisposta'), value: `${stats.tasso}%`, color: '#8B5CF6' },
-    { emoji: '⏱️', label: en?'Average current wait':'Attesa media attuale', value: `${stats.avgAttesa} ${en?'days':'gg'}`, color: '#FBBF24' },
+    { emoji: '⏱️', label: en?'Average current wait':'Attesa media attuale', value: stats.avgAttesa === null ? '—' : `${stats.avgAttesa} ${en?'days':'gg'}`, color: '#FBBF24' },
     { emoji: '📅', label: en?'Scheduled meetings':'Incontri programmati', value:stats.programmati,color:'#34D399' },
     { emoji: '🏆', label: en?'Offers received':'Offerte ricevute', value:stats.offerte,color:'#FFD700' },
   ]
@@ -118,7 +117,7 @@ export default function Stats({ onOpenCandidatura }) {
               ))}
             </div>
 
-            <p className="text-xs text-muted">{en?'Response rate counts recorded replies, including rejections. Completed meetings count only those marked as completed.':'Il tasso considera le risposte registrate, inclusi i rifiuti. Gli incontri svolti sono solo quelli segnati come svolti.'}</p>
+            <p className="text-xs text-muted">{en?'Response rate counts recorded replies, including rejections. Average wait covers sent, viewed and awaiting-response applications, from the latest contact or submission. Interviews count as held when marked completed or dated before today, unless cancelled.':'Il tasso considera le risposte registrate, inclusi i rifiuti. L’attesa media considera inviate, viste e in attesa risposta, dall’ultimo contatto o dall’invio. Contiamo i colloqui segnati come svolti e quelli con data precedente a oggi, esclusi gli annullati.'}</p>
             {/* DISTRIBUZIONE */}
             <div className="card">
               <p className="section-label">{t('stats.distribuzione')}</p>

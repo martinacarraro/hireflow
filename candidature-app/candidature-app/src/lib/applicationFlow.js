@@ -50,7 +50,7 @@ export function hasResponse(c) {
     getInterviews(c).some(e => e.date || e.status === 'completed') || !!c.ultimo_contatto
 }
 export function waitingSince(c) {
-  const dates = [c.attesa_dal, c.ultimo_contatto, ...getInterviews(c).filter(e => e.status === 'completed').map(e => e.date)].filter(Boolean)
+  const dates = [c.attesa_dal, c.ultimo_contatto, ...countedInterviews(c).map(e => e.date)].filter(Boolean)
   return dates.sort().at(-1) || c.data_invio
 }
 export function upcomingInterviews(c, now = new Date(), days = 30) {
@@ -136,10 +136,29 @@ export function duplicateApplication(c, now = new Date()) {
   const keys = ['azienda','ruolo','sede','paese','link_annuncio','fonte','tipo_candidatura','stipendio_min','stipendio_max','priorita','orario_lavoro','tipo_contratto','modalita_lavoro','livello_ruolo','welfare','welfare_note']
   return { ...Object.fromEntries(keys.filter(k => c[k] !== undefined).map(k => [k,c[k]])), stato:'Inviata', data_invio:localDay(now), interviews:[], archiviata:false, notifiche_push:true }
 }
-export function flowStats(list) {
-  return { total:list.length, colloqui:list.reduce((n,c) => n + getInterviews(c).filter(e => e.status === 'completed').length,0),
-    colloquiThisMonth:list.reduce((n,c) => n + getInterviews(c).filter(e => e.status === 'completed' && e.date?.slice(0,7) === localDay().slice(0,7)).length,0),
-    programmati:list.reduce((n,c) => n + upcomingInterviews(c, new Date(),36500).length,0),
+// Past scheduled dates count as held unless explicitly cancelled. This also
+// covers legacy dates without changing their saved status or guessing stages.
+export function countedInterviews(c, now = new Date()) {
+  return getInterviews(c).filter(e => {
+    if (e.status === 'cancelled') return false
+    if (e.date && e.date > localDay(now)) return false
+    if (e.status === 'completed') return true
+    return e.status === 'scheduled' && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '')
+      && localDay(parseDay(e.date)) === e.date && e.date < localDay(now)
+  })
+}
+export function averageWaitingDays(list, now = new Date()) {
+  const days = list.filter(c => !c.archiviata &&
+    ['Inviata', 'Spontanea', 'Vista', 'In attesa risposta'].includes(c.stato))
+    .map(c => waitingSince(c))
+    .filter(date => date && !Number.isNaN(parseDay(date).getTime()) && date.slice(0,10) <= localDay(now))
+    .map(date => elapsedDays(date, now))
+  return days.length ? Math.round(days.reduce((sum, day) => sum + day, 0) / days.length) : null
+}
+export function flowStats(list, now = new Date()) {
+  return { total:list.length, colloqui:list.reduce((n,c) => n + countedInterviews(c, now).length,0),
+    colloquiThisMonth:list.reduce((n,c) => n + countedInterviews(c, now).filter(e => e.date?.slice(0,7) === localDay(now).slice(0,7)).length,0),
+    programmati:list.reduce((n,c) => n + upcomingInterviews(c, now,36500).length,0),
     risposte:list.filter(hasResponse).length, offerte:list.filter(hasOffer).length,
     ghosted:list.filter(c => c.stato === 'GHOSTED').length }
 }

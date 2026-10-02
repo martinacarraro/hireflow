@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
+import { averageWaitingDays, getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
 import { calendarFile } from './calendarExport.js'
 
 const now = new Date('2026-10-01T10:00:00')
@@ -83,4 +83,29 @@ test('archive suggestion respects 90 days, recent contacts, future meetings and 
   assert.equal(shouldSuggestArchive({...old,stato:'Assunta'}, now), false)
   assert.equal(shouldSuggestArchive({...old,interviews:[meeting(1,'2026-11-01')]}, now), false)
   assert.equal(shouldSuggestArchive({...old,archive_suggestion_dismissed_for:old.data_invio}, now), false)
+})
+
+
+test('statistics include old past dates without double counting mirrored fields', () => {
+  const old = {...base, data_colloquio:'2026-09-10', data_secondo_colloquio:'2026-09-20'}
+  assert.equal(flowStats([old], now).colloqui, 2)
+  assert.equal(flowStats([normalizeTransition(old, {note:'saved'}, now)], now).colloqui, 2)
+  assert.equal(flowStats([{...old, archiviata:true}], now).colloqui, 2)
+  assert.equal(flowStats([{...old, stato:'Secondo colloquio', data_secondo_colloquio:null}], now).colloqui, 1)
+})
+test('statistics exclude cancelled, future, undated and unconfirmed same-day meetings', () => {
+  const c = {...base, interviews:[meeting(1,'2026-09-10'), meeting(2,'2026-09-20','cancelled'), meeting(3,'2026-10-02'), meeting(4,''), meeting(5,'2026-10-01'), meeting(6,'2026-10-01','completed')]}
+  const before = JSON.stringify(c)
+  const stats = flowStats([c], now)
+  assert.equal(stats.colloqui, 2)
+  assert.equal(stats.colloquiThisMonth, 1)
+  assert.equal(JSON.stringify(c), before)
+  assert.equal(flowStats([{...base, stato:'Assunta', interviews:[]}], now).colloqui, 0)
+})
+
+test('waiting average includes sent and viewed applications and excludes missing dates and closed records', () => {
+  const list = [ {...base, data_invio:'2026-09-21'}, {...base, stato:'Vista', data_invio:'2026-09-01', ultimo_contatto:'2026-09-29'}, {...base, stato:'Assunta'}, {...base, data_invio:null}, {...base, archiviata:true} ]
+  assert.equal(averageWaitingDays(list, now), 6)
+  assert.equal(averageWaitingDays([{...base, data_invio:null}], now), null)
+  assert.equal(averageWaitingDays([{...base, data_invio:'2026-10-01'}], now), 0)
 })
