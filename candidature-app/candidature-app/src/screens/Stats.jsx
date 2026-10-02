@@ -1,3 +1,4 @@
+import { hiredLabel } from '../lib/utils'
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { flowStats, hasResponse, waitingSince, elapsedDays, CLOSED } from '../lib/applicationFlow'
@@ -5,7 +6,7 @@ import { STATUS_CONFIG, daysSince } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
 export default function Stats({ onOpenCandidatura }) {
-  const { candidature = [], unreadCount, notifications, markAllNotificationsRead } = useApp()
+  const { profile, candidature = [], unreadCount, notifications, markAllNotificationsRead } = useApp()
   const { t, i18n } = useTranslation()
   const en = i18n.language === 'en'
   const [showNotifs, setShowNotifs] = useState(false)
@@ -128,7 +129,7 @@ export default function Stats({ onOpenCandidatura }) {
                   return (
                     <div key={item.stato}>
                       <div className="flex justify-between text-xs mb-1">
-                        <span style={{ color: cfg.color }}>{cfg.emoji} {t('add.stati.'+item.stato,item.stato)}</span>
+                        <span style={{ color: cfg.color }}>{cfg.emoji} {item.stato==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+item.stato,item.stato)}</span>
                         <span className="text-muted">{item.count} ({pct}%)</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">

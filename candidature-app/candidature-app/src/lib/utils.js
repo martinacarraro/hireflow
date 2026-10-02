@@ -461,3 +461,7 @@ export function getMotto(lang = 'it') {
 
   return list[day % list.length];
 }
+
+export function hiredLabel(t, genere) {
+  return t('home.statiLabel.' + (genere === 'f' ? 'Assunta' : genere === 'm' ? 'Assunto' : 'Assunt*'))
+}

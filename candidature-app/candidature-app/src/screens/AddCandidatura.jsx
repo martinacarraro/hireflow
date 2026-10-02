@@ -1,3 +1,4 @@
+import { hiredLabel } from '../lib/utils'
 import { useState } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { Field, Spinner } from '../components/UI'
@@ -35,7 +36,7 @@ function readDraft() {
 }
 
 export default function AddCandidatura({ onBack, onDone }) {
-  const { addCandidatura, showToast } = useApp()
+  const { addCandidatura, showToast, profile } = useApp()
   const { t, i18n } = useTranslation()
   const isIt = i18n.language !== 'en'
   const [form, setForm] = useState(readDraft)
@@ -154,7 +155,7 @@ export default function AddCandidatura({ onBack, onDone }) {
 
         <Field label={t('add.stato')}>
           <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
-            {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{t(`add.stati.${s}`, s)}</option>)}
+            {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
           </select>
         </Field>
 

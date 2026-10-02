@@ -1,3 +1,4 @@
+import { hiredLabel } from '../lib/utils'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { STATUS_CONFIG, PRIORITA_CONFIG, getLevel, getXpProgress } from '../lib/utils'
@@ -7,9 +8,7 @@ export function StatusBadge({ stato, size = 'sm', genere }) {
   const cfg = STATUS_CONFIG[stato] || STATUS_CONFIG['Inviata']
   const p = size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-2.5 py-0.5 text-xs'
   const active = ['Colloquio','Prima call','Secondo colloquio','Vista','In attesa risposta','Offerta ricevuta','Assunta'].includes(stato)
-  const label = stato === 'Assunta' && genere
-    ? t(`home.statiLabel.${genere === 'm' ? 'Assunto' : genere === 'nb' ? 'Assunt*' : 'Assunta'}`)
-    : t(`home.statiLabel.${stato}`, stato)
+  const label = stato === 'Assunta' ? hiredLabel(t, genere) : t(`home.statiLabel.${stato}`, stato)
   return (
     <span className={`status-badge ${p} font-semibold`}
       style={{

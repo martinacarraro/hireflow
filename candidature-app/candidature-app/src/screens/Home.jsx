@@ -1,3 +1,4 @@
+import { hiredLabel } from '../lib/utils'
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
@@ -364,7 +365,7 @@ const candidatureFiltrate = useMemo(() => {
 
 
         {(filtroStato || searchQuery) && <div className="flex items-center justify-between gap-3 rounded-xl bg-purple/15 border border-purple/40 p-3 mb-3">
-          <p className="text-sm font-semibold">{searchQuery ? `“${searchQuery}” · ` : ''}{dashboardStats.find(item=>item.filter===filtroStato)?.[i18n.language==='en'?'en':'it'] || (filtroStato ? t('add.stati.'+filtroStato,filtroStato) : (i18n.language==='en'?'Search':'Ricerca'))} · {candidatureFiltrate.length}</p>
+          <p className="text-sm font-semibold">{searchQuery ? `“${searchQuery}” · ` : ''}{dashboardStats.find(item=>item.filter===filtroStato)?.[i18n.language==='en'?'en':'it'] || (filtroStato ? (filtroStato==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+filtroStato,filtroStato)) : (i18n.language==='en'?'Search':'Ricerca'))} · {candidatureFiltrate.length}</p>
           <button className="text-sm font-bold text-purple-soft min-h-[44px]" onClick={()=>{setFiltroStato(null);setSearchQuery('')}}>{i18n.language==='en'?'Show all':'Mostra tutte'}</button>
         </div>}
         {candidatureFiltrate.length === 0 && <div className="card text-center py-8">
@@ -383,7 +384,7 @@ const candidatureFiltrate = useMemo(() => {
                 <div className="flex items-center gap-2">
                   <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: cfg.color }}>
                    {cfg.emoji} {stato === 'Assunta'
-  ? t(`home.statiLabel.${profile?.genere === 'm' ? 'Assunto' : profile?.genere === 'nb' ? 'Assunt*' : 'Assunta'}`)
+  ? hiredLabel(t, profile?.genere)
   : t(`home.statiLabel.${stato}`, stato)}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold"

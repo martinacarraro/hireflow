@@ -1,3 +1,4 @@
+import { hiredLabel } from '../lib/utils'
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApp } from '../contexts/AppContext'
@@ -147,7 +148,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
       <label className="block text-sm font-semibold">{en?'Where are you now? *':'A che punto sei? *'}
         <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>save({stato:e.target.value})}>
-          {STATI.map(state=><option key={state} value={state}>{t('add.stati.'+state,state)}</option>)}
+          {STATI.map(state=><option key={state} value={state}>{state==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+state,state)}</option>)}
         </select>
       </label>
       {INTERVIEW_STATES.includes(form.stato) && <InterviewFields form={form} onChange={set}/>}
