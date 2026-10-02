@@ -48,6 +48,13 @@
            focus:border-purple focus:ring-1 focus:ring-purple/30
            transition-all duration-150;
   }
+  select.input-field {
+    appearance: none;
+    padding-right: 2.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23C4B5FD' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
   .nav-arrow {
     @apply inline-flex items-center justify-center w-11 h-11 flex-shrink-0 rounded-xl border border-border text-txt text-3xl font-bold leading-none active:scale-95 transition-transform;
   }
@@ -60,14 +67,14 @@
     content: "";
     position: absolute;
     right: 5px;
-    top: 15px;
+    top: 50%;
     width: 10px;
     height: 10px;
     border-right: 3px solid currentColor;
     border-bottom: 3px solid currentColor;
-    transform: rotate(45deg);
+    transform: translateY(-70%) rotate(45deg);
   }
-  .screen details[open] > summary::after { transform: rotate(225deg); top: 20px; }
+  .screen details[open] > summary::after { transform: translateY(-30%) rotate(225deg); }
   button:focus-visible, summary:focus-visible, a:focus-visible {
     outline: 2px solid #C4B5FD;
     outline-offset: 3px;

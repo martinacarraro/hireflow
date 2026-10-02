@@ -110,10 +110,10 @@ export default function Stats({ onOpenCandidatura }) {
             {/* KPI GRID */}
             <div className="grid grid-cols-2 gap-3">
               {kpis.map(k => (
-                <div key={k.label} className="card flex flex-col gap-1">
-                  <span className="text-2xl">{k.emoji}</span>
-                  <span className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</span>
-                  <span className="text-xs text-muted">{k.label}</span>
+                <div key={k.label} className="card flex flex-col items-center text-center gap-2">
+                  <span aria-hidden="true" className="h-9 w-9 flex items-center justify-center text-2xl leading-none">{k.emoji}</span>
+                  <span className="text-2xl font-bold leading-none tabular-nums" style={{ color: k.color }}>{k.value}</span>
+                  <span className="text-xs text-muted leading-snug">{k.label}</span>
                 </div>
               ))}
             </div>
