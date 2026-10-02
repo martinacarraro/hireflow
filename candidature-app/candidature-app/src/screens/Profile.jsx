@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import * as XLSX from 'xlsx'
 import { useApp } from '../contexts/AppContext'
 import { XpBar, SectionLabel } from '../components/UI'
 import { BADGES } from '../lib/utils'
 
-const TEMPLATE_B64 = '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'
 
 export default function Profile() {
   const {
@@ -14,7 +12,6 @@ export default function Profile() {
     notifications,
     markAllNotificationsRead,
     unreadCount,
-    addBulkCandidature,
     candidature,
     showToast,
     recoverLegacyData,
@@ -38,7 +35,6 @@ export default function Profile() {
   const [legacyPassword, setLegacyPassword] = useState('')
   const [legacyLoading, setLegacyLoading] = useState(false)
   const [legacyError, setLegacyError] = useState('')
-  const fileRef = useRef(null)
   const backupRef = useRef(null)
 
   const isIt = i18n.language === 'it'
@@ -134,46 +130,6 @@ export default function Profile() {
       )
     } finally {
       setLegacyLoading(false)
-    }
-  }
-
-  const downloadTemplate = () => {
-    if (!TEMPLATE_B64) return
-
-    const bytes = atob(TEMPLATE_B64)
-    const arr = new Uint8Array(bytes.length)
-
-    for (let i = 0; i < bytes.length; i += 1) {
-      arr[i] = bytes.charCodeAt(i)
-    }
-
-    const blob = new Blob([arr], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    })
-
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'template_candidature.xlsx'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const buf = await file.arrayBuffer()
-    const wb = XLSX.read(buf, { type: 'array' })
-    const ws = wb.Sheets[wb.SheetNames[0]]
-    const data = XLSX.utils.sheet_to_json(ws)
-
-    try { await addBulkCandidature(data) } catch(error) { showToast(error.message || (isIt?'Importazione non riuscita.':'Import failed.'),'error'); return }
-
-    if (fileRef.current) {
-      fileRef.current.value = ''
     }
   }
 
@@ -356,12 +312,19 @@ export default function Profile() {
         </div>
 
         <div className="card">
-          <SectionLabel>🔒 {isIt ? 'Privacy e dati' : 'Privacy & data'}</SectionLabel>
+          <SectionLabel>🔒 Privacy</SectionLabel>
           <p className="text-xs text-muted leading-relaxed mb-3">
             {isIt
               ? 'Candidature, profilo, XP e checklist vengono salvati solo su questo dispositivo. Nessun account e nessuna sincronizzazione cloud.'
               : 'Applications, profile, XP and checklists are stored only on this device. No account and no cloud sync.'}
           </p>
+          <a href="https://lefaremosapere.vercel.app/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-sm text-purple-soft py-3">
+            {isIt ? 'Leggi l’informativa sulla privacy' : 'Read the privacy policy'}
+          </a>
+        </div>
+
+        <div className="card">
+          <SectionLabel>{isIt ? 'Gestisci i tuoi dati' : 'Manage your data'}</SectionLabel>
           <button onClick={async () => {
             if (!window.confirm(isIt ? 'Iniziare una nuova ricerca? Verranno eliminate tutte le candidature, le note, i colloqui, le checklist e i promemoria, inclusi gli archiviati e la bozza. Profilo, preferenze, XP e badge rimangono. Esporta prima un backup se vuoi conservarli. Confermi la cancellazione?' : 'Start a new search? All applications, notes, interviews, checklists and reminders, including archived applications and drafts, will be deleted. Profile, preferences, XP and badges remain. Export a backup first to keep your records. Confirm deletion?')) return
             try { await resetSearch() } catch {}
@@ -453,37 +416,7 @@ export default function Profile() {
         </div>
 
 
-        <details className="card">
-          <summary className="cursor-pointer text-sm font-semibold text-txt mb-2">📁 {t('profile.import_title')}</summary>
 
-          <p className="text-xs text-muted mb-3 leading-relaxed">
-            {t('profile.import_description')}
-          </p>
-
-          <div className="space-y-2">
-            <button
-              onClick={downloadTemplate}
-              className="w-full py-2 bg-white/5 rounded-xl text-xs font-semibold border border-white/10"
-            >
-              1. {isIt ? 'Scarica template Excel' : 'Download Excel template'}
-            </button>
-
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full py-2 bg-purple rounded-xl text-xs font-bold text-white"
-            >
-              2. {isIt ? 'Carica il tuo file Excel' : 'Upload your Excel file'}
-            </button>
-
-            <input
-              ref={fileRef}
-              type="file"
-              className="hidden"
-              onChange={handleImport}
-              accept=".xlsx"
-            />
-          </div>
-        </details>
 
         <div className="pt-4 space-y-2">
           <div className="flex justify-center gap-4 mt-3 flex-wrap">
