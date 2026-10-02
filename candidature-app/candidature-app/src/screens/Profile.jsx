@@ -20,6 +20,24 @@ export default function Profile() {
 
   const { t, i18n } = useTranslation()
 
+  const [notificationBusy, setNotificationBusy] = useState(false)
+  const changeNotificationMode = async (mode) => {
+    setNotificationBusy(true)
+    try {
+      if(mode==='on') {
+        const supported = typeof Notification!=='undefined' && 'serviceWorker' in navigator && !!(await navigator.serviceWorker.getRegistration())
+        const permission = supported ? await Notification.requestPermission() : 'denied'
+        if(permission!=='granted') {
+          await updateProfile({notification_mode:'in_app',reminders_enabled:true})
+          showToast(i18n.language==='it' ? 'Avvisi del telefono non disponibili o non autorizzati. Attivi solo nell’app.' : 'Phone alerts unavailable or not allowed. In-app alerts enabled.','error')
+          return
+        }
+      }
+      await updateProfile({notification_mode:mode,reminders_enabled:mode!=='off'})
+    } catch { showToast(i18n.language==='it' ? 'Impossibile aggiornare le notifiche. Riprova.' : 'Could not update notifications. Try again.','error') }
+    finally { setNotificationBusy(false) }
+  }
+
   const changeLanguage = (lang) => {
     localStorage.setItem('lfs_lang', lang)
     localStorage.setItem('lingua', lang)
@@ -277,11 +295,34 @@ export default function Profile() {
         </section>
 
         <div className="card">
-          <label className="flex items-center justify-between gap-3 text-sm font-semibold">
-            {isIt?'Avvisi dentro l’app':'In-app reminders'}
-            <input type="checkbox" className="w-5 h-5" checked={profile?.reminders_enabled!==false} onChange={e=>updateProfile({reminders_enabled:e.target.checked}).catch(()=>{})}/>
-          </label>
-          <p className="text-xs text-muted mt-2">{isIt?'Visibili nella campanella quando apri l’app. Per gli avvisi ad app chiusa, esporta gli appuntamenti nel calendario del telefono.':'Shown in the bell when you open the app. Export appointments to your phone calendar for alerts while this app is closed.'}</p>
+          <SectionLabel>{isIt ? 'Notifiche' : 'Notifications'}</SectionLabel>
+          <div className="grid grid-cols-3 gap-2 mt-3" role="group" aria-label={isIt ? 'Modalità notifiche' : 'Notification mode'}>
+            {[['on','On'],['in_app',isIt ? 'Solo nell’app' : 'In app only'],['off','Off']].map(([mode,label]) => {
+              const saved = profile?.notification_mode || (profile?.reminders_enabled===false ? 'off' : 'in_app')
+              const active = saved==='on' && (typeof Notification==='undefined' || Notification.permission!=='granted') ? 'in_app' : saved
+              return <button key={mode} disabled={notificationBusy} aria-pressed={active===mode} onClick={() => changeNotificationMode(mode)} className={`min-h-[48px] rounded-xl px-2 py-3 text-sm font-semibold border ${active===mode ? 'bg-purple text-white border-purple' : 'border-border text-muted'} disabled:opacity-50`}>{label}</button>
+            })}
+          </div>
+          <p className="text-xs text-muted mt-3">{isIt ? 'On: avvisi sul telefono mentre usi l’app. Solo nell’app: avvisi nella campanella. Off: nessun nuovo avviso. Ad app chiusa, usa il calendario del telefono.' : 'On: phone alerts while using the app. In app only: alerts in the bell. Off: no new alerts. For alerts while the app is closed, use your phone calendar.'}</p>
+        </div>
+        <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
+          <div className="flex-1">
+            <p className="text-xs font-bold text-purple-soft uppercase tracking-widest mb-0.5">
+              {isIt ? "Ti piace l'app?" : 'Enjoying the app?'}
+            </p>
+            <p className="text-sm font-bold text-txt">
+              {isIt ? 'Offrimi un caffè' : 'Buy me a coffee'}
+            </p>
+          </div>
+
+          <a
+            href="https://ko-fi.com/lefaremosapere"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-purple text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-lg shadow-purple/20"
+          >
+            ☕ {isIt ? 'Sostieni' : 'Support'}
+          </a>
         </div>
         <div className="card">
           <SectionLabel>LANGUAGE / LINGUA</SectionLabel>
@@ -395,25 +436,7 @@ export default function Profile() {
           </button>
         </div>
 
-        <div className="card flex items-center justify-between bg-gradient-to-r from-purple/10 to-transparent border-l-4 border-purple/50">
-          <div className="flex-1">
-            <p className="text-xs font-bold text-purple-soft uppercase tracking-widest mb-0.5">
-              {isIt ? "Ti piace l'app?" : 'Enjoying the app?'}
-            </p>
-            <p className="text-sm font-bold text-txt">
-              {isIt ? 'Offrimi un caffè' : 'Buy me a coffee'}
-            </p>
-          </div>
 
-          <a
-            href="https://ko-fi.com/lefaremosapere"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-purple text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-lg shadow-purple/20"
-          >
-            ☕ {isIt ? 'Sostieni' : 'Support'}
-          </a>
-        </div>
 
 
 

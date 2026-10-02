@@ -176,9 +176,14 @@ export function AppProvider({ children }) {
   }
 
   const pushNotification=(title,body,cid=null,key=title+'::'+body)=>{
-    if(notifRef.current.some(n=>n.key===key))return
+    if(profileRef.current?.reminders_enabled===false || profileRef.current?.notification_mode==='off' || notifRef.current.some(n=>n.key===key))return
     const next=[{id:crypto.randomUUID(),key,title,body,candidaturaId:cid,time:new Date().toISOString(),read:false},...notifRef.current].slice(0,100)
     writeValues({[NOTIFICATIONS_KEY]:next});notifRef.current=next;setNotifications(next)
+    if(profileRef.current?.notification_mode==='on' && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if(profileRef.current?.notification_mode==='on' && profileRef.current?.reminders_enabled!==false) return registration?.showNotification(title,{body,tag:key,icon:'/icon-192.png'})
+      }).catch(()=>{})
+    }
   }
   useEffect(()=>{
     if(loading || loadError)return
