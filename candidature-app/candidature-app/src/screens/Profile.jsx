@@ -18,6 +18,7 @@ export default function Profile() {
     candidature,
     showToast,
     recoverLegacyData,
+    resetSearch,
   } = useApp()
 
   const { t, i18n } = useTranslation()
@@ -361,6 +362,12 @@ export default function Profile() {
               ? 'Candidature, profilo, XP e checklist vengono salvati solo su questo dispositivo. Nessun account e nessuna sincronizzazione cloud.'
               : 'Applications, profile, XP and checklists are stored only on this device. No account and no cloud sync.'}
           </p>
+          <button onClick={async () => {
+            if (!window.confirm(isIt ? 'Iniziare una nuova ricerca? Verranno eliminate tutte le candidature, le note, i colloqui, le checklist e i promemoria, inclusi gli archiviati e la bozza. Profilo, preferenze, XP e badge rimangono. Esporta prima un backup se vuoi conservarli. Confermi la cancellazione?' : 'Start a new search? All applications, notes, interviews, checklists and reminders, including archived applications and drafts, will be deleted. Profile, preferences, XP and badges remain. Export a backup first to keep your records. Confirm deletion?')) return
+            try { await resetSearch() } catch {}
+          }} className="w-full min-h-[44px] py-2.5 rounded-xl text-sm font-semibold border border-purple/30 bg-purple/10 text-purple-soft mb-2">
+            {isIt ? 'Inizia una nuova ricerca' : 'Start a new search'}
+          </button>
           <button
             onClick={exportBackup}
             className="w-full py-2.5 rounded-xl text-xs font-semibold border border-white/10 bg-white/5 mb-2">

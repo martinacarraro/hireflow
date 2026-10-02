@@ -66,6 +66,9 @@ export function AppProvider({ children }) {
           if(migrated){list=migrated.candidature;prof=migrated.profile;if(active)setMigrationNotice({type:'success',...migrated})}
         } catch { if(active && localStorage.getItem(MIGRATION_ERROR_DISMISSED_KEY)!=='1')setMigrationNotice({type:'error'}) }
         if(!active)return
+        const observed = {...prof.hire_observed}
+        list.filter(c=>c.stato==='Assunta').forEach(c=>{if(!observed[c.id])observed[c.id]=new Date().toISOString()})
+        prof={...prof,hire_observed:observed}
         const today=localDay()
         if(prof.ultimo_accesso!==today) prof={...prof,ultimo_accesso:today,streak_giorni:elapsedDays(prof.ultimo_accesso)===1?(prof.streak_giorni || 0)+1:1}
         commit(list,withBadges(list,prof))
@@ -127,6 +130,13 @@ export function AppProvider({ children }) {
     commit(list,profileRef.current)
     try{Object.keys(localStorage).filter(k=>k==='lfs_checklist_'+id || k.startsWith('lfs_checklist_'+id+':')).forEach(k=>localStorage.removeItem(k))}catch{}
     showToast(en()?'Application deleted':'Candidatura eliminata')
+  }
+  const resetSearch=async()=>{
+    const extra = {[NOTIFICATIONS_KEY]:[], lfs_guest_candidature:[], lfs_application_draft_v1:null}
+    Object.keys(localStorage).filter(k=>k.startsWith('lfs_checklist_')).forEach(k=>{extra[k]=[]})
+    commit([], {...profileRef.current,hire_observed:{},new_search_asked:[]}, extra)
+    notifRef.current=[];setNotifications([])
+    showToast(en()?'Ready for a new search':'Tutto pronto per una nuova ricerca')
   }
   const addBulkCandidature=async(rows)=>{
     const now=new Date().toISOString()
@@ -204,7 +214,7 @@ export function AppProvider({ children }) {
   }
   return <AppContext.Provider value={{
     candidature,profile,notifications,toast,confetti,loading,loadError,migrationNotice,unreadCount:notifications.filter(n=>!n.read).length,
-    addCandidatura,updateCandidatura,deleteCandidatura,addBulkCandidature,getChecklist,toggleChecklistItem,
+    resetSearch,addCandidatura,updateCandidatura,deleteCandidatura,addBulkCandidature,getChecklist,toggleChecklistItem,
     addXP,removeXP,updateProfile,computeStats,checkBadges,triggerConfetti,showToast,markOnboarded,
     pushNotification,recoverLegacyData,markAllNotificationsRead,dismissMigrationNotice,
   }}>{children}</AppContext.Provider>

@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState, useEffect } from 'react'
+import { eligibleHire } from './lib/newSearch'
+import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
 import Splash from './screens/Splash'
@@ -38,7 +39,7 @@ function registerOpenAndShouldAskForSupport(now = new Date()) {
 }
 
 export default function App() {
-  const { profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
+  const { candidature, updateProfile, profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
   const { t, i18n } = useTranslation()
   
   const [showSplash, setShowSplash] = useState(true)
@@ -50,6 +51,20 @@ export default function App() {
   const [showReviewPopup, setShowReviewPopup] = useState(false)
   const [showSupportPopup, setShowSupportPopup] = useState(false)
 
+  const [newSearch, setNewSearch] = useState(null)
+  const searchChecked = useRef(false)
+  useEffect(() => {
+    if(dataLoading || loadError || searchChecked.current) return
+    searchChecked.current=true
+    setNewSearch(eligibleHire(candidature,profile) || null)
+  },[dataLoading,loadError,candidature,profile])
+  const dismissNewSearch = async (openSettings=false) => {
+    try {
+      await updateProfile({new_search_asked:[...(profile?.new_search_asked || []),`${newSearch.id}:${newSearch.at}`]})
+      setNewSearch(null)
+      if(openSettings)setTab('profile')
+    } catch {}
+  }
   const loading = dataLoading
 
   useEffect(() => {
@@ -125,13 +140,14 @@ export default function App() {
           onClose={dismissMigrationNotice}
         />
       )}
-      {showSupportPopup && !migrationNotice && (
+      {newSearch && !migrationNotice && <NewSearchPrompt en={i18n.language==='en'} onClose={() => dismissNewSearch()} onSettings={() => dismissNewSearch(true)} />}
+      {showSupportPopup && !newSearch && !migrationNotice && (
         <SupportPopup
           isIt={i18n.language !== 'en'}
           onClose={() => setShowSupportPopup(false)}
         />
       )}
-      {showReviewPopup && !showSupportPopup && !migrationNotice && (
+      {showReviewPopup && !newSearch && !showSupportPopup && !migrationNotice && (
         <ReviewPopup
           profile={profile} 
           t={t} 
@@ -261,4 +277,15 @@ function ReviewPopup({ profile, onClose, t }) {
       </div>
     </div>
   )
+}
+
+function NewSearchPrompt({en,onClose,onSettings}) {
+  const ref=useRef(null)
+  useEffect(()=>{const dialog=ref.current;dialog.showModal();return ()=>dialog.close()},[])
+  return <dialog ref={ref} onCancel={e=>{e.preventDefault();onClose()}} className="bg-card text-txt rounded-2xl border border-border p-6 w-[90%] max-w-sm backdrop:bg-black/70">
+    <h2 className="text-xl font-bold mb-3">{en?'Looking for new opportunities?':'Cerchi nuove opportunità?'}</h2>
+    <p className="text-sm text-muted mb-5">{en?'It has been at least a month since you recorded a new job. You can start fresh by resetting your applications in Settings.':'È passato almeno un mese da quando hai segnato di aver trovato lavoro. Vuoi ripartire da zero e resettare le candidature?'}</p>
+    <button className="btn-primary w-full mb-3" onClick={onSettings}>{en?'Go to reset options':'Vai alle opzioni di reset'}</button>
+    <button className="w-full min-h-[44px] text-muted" onClick={onClose}>{en?'No, keep my data':'No, mantieni i miei dati'}</button>
+  </dialog>
 }

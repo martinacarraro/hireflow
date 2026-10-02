@@ -93,6 +93,7 @@ export function normalizeTransition(previous, data, now = new Date()) {
     next.data_scadenza_responso = null
   }
   if (changed && previous.stato === 'Assunta' && next.stato !== 'Assunta') next.offerta_risposta = null
+  if (next.stato === 'Assunta' && (!previous || changed)) next.hired_at = now.toISOString()
   if (next.stato === 'Assunta') { next.offerta_risposta = 'si'; next.hire_celebrated = true }
   if (next.stato === 'Offerta rifiutata') next.offerta_risposta = 'no'
   next.interviews = getInterviews(next)
