@@ -305,17 +305,17 @@ export default function Profile() {
 
         <section className="card" aria-label={isIt ? 'I tuoi badge' : 'Your badges'}>
           <h2 className="text-sm font-semibold">{isIt ? 'I tuoi badge' : 'Your badges'} <span className="text-muted ml-2">{earned.length}/{BADGES.length}</span></h2>
-          <p className="text-xs text-muted mt-1">{isIt ? 'Tocca un badge per scoprire il traguardo.' : 'Tap a badge to see the achievement.'}</p>
+          <p className="text-xs text-muted mt-1">{isIt ? 'Tocca un badge sbloccato per scoprire il traguardo.' : 'Tap an unlocked badge to see the achievement.'}</p>
           <div className="grid grid-cols-4 gap-2 mt-3">
             {BADGES.map(badge => {
               const unlocked = earned.includes(badge.id)
-              return <button key={badge.id} type="button" onClick={() => setSelectedBadge(selectedBadge === badge.id ? null : badge.id)} aria-expanded={selectedBadge === badge.id} aria-haspopup="dialog" aria-label={`${t(`badges.${badge.id}`)} — ${unlocked ? (isIt ? 'sbloccato' : 'unlocked') : (isIt ? 'da sbloccare' : 'locked')}`} className={`p-2 rounded-xl flex flex-col items-center gap-2 min-h-[72px] border ${selectedBadge === badge.id ? 'border-purple bg-purple/20' : 'border-transparent bg-white/5'}`}>
-                <span aria-hidden="true" className={`w-10 h-10 ${unlocked ? '' : 'opacity-30 grayscale'}`} dangerouslySetInnerHTML={{__html:badge.svg}} />
+              return <button key={badge.id} type="button" disabled={!unlocked} onClick={() => { if (unlocked) setSelectedBadge(badge.id) }} aria-expanded={selectedBadge === badge.id} aria-haspopup={unlocked ? "dialog" : undefined} aria-label={unlocked ? t(`badges.${badge.id}`) : (isIt ? "Badge da sbloccare" : "Locked badge")} className={`p-2 rounded-xl flex flex-col items-center gap-2 min-h-[72px] border ${selectedBadge === badge.id ? 'border-purple bg-purple/20' : 'border-transparent bg-white/5'}`}>
+                {unlocked ? <span aria-hidden="true" className="w-10 h-10" dangerouslySetInnerHTML={{__html:badge.svg}} /> : <span aria-hidden="true" className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-muted text-xl">🔒</span>}
                 <span className="text-xs font-semibold leading-snug">{unlocked ? t(`badges.${badge.id}`) : (isIt ? 'Da sbloccare' : 'Locked')}</span>
               </button>
             })}
           </div>
-          {selectedBadge && <BadgePopup badge={BADGES.find(b => b.id === selectedBadge)} earned={earned.includes(selectedBadge)} isIt={isIt} t={t} onClose={() => setSelectedBadge(null)} />}
+          {selectedBadge && earned.includes(selectedBadge) && <BadgePopup badge={BADGES.find(b => b.id === selectedBadge)} earned={earned.includes(selectedBadge)} isIt={isIt} t={t} onClose={() => setSelectedBadge(null)} />}
 
         </section>
 
