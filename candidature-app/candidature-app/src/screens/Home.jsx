@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
-import { CLOSED, upcomingInterviews, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays } from '../lib/applicationFlow'
+import { CLOSED, upcomingInterviews, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays, shouldSuggestArchive } from '../lib/applicationFlow'
 import { useTranslation } from 'react-i18next'
 
 const DASHBOARD_FILTERS = {
@@ -376,6 +376,8 @@ const candidatureFiltrate = useMemo(() => {
               {(!isCollapsed || selectMode) && items.map(c => (
                 <CandidaturaCard
                   key={c.id} c={c}
+                  onArchive={() => updateCandidatura(c.id, { archiviata: true })}
+                  onKeep={() => updateCandidatura(c.id, { archive_suggestion_dismissed_for: waitingSince(c) })}
                   genere={profile?.genere}
                   onPress={() => selectMode ? toggleSelect(c.id) : onDetail(c)}
                   onLongPress={() => { setSelectMode(true); setSelected(new Set([c.id])) }}
@@ -497,7 +499,13 @@ function DeadlineRow({ scadenza }) {
   }
 }
 
-function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, genere }) {
+function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMode, isSelected, genere }) {
+  const [archiveBusy, setArchiveBusy] = useState(false)
+  const archiveAction = async action => {
+    if (archiveBusy) return
+    setArchiveBusy(true)
+    try { await action() } catch {} finally { setArchiveBusy(false) }
+  }
   const cfg = STATUS_CONFIG[c.stato] || STATUS_CONFIG['Inviata']
   const days = daysSince(c.data_invio)
   const isStale = elapsedDays(waitingSince(c)) >= 14 && ['Inviata', 'In attesa risposta'].includes(c.stato)
@@ -541,6 +549,14 @@ function CandidaturaCard({ c, onPress, onLongPress, selectMode, isSelected, gene
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none',
       }}>
+      {!selectMode && shouldSuggestArchive(c) && <div className="mb-3 p-3 rounded-xl bg-purple/10 border border-purple/20" onClick={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
+        <p className="text-sm font-semibold">{i18n.language === 'en' ? 'No reply for 90 days?' : 'Nessuna risposta da 90 giorni?'}</p>
+        <p className="text-sm text-muted mt-1">{i18n.language === 'en' ? 'You can archive this application and keep all its details.' : 'Puoi archiviare questa candidatura e conservare tutti i dettagli.'}</p>
+        <div className="flex gap-2 mt-3">
+          <button type="button" disabled={archiveBusy} className="btn-primary flex-1 py-2 text-sm" onClick={() => archiveAction(onArchive)}>{i18n.language === 'en' ? 'Archive' : 'Archivia'}</button>
+          <button type="button" disabled={archiveBusy} className="btn-secondary flex-1 py-2 text-sm" onClick={() => archiveAction(onKeep)}>{i18n.language === 'en' ? 'Keep active' : 'Mantieni attiva'}</button>
+        </div>
+      </div>}
       {isStale && (
         <div className="flex items-center gap-1 mb-2 text-amber text-xs">
           <span>⚠️</span><span>{t('home.nessunaRisposta', { giorni: days })}</span>

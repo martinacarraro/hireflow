@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince } from './applicationFlow.js'
+import { getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
 import { calendarFile } from './calendarExport.js'
 
 const now = new Date('2026-10-01T10:00:00')
@@ -72,4 +72,15 @@ test('calendar export keeps date-only events all-day and escapes notes',()=>{
   assert.ok(text.includes('SUMMARY:Acme\\, HR'))
   assert.ok(text.includes('DESCRIPTION:First\\nSecond'))
   assert.ok(calendarFile({id:'123',title:'Interview',date:'2026-10-03',time:'14:30'}).includes('DTSTART:20261003T143000'))
+})
+
+test('archive suggestion respects 90 days, recent contacts, future meetings and dismissal', () => {
+  const old = {...base, data_invio:'2026-07-03'}
+  assert.equal(shouldSuggestArchive(old, now), true)
+  assert.equal(shouldSuggestArchive({...old,data_invio:'2026-07-04'}, now), false)
+  assert.equal(shouldSuggestArchive({...old,ultimo_contatto:'2026-09-20'}, now), false)
+  assert.equal(shouldSuggestArchive({...old,archiviata:true}, now), false)
+  assert.equal(shouldSuggestArchive({...old,stato:'Assunta'}, now), false)
+  assert.equal(shouldSuggestArchive({...old,interviews:[meeting(1,'2026-11-01')]}, now), false)
+  assert.equal(shouldSuggestArchive({...old,archive_suggestion_dismissed_for:old.data_invio}, now), false)
 })

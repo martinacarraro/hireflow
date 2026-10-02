@@ -150,3 +150,11 @@ export function dueReminders(c, now = new Date()) {
     result.push({ key:`reminder:${c.id}:${c.reminder_date}:${c.reminder_time || ''}:${c.reminder_note || ''}`, kind:'reminder', date:c.reminder_date, time:c.reminder_time, note:c.reminder_note })
   return result
 }
+
+export function shouldSuggestArchive(c, now = new Date()) {
+  const since = waitingSince(c)
+  return !c.archiviata && ['Inviata', 'Vista', 'Spontanea', 'In attesa risposta', 'GHOSTED'].includes(c.stato)
+    && elapsedDays(since, now) >= 90
+    && !upcomingInterviews(c, now, 36500).length
+    && c.archive_suggestion_dismissed_for !== since
+}
