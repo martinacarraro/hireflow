@@ -6,6 +6,7 @@ export default function LocationAutocomplete({ className, value, language = 'it'
   const [results, setResults] = useState([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
   useEffect(() => setQuery(value || ''), [value])
@@ -15,12 +16,20 @@ export default function LocationAutocomplete({ className, value, language = 'it'
     if (term.length < 2) {
       setResults([])
       setLoading(false)
+      setSearchError(false)
       return
     }
 
     const controller = new AbortController()
+    let requestTimeout
+    let timedOut = false
     const timer = window.setTimeout(async () => {
       setLoading(true)
+      setSearchError(false)
+      requestTimeout = window.setTimeout(() => {
+        timedOut = true
+        controller.abort()
+      }, 7000)
       try {
         const url = new URL('https://photon.komoot.io/api/')
         url.searchParams.set('q', term)
@@ -45,14 +54,19 @@ export default function LocationAutocomplete({ className, value, language = 'it'
           setActiveIndex(-1)
         }
       } catch {
-        if (!controller.signal.aborted) setResults([])
+        if (!controller.signal.aborted || timedOut) {
+          setResults([])
+          setSearchError(true)
+        }
       } finally {
-        if (!controller.signal.aborted) setLoading(false)
+        window.clearTimeout(requestTimeout)
+        if (!controller.signal.aborted || timedOut) setLoading(false)
       }
     }, 350)
 
     return () => {
       window.clearTimeout(timer)
+      window.clearTimeout(requestTimeout)
       controller.abort()
     }
   }, [query, language])
@@ -87,11 +101,11 @@ export default function LocationAutocomplete({ className, value, language = 'it'
     <input
       className={className}
       value={query}
-      placeholder={language === 'en' ? 'E.g. Moscow, Russia · Remote' : 'Es. Mosca, Russia · Da remoto'}
+      placeholder={language === 'en' ? 'E.g. Rome, Italy · Remote' : 'Es. Roma, Italia · Da remoto'}
       autoComplete="off"
       role="combobox"
       aria-autocomplete="list"
-      aria-expanded={open && results.length > 0}
+      aria-expanded={open && (results.length > 0 || loading || searchError)}
       aria-controls={listId}
       onFocus={() => setOpen(true)}
       onBlur={() => window.setTimeout(() => setOpen(false), 120)}
@@ -103,8 +117,9 @@ export default function LocationAutocomplete({ className, value, language = 'it'
         onChange(event.target.value)
       }}
     />
-    {open && (results.length > 0 || loading) && <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+    {open && (results.length > 0 || loading || searchError) && <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
       {loading && results.length === 0 && <p className="px-3 py-2 text-xs text-muted">{language === 'en' ? 'Searching places…' : 'Cerco la località…'}</p>}
+      {searchError && <p role="status" className="px-3 py-2 text-xs text-muted">{language === 'en' ? 'Suggestions are unavailable. You can type the location manually.' : 'Suggerimenti non disponibili. Puoi scrivere la località a mano.'}</p>}
       {results.length > 0 && <ul id={listId} role="listbox" className="max-h-56 overflow-y-auto py-1">
         {results.map((place, index) => <li key={place.id} role="option" aria-selected={activeIndex === index}>
           <button
