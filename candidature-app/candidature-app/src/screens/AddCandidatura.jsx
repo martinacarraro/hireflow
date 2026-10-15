@@ -58,6 +58,16 @@ export default function AddCandidatura({ onBack, onDone }) {
       setDraftStatus('saved')
     } catch { setDraftStatus('error') }
   }
+  const setLocation = ({ name, country }) => {
+    const next = { ...form, sede: name, paese: country }
+    setFormError('')
+    setForm(next)
+    setErrors(e => ({ ...e, sede: '' }))
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(next))
+      setDraftStatus('saved')
+    } catch { setDraftStatus('error') }
+  }
   const clearDraft = () => {
     if (!window.confirm(isIt ? 'Vuoi cancellare la bozza e ricominciare?' : 'Discard this draft and start again?')) return
     try { localStorage.removeItem(DRAFT_KEY) } catch {
@@ -162,7 +172,7 @@ export default function AddCandidatura({ onBack, onDone }) {
         {statiConColloquio.includes(form.stato) && <div className="py-3"><InterviewFields form={form} onChange={set}/></div>}
         <details className="card mt-4">
           <summary>{isIt?'Altri dettagli':'More details'}</summary>
-          <EssentialDetails form={form} onChange={set} includeNotes/>
+          <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
         </details>
       </div>
         <div className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>

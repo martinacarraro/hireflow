@@ -24,6 +24,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
   const [showCoffeePrompt,setShowCoffeePrompt]=useState(false)
   const lock=useRef(false),persisted=useRef(c)
   const set=(key,value)=>{setForm(f=>({...f,[key]:value,...(key==='sede'?{paese:''}:{})}));setDirty(true);setSaved(false);setError('')}
+  const setLocation=({name,country})=>{setForm(f=>({...f,sede:name,paese:country}));setDirty(true);setSaved(false);setError('')}
   useEffect(()=>{
     if(!showAssuntaCelebration)return
     const timer=setTimeout(()=>{setShowAssuntaCelebration(false);setShowCoffeePrompt(true);try{localStorage.setItem('lfs_support_shown_at',new Date().toISOString())}catch{}},2500)
@@ -164,7 +165,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
         <div className="pt-3 space-y-4">
           <label className="block text-xs text-muted">{en?'Company *':'Azienda *'}<CompanyAutocomplete className="input-field mt-1" value={form.azienda} onChange={v=>set('azienda',v)} onSelect={company=>set('azienda',company.name)}/></label>
           <label className="block text-xs text-muted">{en?'Role *':'Ruolo *'}<RoleInput className="input-field mt-1" value={form.ruolo} onChange={v=>set('ruolo',v)}/></label>
-          <EssentialDetails form={form} onChange={set}/>
+          <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation}/>
           {form.data_scadenza_responso && <label className="block text-xs text-muted">{en?'Expected reply date':'Risposta prevista entro'}<input className="input-field mt-1" type="date" value={form.data_scadenza_responso} onChange={e=>set('data_scadenza_responso',e.target.value)}/></label>}
           {form.reminder_date && <details><summary>{en?'Saved reminder':'Promemoria salvato'}</summary><div className="pt-2 space-y-3">
             <input aria-label={en?'Reminder date':'Data promemoria'} className="input-field" type="date" value={form.reminder_date} onChange={e=>set('reminder_date',e.target.value)}/>
