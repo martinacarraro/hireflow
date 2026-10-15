@@ -41,6 +41,7 @@ const POPULAR_PLACES = [
   ['Dublino', 'Dublin', 'Irlanda', 'Ireland', ['Dublino', 'Dublin']],
   ['Zurigo', 'Zurich', 'Svizzera', 'Switzerland', ['Zurigo', 'Zurich']],
   ['Monaco di Baviera', 'Munich', 'Germania', 'Germany', ['Monaco di Baviera', 'Munich']],
+  ['Marburgo', 'Marburg', 'Germania', 'Germany', ['Marburgo', 'Marburg']],
   ['Amburgo', 'Hamburg', 'Germania', 'Germany', ['Amburgo', 'Hamburg']],
   ['New York', 'New York', 'Stati Uniti', 'United States', ['New York']],
   ['Los Angeles', 'Los Angeles', 'Stati Uniti', 'United States', ['Los Angeles']],
