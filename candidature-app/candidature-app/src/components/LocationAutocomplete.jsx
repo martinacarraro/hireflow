@@ -102,8 +102,6 @@ export default function LocationAutocomplete({ className, value, language = 'it'
   const [query, setQuery] = useState(value || '')
   const [results, setResults] = useState([])
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [searchError, setSearchError] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
   useEffect(() => setQuery(value || ''), [value])
@@ -112,70 +110,12 @@ export default function LocationAutocomplete({ className, value, language = 'it'
     const term = query.trim()
     if (term.length < 2) {
       setResults([])
-      setLoading(false)
-      setSearchError(false)
+      setActiveIndex(-1)
       return
     }
 
-    const localPlaces = popularSuggestions(term, language)
-    setResults(localPlaces)
-    setSearchError(false)
-    const controller = new AbortController()
-    let requestTimeout
-    let timedOut = false
-    const timer = window.setTimeout(async () => {
-      setLoading(true)
-      setSearchError(false)
-      requestTimeout = window.setTimeout(() => {
-        timedOut = true
-        controller.abort()
-      }, 7000)
-      try {
-        const url = new URL('https://photon.komoot.io/api/')
-        url.searchParams.set('q', term)
-        url.searchParams.set('limit', '6')
-        url.searchParams.set('lang', language)
-        const response = await fetch(url, { signal: controller.signal })
-        if (!response.ok) throw new Error('Location search failed')
-        const data = await response.json()
-        const seen = new Set()
-        const places = (data.features || []).flatMap(feature => {
-          const properties = feature.properties || {}
-          const name = properties.city || properties.name
-          const country = properties.country
-          if (!name || !country) return []
-          const key = `${name.toLocaleLowerCase()}|${country.toLocaleLowerCase()}|${(properties.state || '').toLocaleLowerCase()}`
-          if (seen.has(key)) return []
-          seen.add(key)
-          return [{ id: key, name, country, state: properties.state || '' }]
-        })
-        if (!controller.signal.aborted) {
-          const known = new Set(localPlaces.map(place => `${normalize(place.name)}|${normalize(place.country)}`))
-          const merged = [...localPlaces, ...places.filter(place => {
-            const key = `${normalize(place.name)}|${normalize(place.country)}`
-            if (known.has(key)) return false
-            known.add(key)
-            return true
-          })].slice(0, 8)
-          setResults(merged)
-          setActiveIndex(-1)
-        }
-      } catch {
-        if (!controller.signal.aborted || timedOut) {
-          setResults(localPlaces)
-          setSearchError(localPlaces.length === 0)
-        }
-      } finally {
-        window.clearTimeout(requestTimeout)
-        if (!controller.signal.aborted || timedOut) setLoading(false)
-      }
-    }, 350)
-
-    return () => {
-      window.clearTimeout(timer)
-      window.clearTimeout(requestTimeout)
-      controller.abort()
-    }
+    setResults(popularSuggestions(term, language))
+    setActiveIndex(-1)
   }, [query, language])
 
   const choose = place => {
@@ -212,7 +152,7 @@ export default function LocationAutocomplete({ className, value, language = 'it'
       autoComplete="off"
       role="combobox"
       aria-autocomplete="list"
-      aria-expanded={open && (results.length > 0 || loading || searchError)}
+      aria-expanded={open && results.length > 0}
       aria-controls={listId}
       onFocus={() => setOpen(true)}
       onBlur={() => window.setTimeout(() => setOpen(false), 120)}
@@ -224,9 +164,7 @@ export default function LocationAutocomplete({ className, value, language = 'it'
         onChange(event.target.value)
       }}
     />
-    {open && (results.length > 0 || loading || searchError) && <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
-      {loading && results.length === 0 && <p className="px-3 py-2 text-xs text-muted">{language === 'en' ? 'Searching places…' : 'Cerco la località…'}</p>}
-      {searchError && <p role="status" className="px-3 py-2 text-xs text-muted">{language === 'en' ? 'Suggestions are unavailable. You can type the location manually.' : 'Suggerimenti non disponibili. Puoi scrivere la località a mano.'}</p>}
+    {open && results.length > 0 && <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
       {results.length > 0 && <ul id={listId} role="listbox" className="max-h-56 overflow-y-auto py-1">
         {results.map((place, index) => <li key={place.id} role="option" aria-selected={activeIndex === index}>
           <button
@@ -241,9 +179,6 @@ export default function LocationAutocomplete({ className, value, language = 'it'
           </button>
         </li>)}
       </ul>}
-      <p className="border-t border-border px-3 py-1.5 text-[10px] text-muted">
-        © <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> · <a className="underline" href="https://github.com/komoot/photon" target="_blank" rel="noreferrer">Photon</a>
-      </p>
     </div>}
   </div>
 }
