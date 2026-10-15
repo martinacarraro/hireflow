@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react'
+import worldCities from '../data/world-cities.json'
 
 const POPULAR_PLACES = [
   ['Roma', 'Rome', 'Italia', 'Italy', ['Roma', 'Rome']],
@@ -190,17 +191,65 @@ const POPULAR_PLACES = [
 ]
 
 const normalize = value => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+const WORLD_CITIES_INDEX = worldCities.map(([name, country, state], index) => ({
+  id: `world-${index}`,
+  name,
+  country,
+  state,
+  normalized: normalize(name),
+}))
+const COUNTRY_NAMES_IT = {
+  ...Object.fromEntries(POPULAR_PLACES.map(([, , countryIt, countryEn]) => [countryEn, countryIt])),
+  'Russian Federation': 'Russia',
+  'United States': 'Stati Uniti',
+  'United Kingdom': 'Regno Unito',
+  'Viet Nam': 'Vietnam',
+  'Korea, Republic of': 'Corea del Sud',
+  'Korea, Democratic People\'s Republic of': 'Corea del Nord',
+  'Iran, Islamic Republic of': 'Iran',
+  'Bolivia, Plurinational State of': 'Bolivia',
+  'Venezuela, Bolivarian Republic of': 'Venezuela',
+  'Tanzania, United Republic of': 'Tanzania',
+  'Moldova, Republic of': 'Moldavia',
+  'Syrian Arab Republic': 'Siria',
+  'Lao People\'s Democratic Republic': 'Laos',
+  'Brunei Darussalam': 'Brunei',
+  'Czechia': 'Cechia',
+  'Türkiye': 'Turchia',
+}
 const popularSuggestions = (query, language) => {
   const term = normalize(query)
-  return POPULAR_PLACES
+  const curated = POPULAR_PLACES
     .filter(([it, en, , , aliases]) => [it, en, ...aliases].some(name => normalize(name).startsWith(term)))
-    .slice(0, 6)
-    .map(([it, en, countryIt, countryEn]) => ({
+    .map(([it, en, countryIt, countryEn, aliases]) => ({
       id: `popular-${normalize(en)}`,
       name: language === 'en' ? en : it,
       country: language === 'en' ? countryEn : countryIt,
       state: '',
+      aliases: aliases.map(normalize),
     }))
+
+  const seen = new Set()
+  const results = []
+  for (const place of curated) {
+    const key = `${normalize(place.name)}|${normalize(place.country)}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      results.push(place)
+    }
+  }
+  const curatedAliases = curated.flatMap(place => place.aliases)
+  for (const place of WORLD_CITIES_INDEX) {
+    if (!place.normalized.startsWith(term)) continue
+    if (curatedAliases.some(alias => place.normalized.startsWith(alias) || alias.startsWith(place.normalized))) continue
+    const country = language === 'en' ? place.country : (COUNTRY_NAMES_IT[place.country] || place.country)
+    const key = `${place.normalized}|${normalize(country)}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    results.push({ id: place.id, name: place.name, country, state: place.state })
+    if (results.length >= 8) break
+  }
+  return results.slice(0, 8)
 }
 
 export default function LocationAutocomplete({ className, value, language = 'it', onChange, onSelect }) {
