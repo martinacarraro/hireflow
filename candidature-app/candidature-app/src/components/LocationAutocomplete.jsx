@@ -83,7 +83,7 @@ const POPULAR_PLACES = [
   ['Auckland', 'Auckland', 'Nuova Zelanda', 'New Zealand', ['Auckland']],
 ]
 
-const normalize = value => value.toLocaleLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim()
+const normalize = value => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
 const popularSuggestions = (query, language) => {
   const term = normalize(query)
   return POPULAR_PLACES
