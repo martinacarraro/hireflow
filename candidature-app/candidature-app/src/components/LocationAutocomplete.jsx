@@ -1,5 +1,102 @@
 import { useEffect, useId, useState } from 'react'
 
+const POPULAR_PLACES = [
+  ['Roma', 'Rome', 'Italia', 'Italy', ['Roma', 'Rome']],
+  ['Milano', 'Milan', 'Italia', 'Italy', ['Milano', 'Milan']],
+  ['Napoli', 'Naples', 'Italia', 'Italy', ['Napoli', 'Naples']],
+  ['Torino', 'Turin', 'Italia', 'Italy', ['Torino', 'Turin']],
+  ['Bologna', 'Bologna', 'Italia', 'Italy', ['Bologna']],
+  ['Firenze', 'Florence', 'Italia', 'Italy', ['Firenze', 'Florence']],
+  ['Venezia', 'Venice', 'Italia', 'Italy', ['Venezia', 'Venice']],
+  ['Palermo', 'Palermo', 'Italia', 'Italy', ['Palermo']],
+  ['Genova', 'Genoa', 'Italia', 'Italy', ['Genova', 'Genoa']],
+  ['Bari', 'Bari', 'Italia', 'Italy', ['Bari']],
+  ['Catania', 'Catania', 'Italia', 'Italy', ['Catania']],
+  ['Verona', 'Verona', 'Italia', 'Italy', ['Verona']],
+  ['Padova', 'Padua', 'Italia', 'Italy', ['Padova', 'Padua']],
+  ['Trieste', 'Trieste', 'Italia', 'Italy', ['Trieste']],
+  ['Cagliari', 'Cagliari', 'Italia', 'Italy', ['Cagliari']],
+  ['Londra', 'London', 'Regno Unito', 'United Kingdom', ['Londra', 'London']],
+  ['Parigi', 'Paris', 'Francia', 'France', ['Parigi', 'Paris']],
+  ['Berlino', 'Berlin', 'Germania', 'Germany', ['Berlino', 'Berlin']],
+  ['Madrid', 'Madrid', 'Spagna', 'Spain', ['Madrid']],
+  ['Barcellona', 'Barcelona', 'Spagna', 'Spain', ['Barcellona', 'Barcelona']],
+  ['Lisbona', 'Lisbon', 'Portogallo', 'Portugal', ['Lisbona', 'Lisbon']],
+  ['Amsterdam', 'Amsterdam', 'Paesi Bassi', 'Netherlands', ['Amsterdam']],
+  ['Bruxelles', 'Brussels', 'Belgio', 'Belgium', ['Bruxelles', 'Brussels']],
+  ['Vienna', 'Vienna', 'Austria', 'Austria', ['Vienna']],
+  ['Praga', 'Prague', 'Cechia', 'Czechia', ['Praga', 'Prague']],
+  ['Varsavia', 'Warsaw', 'Polonia', 'Poland', ['Varsavia', 'Warsaw']],
+  ['Budapest', 'Budapest', 'Ungheria', 'Hungary', ['Budapest']],
+  ['Bucarest', 'Bucharest', 'Romania', 'Romania', ['Bucarest', 'Bucharest']],
+  ['Atene', 'Athens', 'Grecia', 'Greece', ['Atene', 'Athens']],
+  ['Istanbul', 'Istanbul', 'Turchia', 'Türkiye', ['Istanbul']],
+  ['Kyiv', 'Kyiv', 'Ucraina', 'Ukraine', ['Kyiv', 'Kiev']],
+  ['Mosca', 'Moscow', 'Russia', 'Russia', ['Mosca', 'Moscow', 'Moskva']],
+  ['Stoccolma', 'Stockholm', 'Svezia', 'Sweden', ['Stoccolma', 'Stockholm']],
+  ['Oslo', 'Oslo', 'Norvegia', 'Norway', ['Oslo']],
+  ['Copenaghen', 'Copenhagen', 'Danimarca', 'Denmark', ['Copenaghen', 'Copenhagen']],
+  ['Helsinki', 'Helsinki', 'Finlandia', 'Finland', ['Helsinki']],
+  ['Dublino', 'Dublin', 'Irlanda', 'Ireland', ['Dublino', 'Dublin']],
+  ['Zurigo', 'Zurich', 'Svizzera', 'Switzerland', ['Zurigo', 'Zurich']],
+  ['Monaco di Baviera', 'Munich', 'Germania', 'Germany', ['Monaco di Baviera', 'Munich']],
+  ['Amburgo', 'Hamburg', 'Germania', 'Germany', ['Amburgo', 'Hamburg']],
+  ['New York', 'New York', 'Stati Uniti', 'United States', ['New York']],
+  ['Los Angeles', 'Los Angeles', 'Stati Uniti', 'United States', ['Los Angeles']],
+  ['San Francisco', 'San Francisco', 'Stati Uniti', 'United States', ['San Francisco']],
+  ['Chicago', 'Chicago', 'Stati Uniti', 'United States', ['Chicago']],
+  ['Toronto', 'Toronto', 'Canada', 'Canada', ['Toronto']],
+  ['Montreal', 'Montreal', 'Canada', 'Canada', ['Montreal', 'Montréal']],
+  ['Vancouver', 'Vancouver', 'Canada', 'Canada', ['Vancouver']],
+  ['Città del Messico', 'Mexico City', 'Messico', 'Mexico', ['Città del Messico', 'Mexico City']],
+  ['San Paolo', 'São Paulo', 'Brasile', 'Brazil', ['San Paolo', 'Sao Paulo', 'São Paulo']],
+  ['Rio de Janeiro', 'Rio de Janeiro', 'Brasile', 'Brazil', ['Rio de Janeiro']],
+  ['Buenos Aires', 'Buenos Aires', 'Argentina', 'Argentina', ['Buenos Aires']],
+  ['Santiago', 'Santiago', 'Cile', 'Chile', ['Santiago']],
+  ['Lima', 'Lima', 'Perù', 'Peru', ['Lima']],
+  ['Bogotà', 'Bogota', 'Colombia', 'Colombia', ['Bogotà', 'Bogota']],
+  ['Tokyo', 'Tokyo', 'Giappone', 'Japan', ['Tokyo']],
+  ['Seul', 'Seoul', 'Corea del Sud', 'South Korea', ['Seul', 'Seoul']],
+  ['Pechino', 'Beijing', 'Cina', 'China', ['Pechino', 'Beijing']],
+  ['Shanghai', 'Shanghai', 'Cina', 'China', ['Shanghai']],
+  ['Hong Kong', 'Hong Kong', 'Hong Kong', 'Hong Kong', ['Hong Kong']],
+  ['Taipei', 'Taipei', 'Taiwan', 'Taiwan', ['Taipei']],
+  ['Singapore', 'Singapore', 'Singapore', 'Singapore', ['Singapore']],
+  ['Bangkok', 'Bangkok', 'Thailandia', 'Thailand', ['Bangkok']],
+  ['Hanoi', 'Hanoi', 'Vietnam', 'Vietnam', ['Hanoi']],
+  ['Giacarta', 'Jakarta', 'Indonesia', 'Indonesia', ['Giacarta', 'Jakarta']],
+  ['Manila', 'Manila', 'Filippine', 'Philippines', ['Manila']],
+  ['Nuova Delhi', 'New Delhi', 'India', 'India', ['Nuova Delhi', 'New Delhi']],
+  ['Mumbai', 'Mumbai', 'India', 'India', ['Mumbai', 'Bombay']],
+  ['Bengaluru', 'Bengaluru', 'India', 'India', ['Bengaluru', 'Bangalore']],
+  ['Dubai', 'Dubai', 'Emirati Arabi Uniti', 'United Arab Emirates', ['Dubai']],
+  ['Abu Dhabi', 'Abu Dhabi', 'Emirati Arabi Uniti', 'United Arab Emirates', ['Abu Dhabi']],
+  ['Riad', 'Riyadh', 'Arabia Saudita', 'Saudi Arabia', ['Riad', 'Riyadh']],
+  ['Doha', 'Doha', 'Qatar', 'Qatar', ['Doha']],
+  ['Il Cairo', 'Cairo', 'Egitto', 'Egypt', ['Il Cairo', 'Cairo']],
+  ['Lagos', 'Lagos', 'Nigeria', 'Nigeria', ['Lagos']],
+  ['Nairobi', 'Nairobi', 'Kenya', 'Kenya', ['Nairobi']],
+  ['Johannesburg', 'Johannesburg', 'Sudafrica', 'South Africa', ['Johannesburg']],
+  ['Città del Capo', 'Cape Town', 'Sudafrica', 'South Africa', ['Città del Capo', 'Cape Town']],
+  ['Sydney', 'Sydney', 'Australia', 'Australia', ['Sydney']],
+  ['Melbourne', 'Melbourne', 'Australia', 'Australia', ['Melbourne']],
+  ['Auckland', 'Auckland', 'Nuova Zelanda', 'New Zealand', ['Auckland']],
+]
+
+const normalize = value => value.toLocaleLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim()
+const popularSuggestions = (query, language) => {
+  const term = normalize(query)
+  return POPULAR_PLACES
+    .filter(([it, en, , , aliases]) => [it, en, ...aliases].some(name => normalize(name).startsWith(term)))
+    .slice(0, 6)
+    .map(([it, en, countryIt, countryEn]) => ({
+      id: `popular-${normalize(en)}`,
+      name: language === 'en' ? en : it,
+      country: language === 'en' ? countryEn : countryIt,
+      state: '',
+    }))
+}
+
 export default function LocationAutocomplete({ className, value, language = 'it', onChange, onSelect }) {
   const listId = useId()
   const [query, setQuery] = useState(value || '')
@@ -20,6 +117,9 @@ export default function LocationAutocomplete({ className, value, language = 'it'
       return
     }
 
+    const localPlaces = popularSuggestions(term, language)
+    setResults(localPlaces)
+    setSearchError(false)
     const controller = new AbortController()
     let requestTimeout
     let timedOut = false
@@ -50,13 +150,20 @@ export default function LocationAutocomplete({ className, value, language = 'it'
           return [{ id: key, name, country, state: properties.state || '' }]
         })
         if (!controller.signal.aborted) {
-          setResults(places)
+          const known = new Set(localPlaces.map(place => `${normalize(place.name)}|${normalize(place.country)}`))
+          const merged = [...localPlaces, ...places.filter(place => {
+            const key = `${normalize(place.name)}|${normalize(place.country)}`
+            if (known.has(key)) return false
+            known.add(key)
+            return true
+          })].slice(0, 8)
+          setResults(merged)
           setActiveIndex(-1)
         }
       } catch {
         if (!controller.signal.aborted || timedOut) {
-          setResults([])
-          setSearchError(true)
+          setResults(localPlaces)
+          setSearchError(localPlaces.length === 0)
         }
       } finally {
         window.clearTimeout(requestTimeout)
