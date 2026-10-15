@@ -13,7 +13,7 @@ import { ensureStageInterview, getInterviews, validationIssues, validationMessag
 const DRAFT_KEY = 'lfs_application_draft_v1'
 const emptyForm = () => ({
   azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
-  sede: '', paese: 'Italia', link_annuncio: '', fonte: '',
+  sede: '', paese: '', link_annuncio: '', fonte: '',
   stipendio_min: '', stipendio_max: '', note: '', notifiche_push: true,
   data_invio: new Date().toLocaleDateString('sv-SE'), data_colloquio: '',
   tipo_candidatura: 'annuncio', interviews: [], attesa_dal: '', orario_lavoro: '', tipo_contratto: '', modalita_lavoro: '', livello_ruolo: '',
@@ -48,7 +48,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [errors, setErrors] = useState({})
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => {
-    const next = { ...form, [k]: v }
+    const next = { ...form, [k]: v, ...(k === 'sede' ? {paese:''} : {}) }
     if(k === 'stato') next.interviews = ensureStageInterview(next,v)
     setFormError('')
     setForm(next)

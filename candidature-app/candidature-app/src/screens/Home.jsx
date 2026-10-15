@@ -1,3 +1,4 @@
+import { locationText } from '../lib/location'
 import { hiredLabel } from '../lib/utils'
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
@@ -137,7 +138,7 @@ const candidatureFiltrate = useMemo(() => {
       list = list.filter(c =>
         c.azienda?.toLowerCase().includes(q) ||
         c.ruolo?.toLowerCase().includes(q) ||
-        c.sede?.toLowerCase().includes(q)
+        locationText(c).toLowerCase().includes(q)
       );
     }
 
@@ -602,7 +603,7 @@ function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMod
           {upcomingInterviews(c)[0] && <p className="text-xs text-amber mt-1.5">📅 {interviewLabel(upcomingInterviews(c)[0],i18n.language==='en')} · {formatDateTime(upcomingInterviews(c)[0].date,upcomingInterviews(c)[0].time)}</p>}
           {getInterviews(c).some(e=>e.needsReview) && <p className="text-xs text-amber mt-1.5">{i18n.language==='en'?'Check the stage of a previous interview':'Verifica la fase di un colloquio precedente'}</p>}
           <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-muted truncate">{[c.sede, c.paese].filter(Boolean).join(', ') || '—'}</p>
+            <p className="text-xs text-muted truncate">{locationText(c) || '—'}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {c.priorita && isRecent && isActive && <PriorityBadge priorita={c.priorita} />}
               <span className="text-xs text-muted font-medium">{days}{t('home.ggFa')}</span>

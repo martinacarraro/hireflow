@@ -23,7 +23,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
   const [showAssuntaCelebration,setShowAssuntaCelebration]=useState(celebrateOnOpen)
   const [showCoffeePrompt,setShowCoffeePrompt]=useState(false)
   const lock=useRef(false),persisted=useRef(c)
-  const set=(key,value)=>{setForm(f=>({...f,[key]:value}));setDirty(true);setSaved(false);setError('')}
+  const set=(key,value)=>{setForm(f=>({...f,[key]:value,...(key==='sede'?{paese:''}:{})}));setDirty(true);setSaved(false);setError('')}
   useEffect(()=>{
     if(!showAssuntaCelebration)return
     const timer=setTimeout(()=>{setShowAssuntaCelebration(false);setShowCoffeePrompt(true);try{localStorage.setItem('lfs_support_shown_at',new Date().toISOString())}catch{}},2500)
