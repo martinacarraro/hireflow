@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import worldCities from '../data/world-cities.json'
 
 const POPULAR_PLACES = [
@@ -255,33 +255,19 @@ const popularSuggestions = (query, language) => {
 
 export default function LocationAutocomplete({ className, value, language = 'it', onChange, onSelect }) {
   const listId = useId()
-  const [query, setQuery] = useState(value || '')
-  const [results, setResults] = useState([])
+  const query = value || ''
+  const results = useMemo(() => query.trim().length >= 2
+    ? popularSuggestions(query.trim(), language) : [], [query, language])
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
-  useEffect(() => setQuery(value || ''), [value])
-
-  useEffect(() => {
-    const term = query.trim()
-    if (term.length < 2) {
-      setResults([])
-      setActiveIndex(-1)
-      return
-    }
-
-    setResults(popularSuggestions(term, language))
-    setActiveIndex(-1)
-  }, [query, language])
-
   const choose = place => {
+    if (!open || query.trim().length < 2 || !results.some(result => result.id === place?.id)) return
     const fullName = `${place.name}, ${place.country}`
-    setQuery(fullName)
-    setResults([])
     setOpen(false)
     setActiveIndex(-1)
-    onChange(fullName)
-    onSelect?.({ name: fullName, country: place.country })
+    if (onSelect) onSelect({ name: fullName, country: place.country })
+    else onChange(fullName)
   }
 
   const handleKeyDown = event => {
@@ -310,11 +296,10 @@ export default function LocationAutocomplete({ className, value, language = 'it'
       aria-autocomplete="list"
       aria-expanded={open && results.length > 0}
       aria-controls={listId}
-      onFocus={() => setOpen(true)}
-      onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+      onFocus={() => { setOpen(true); setActiveIndex(-1) }}
+      onBlur={() => { setOpen(false); setActiveIndex(-1) }}
       onKeyDown={handleKeyDown}
       onChange={event => {
-        setQuery(event.target.value)
         setOpen(true)
         setActiveIndex(-1)
         onChange(event.target.value)
@@ -326,6 +311,7 @@ export default function LocationAutocomplete({ className, value, language = 'it'
           <button
             type="button"
             className="block w-full px-3 py-2 text-left text-sm hover:bg-white/10"
+            onPointerDown={event => event.preventDefault()}
             onMouseDown={event => event.preventDefault()}
             onMouseEnter={() => setActiveIndex(index)}
             onClick={() => choose(place)}
