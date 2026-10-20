@@ -49,9 +49,11 @@ export function hasResponse(c) {
   return evidence.includes(c.stato) || (c.history || []).some(h => evidence.includes(h.stato)) || hasOffer(c) ||
     getInterviews(c).some(e => e.date || e.status === 'completed') || !!c.ultimo_contatto
 }
-export function waitingSince(c) {
-  const dates = [c.attesa_dal, c.ultimo_contatto, ...countedInterviews(c).map(e => e.date)].filter(Boolean)
-  return dates.sort().at(-1) || c.data_invio
+export function waitingSince(c, now = new Date()) {
+  const dates = [c.data_invio, c.attesa_dal, c.ultimo_contatto, ...countedInterviews(c, now).map(e => e.date)]
+    .filter(date => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
+      && localDay(parseDay(date)) === date && date <= localDay(now))
+  return dates.sort().at(-1)
 }
 export function upcomingInterviews(c, now = new Date(), days = 30) {
   if (c.archiviata || CLOSED.has(c.stato) || c.stato === 'Offerta ricevuta') return []
@@ -151,7 +153,7 @@ export function countedInterviews(c, now = new Date()) {
 export function averageWaitingDays(list, now = new Date()) {
   const days = list.filter(c => !c.archiviata &&
     ['Inviata', 'Spontanea', 'Vista', 'In attesa risposta'].includes(c.stato))
-    .map(c => waitingSince(c))
+    .map(c => waitingSince(c, now))
     .filter(date => date && !Number.isNaN(parseDay(date).getTime()) && date.slice(0,10) <= localDay(now))
     .map(date => elapsedDays(date, now))
   return days.length ? Math.round(days.reduce((sum, day) => sum + day, 0) / days.length) : null
@@ -172,9 +174,10 @@ export function dueReminders(c, now = new Date()) {
 }
 
 export function shouldSuggestArchive(c, now = new Date()) {
-  const since = waitingSince(c)
+  const since = waitingSince(c, now)
   return !c.archiviata && ['Inviata', 'Vista', 'Spontanea', 'In attesa risposta', 'GHOSTED'].includes(c.stato)
     && elapsedDays(since, now) >= 90
     && !upcomingInterviews(c, now, 36500).length
     && c.archive_suggestion_dismissed_for !== since
 }
+

@@ -86,7 +86,7 @@ export default function Stats({ onOpenCandidatura }) {
     const title = selected?.label || t('add.stati.' + selectedCount.slice(6), selectedCount.slice(6))
     return <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border">
-        <button className="nav-arrow" onClick={() => setSelectedCount(null)} aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
+        <button className="nav-arrow" onClick={() => setSelectedCount(null)} aria-label={t('common.indietro', 'Indietro / Back')}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
         <div><h2 className="font-bold text-txt">{title}</h2>
           <p className="text-sm text-muted">{selectedCount === 'responses' ? `${rows.length} / ${stats.total} · ${selected.value}` : `${rows.length} ${en ? 'applications' : 'candidature'}`}</p>
         </div>
@@ -108,7 +108,7 @@ export default function Stats({ onOpenCandidatura }) {
   if (showNotifs) return (
     <div className="screen">
       <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
+        <button onClick={() => { setShowNotifs(false); markAllNotificationsRead() }} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
         <h2 className="font-bold text-txt">{t('home.notifiche')}</h2>
       </div>
       <div className="flex-1 scrollable px-4 py-4">
@@ -221,3 +221,4 @@ export default function Stats({ onOpenCandidatura }) {
     </div>
   )
 }
+

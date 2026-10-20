@@ -1,3 +1,4 @@
+import { createBackup, validateBackup, restoreBackupData } from '../lib/backup'
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApp } from '../contexts/AppContext'
@@ -57,18 +58,7 @@ export default function Profile() {
   const streak = profile?.streak_giorni || 0
 
   const exportBackup = () => {
-    const localStorageSnapshot = {}
-    Object.keys(localStorage)
-      .filter(k => k.startsWith('lfs_') || k === 'lingua')
-      .forEach(k => { localStorageSnapshot[k] = localStorage.getItem(k) })
-
-    const backup = {
-      version: 2,
-      exported_at: new Date().toISOString(),
-      profile,
-      candidature,
-      local_storage: localStorageSnapshot,
-    }
+    const backup = createBackup(localStorage, profile, candidature)
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -86,11 +76,9 @@ export default function Profile() {
 
     try {
       const backup = JSON.parse(await file.text())
-      if (!backup || !Array.isArray(backup.candidature) || !backup.profile) {
-        throw new Error('invalid-backup')
-      }
+      validateBackup(backup)
 
-      const backupDate = backup.exported_at
+      const backupDate = backup.exported_at && !Number.isNaN(new Date(backup.exported_at).getTime())
         ? new Date(backup.exported_at).toLocaleString(isIt ? 'it-IT' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' })
         : (isIt ? 'data non disponibile' : 'date unavailable')
       const confirmMessage = isIt
@@ -98,24 +86,15 @@ export default function Profile() {
         : `Backup from ${backupDate}\nApplications in backup: ${backup.candidature.length}\nCurrent applications: ${candidature.length}\n\nRestore it? Current data will be replaced.`
       if (!window.confirm(confirmMessage)) return
 
-      Object.keys(localStorage)
-        .filter(k => k.startsWith('lfs_'))
-        .forEach(k => localStorage.removeItem(k))
-
-      if (backup.local_storage && typeof backup.local_storage === 'object') {
-        Object.entries(backup.local_storage).forEach(([key, value]) => {
-          if ((key.startsWith('lfs_') || key === 'lingua') && typeof value === 'string') {
-            localStorage.setItem(key, value)
-          }
-        })
-      }
-
-      localStorage.setItem('lfs_candidature', JSON.stringify(backup.candidature))
-      localStorage.setItem('lfs_profile', JSON.stringify(backup.profile))
-      localStorage.setItem('lfs_onboarding_done', '1')
+      restoreBackupData(localStorage, backup)
       window.location.reload()
-    } catch {
-      showToast(isIt ? 'Backup non valido' : 'Invalid backup', 'error')
+    } catch (error) {
+      const message = error.message === 'restore-failed'
+        ? (isIt ? 'Ripristino non riuscito. I dati precedenti sono stati mantenuti.' : 'Restore failed. Previous data was kept.')
+        : error.message === 'restore-rollback-failed'
+          ? (isIt ? 'Memoria del dispositivo non disponibile. Non chiudere l’app: esporta un backup prima di riprovare.' : 'Device storage unavailable. Keep the app open and export a backup before retrying.')
+          : (isIt ? 'Backup non valido' : 'Invalid backup')
+      showToast(message, 'error')
     } finally {
       if (backupRef.current) backupRef.current.value = ''
     }
@@ -144,7 +123,7 @@ export default function Profile() {
               markAllNotificationsRead()
             }}
             className="nav-arrow"
-           aria-label={t('common.indietro', 'Indietro / Back')}>←</button>
+           aria-label={t('common.indietro', 'Indietro / Back')}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
 
           <h2 className="font-bold text-txt">
             {isIt ? 'Notifiche' : 'Notifications'}
@@ -412,3 +391,4 @@ function BadgePopup({ badge, earned, isIt, t, onClose }) {
     </div>
   </dialog>
 }
+
