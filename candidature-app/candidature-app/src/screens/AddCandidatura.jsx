@@ -129,9 +129,9 @@ export default function AddCandidatura({ onBack, onDone }) {
         </div>
       </div>
 
-      <div className="flex-1 scrollable px-5 py-4 space-y-1">
+      <div className="flex-1 scrollable px-5 py-5 flex flex-col gap-5" data-application-fields>
         {draftStatus && (
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2 mb-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2">
             <p role="status" className="text-xs text-muted">
               {draftStatus === 'saved'
                 ? (isIt ? 'Bozza salvata su questo dispositivo' : 'Draft saved on this device')
@@ -143,9 +143,8 @@ export default function AddCandidatura({ onBack, onDone }) {
           </div>
         )}
 
-        <div data-application-fields />
 
-        <Field label={t('add.azienda')}>
+        <Field className="" label={t('add.azienda')}>
           <CompanyAutocomplete
             className={`input-field ${errors.azienda ? 'border-red' : ''}`}
             placeholder={t('add.aziendaPlaceholder')}
@@ -156,21 +155,21 @@ export default function AddCandidatura({ onBack, onDone }) {
           {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
         </Field>
 
-        <Field label={t('add.ruolo')}>
+        <Field className="" label={t('add.ruolo')}>
           <RoleInput className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
             placeholder={t('add.ruoloPlaceholder')}
             value={form.ruolo} onChange={value => set('ruolo', value)} />
           {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
         </Field>
 
-        <Field label={t('add.stato')}>
+        <Field className="" label={t('add.stato')}>
           <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
             {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
           </select>
         </Field>
 
-        {statiConColloquio.includes(form.stato) && <div className="py-3"><InterviewFields form={form} onChange={set}/></div>}
-        <details className="card mt-4">
+        {statiConColloquio.includes(form.stato) && <div><InterviewFields form={form} onChange={set}/></div>}
+        <details className="card">
           <summary>{isIt?'Altri dettagli':'More details'}</summary>
           <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
         </details>

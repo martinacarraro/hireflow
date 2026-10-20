@@ -285,9 +285,9 @@ export function TabBar({ active, onChange, unread = 0 }) {
 }
 
 
-export function Field({ label, children, hint }) {
+export function Field({ label, children, hint, className = 'mb-4' }) {
   return (
-    <div className="mb-4">
+    <div className={className}>
       {label && <label className="block text-sm font-medium text-txt mb-1.5">{label}</label>}
       {children}
       {hint && <p className="text-xs text-muted mt-1">{hint}</p>}

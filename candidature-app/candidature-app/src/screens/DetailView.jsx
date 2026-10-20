@@ -141,11 +141,11 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
 
   return <div className="screen">
     <header className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-      <button className="nav-arrow" onClick={back} aria-label={en?'Back':'Indietro'}>←</button>
+      <button className="nav-arrow" onClick={back} aria-label={en?'Back':'Indietro'}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
       <CompanyAvatar name={form.azienda} size={40}/>
       <div className="min-w-0"><h1 className="font-bold text-base truncate">{form.azienda}</h1><p className="text-sm text-muted truncate">{form.ruolo}</p></div>
     </header>
-    <div className="flex-1 scrollable px-5 py-4 space-y-4">
+    <div className="flex-1 scrollable px-5 py-5 flex flex-col gap-5">
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
       <label className="block text-sm font-semibold">{en?'Where are you now? *':'A che punto sei? *'}
         <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>save({stato:e.target.value})}>
