@@ -101,8 +101,6 @@ export function XpBar({ xp = 0, genere }) {
   const { t } = useTranslation()
   const lv = getLevel(xp)
   const pct = getXpProgress(xp)
-  const next = lv.max === 99999 ? '∞' : lv.max
-  const [showLog, setShowLog] = React.useState(false)
   
   const rawLabel = t(`profile.levels.${lv.name}`, lv.name)
   let name = rawLabel.endsWith('*') 
@@ -113,12 +111,6 @@ export function XpBar({ xp = 0, genere }) {
 
   const displayName = name.charAt(0).toUpperCase() + name.slice(1)
 
-  let log = []
-  try { 
-    const key = window.XP_LOG_KEY || 'job_xp_log'
-    log = JSON.parse(sessionStorage.getItem(key) || '[]') 
-  } catch (e) {}
-
   return (
     <div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 justify-between text-xs text-muted mb-1 font-semibold">
@@ -126,29 +118,11 @@ export function XpBar({ xp = 0, genere }) {
         <span>{xp} {t('profile.levels.total_xp')}</span>
       </div>
       
-      <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
+      <div className="h-1.5 bg-border rounded-full overflow-hidden">
         <div className="h-full bg-purple rounded-full transition-all"
           style={{ width: `${pct}%` }} />
       </div>
 
-      <div className="flex justify-end">
-        <button onClick={() => setShowLog(v => !v)} className="text-xs text-purple-soft font-semibold min-h-[44px] px-2">
-          {xp} / {next} XP {showLog ? '▴' : '▾'}
-        </button>
-      </div>
-
-      {showLog && (
-        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border-t border-border pt-1">
-          {log.length === 0 ? (
-            <p className="text-xs text-muted text-center py-1">No XP yet</p>
-          ) : log.map((e, i) => (
-            <div key={i} className="flex justify-between items-center text-xs py-0.5">
-              <span className="text-muted">{e.label}</span>
-              <span className="text-green font-semibold">+{e.amount} XP</span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
