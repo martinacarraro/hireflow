@@ -125,11 +125,11 @@ export default function AddCandidatura({ onBack, onDone }) {
         <button onClick={onBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
         <div>
           <h2 className="font-bold text-txt text-base">{t('add.titolo')}</h2>
-          <p className="text-xs text-muted">{isIt ? 'Bastano azienda e ruolo. Il resto puoi aggiungerlo dopo.' : 'Company and role are enough. Add the rest later.'}</p>
+          <p className="text-xs text-muted">{isIt ? 'Inserisci solo l’essenziale. I dettagli sono facoltativi.' : 'Company and role are enough. Add the rest later.'}</p>
         </div>
       </div>
 
-      <div className="flex-1 scrollable px-5 py-5 flex flex-col gap-5" data-application-fields>
+      <div className="flex-1 scrollable px-5 py-4 flex flex-col gap-4" data-application-fields>
         {draftStatus && (
           <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2">
             <p role="status" className="text-xs text-muted">
@@ -144,6 +144,8 @@ export default function AddCandidatura({ onBack, onDone }) {
         )}
 
 
+        <div className="card p-4 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-bold text-txt"><span>✨</span>{isIt ? 'Informazioni essenziali' : 'Essential information'}</div>
         <Field className="" label={t('add.azienda')}>
           <CompanyAutocomplete
             className={`input-field ${errors.azienda ? 'border-red' : ''}`}
@@ -167,10 +169,11 @@ export default function AddCandidatura({ onBack, onDone }) {
             {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
           </select>
         </Field>
+        </div>
 
-        {statiConColloquio.includes(form.stato) && <div><InterviewFields form={form} onChange={set}/></div>}
-        <details className="card">
-          <summary>{isIt?'Altri dettagli':'More details'}</summary>
+        {statiConColloquio.includes(form.stato) && <div className="card p-4"><InterviewFields form={form} onChange={set}/></div>}
+        <details className="card p-4">
+          <summary>{isIt?'Altri dettagli (facoltativi)':'More details (optional)'}</summary>
           <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
         </details>
       </div>
