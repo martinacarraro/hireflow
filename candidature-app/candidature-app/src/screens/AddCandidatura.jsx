@@ -178,15 +178,17 @@ export default function AddCandidatura({ onBack, onDone }) {
               {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
             </Field>
 
-            <Field className="add-field" label={isIt ? 'A che punto sei?' : 'Application status'}>
-              <select aria-label={t('add.stato')} className="input-field add-input add-select" value={form.stato} onChange={e => set('stato', e.target.value)}>
-                {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
-              </select>
-            </Field>
-            <label className="add-field flex items-center gap-2 text-sm font-medium text-txt">
-              <input type="checkbox" checked={!!form.spontanea} onChange={e => set('spontanea', e.target.checked)} />
-              <span>{isIt ? 'Candidatura spontanea' : 'Unsolicited application'}</span>
-            </label>
+            <div className="add-field flex items-end gap-2">
+              <label className="block flex-1 min-w-0 text-xs text-muted">{isIt ? 'A che punto sei?' : 'Application status'}
+                <select aria-label={t('add.stato')} className="input-field add-input add-select mt-1" value={form.stato} onChange={e => set('stato', e.target.value)}>
+                  {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
+                </select>
+              </label>
+              <label className="flex items-center gap-1.5 pb-2 text-xs font-semibold whitespace-nowrap text-txt">
+                <input type="checkbox" checked={!!form.spontanea} onChange={e => set('spontanea', e.target.checked)} />
+                <span>💡 {isIt ? 'Spontanea' : 'Unsolicited'}</span>
+              </label>
+            </div>
           </div>
         </section>
 
