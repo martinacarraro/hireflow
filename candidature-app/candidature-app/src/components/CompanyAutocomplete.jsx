@@ -55,15 +55,16 @@ export default function CompanyAutocomplete({
           setFocused(false)
           onBlur?.(event)
         }}
-        onKeyDown={handleKeyDown}
         autoFocus={autoFocus}
         autoComplete="off"
         role="combobox"
         aria-expanded={isOpen}
         aria-autocomplete="list"
+        aria-controls="company-suggestions"
+        onKeyDown={handleKeyDown}
       />
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl">
+        <div id="company-suggestions" role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl">
           <p className="border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted">
             Suggerimenti sul dispositivo
           </p>
@@ -71,6 +72,9 @@ export default function CompanyAutocomplete({
             <button
               key={company.name}
               type="button"
+              role="option"
+              aria-selected={activeIndex === index}
+              onPointerDown={event => event.preventDefault()}
               onMouseDown={event => event.preventDefault()}
               onClick={() => choose(company)}
               className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors ${
