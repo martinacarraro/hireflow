@@ -120,70 +120,95 @@ export default function AddCandidatura({ onBack, onDone }) {
   }
 
   return (
-    <div className="screen">
-      <div className="flex items-center gap-3 px-5 pt-safe pt-4 pb-3 border-b border-border flex-shrink-0">
-        <button onClick={onBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
-        <div>
-          <h2 className="font-bold text-txt text-base">{t('add.titolo')}</h2>
-          <p className="text-xs text-muted">{isIt ? 'Inserisci solo l’essenziale. I dettagli sono facoltativi.' : 'Company and role are enough. Add the rest later.'}</p>
+    <div className="screen add-screen">
+      <header className="add-header flex items-center gap-3 px-5 pt-safe pt-4 pb-4">
+        <button onClick={onBack} className="nav-arrow" aria-label={t('common.indietro', 'Indietro / Back')}>
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="add-eyebrow">{isIt ? 'NUOVA OPPORTUNITÀ' : 'NEW OPPORTUNITY'}</p>
+          <h2 className="font-bold text-txt text-xl leading-tight">{t('add.titolo')}</h2>
+          <p className="text-xs text-muted mt-1">{isIt ? 'Bastano due informazioni per iniziare.' : 'Just two details to get started.'}</p>
         </div>
-      </div>
+        <span className="add-time-chip">{isIt ? '1 min' : '1 min'}</span>
+      </header>
 
-      <div className="flex-1 scrollable px-5 py-4 flex flex-col gap-4" data-application-fields>
+      <div className="flex-1 scrollable px-5 pt-5 pb-6 flex flex-col gap-5" data-application-fields>
         {draftStatus && (
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2">
-            <p role="status" className="text-xs text-muted">
-              {draftStatus === 'saved'
-                ? (isIt ? 'Bozza salvata su questo dispositivo' : 'Draft saved on this device')
-                : (isIt ? 'Bozza non salvata: tieni aperta questa schermata.' : 'Draft not saved: keep this screen open.')}
-            </p>
-            <button type="button" disabled={loading} onClick={clearDraft} className="text-xs text-purple-soft font-semibold py-2">
-              {isIt ? 'Ricomincia' : 'Start over'}
+          <div className="add-draft-note" role="status">
+            <span className="add-draft-dot" />
+            <span className="flex-1">{draftStatus === 'saved'
+              ? (isIt ? 'Bozza salvata automaticamente' : 'Draft saved automatically')
+              : (isIt ? 'Bozza non salvata: tieni aperta questa schermata.' : 'Draft not saved: keep this screen open.')}</span>
+            <button type="button" disabled={loading} onClick={clearDraft} className="text-xs text-purple-soft font-semibold">
+              {isIt ? 'Azzera' : 'Reset'}
             </button>
           </div>
         )}
 
+        <section className="add-section">
+          <div className="add-section-heading">
+            <span className="add-step">01</span>
+            <div>
+              <h3>{isIt ? 'Le informazioni principali' : 'The essentials'}</h3>
+              <p>{isIt ? 'Inizia da azienda e posizione.' : 'Start with company and role.'}</p>
+            </div>
+          </div>
 
-        <div className="card p-4 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-txt"><span>✨</span>{isIt ? 'Informazioni essenziali' : 'Essential information'}</div>
-        <Field className="" label={t('add.azienda')}>
-          <CompanyAutocomplete
-            className={`input-field ${errors.azienda ? 'border-red' : ''}`}
-            placeholder={t('add.aziendaPlaceholder')}
-            value={form.azienda}
-            onChange={value => set('azienda', value)}
-            onSelect={company => set('azienda', company.name)}
-          />
-          {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
-        </Field>
+          <div className="add-fields">
+            <Field className="add-field" label={<>{isIt ? 'Azienda' : 'Company'} <span className="add-required">*</span></>}>
+              <CompanyAutocomplete
+                className={`input-field add-input ${errors.azienda ? 'border-red' : ''}`}
+                placeholder={isIt ? 'Es. Spotify, Google, Apple' : 'e.g. Spotify, Google, Apple'}
+                value={form.azienda}
+                onChange={value => set('azienda', value)}
+                onSelect={company => set('azienda', company.name)}
+              />
+              {errors.azienda && <p className="text-red text-xs mt-1">{errors.azienda}</p>}
+            </Field>
 
-        <Field className="" label={t('add.ruolo')}>
-          <RoleInput className={`input-field ${errors.ruolo ? 'border-red' : ''}`}
-            placeholder={t('add.ruoloPlaceholder')}
-            value={form.ruolo} onChange={value => set('ruolo', value)} />
-          {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
-        </Field>
+            <Field className="add-field" label={<>{isIt ? 'Ruolo' : 'Role'} <span className="add-required">*</span></>}>
+              <RoleInput
+                className={`input-field add-input ${errors.ruolo ? 'border-red' : ''}`}
+                placeholder={isIt ? 'Es. Digital Marketing Specialist' : 'e.g. Product Designer'}
+                value={form.ruolo}
+                onChange={value => set('ruolo', value)}
+              />
+              {errors.ruolo && <p className="text-red text-xs mt-1">{errors.ruolo}</p>}
+            </Field>
 
-        <Field className="" label={t('add.stato')}>
-          <select aria-label={t('add.stato')} className="input-field" value={form.stato} onChange={e => set('stato', e.target.value)}>
-            {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
-          </select>
-        </Field>
-        </div>
+            <Field className="add-field" label={isIt ? 'A che punto sei?' : 'Application status'}>
+              <select aria-label={t('add.stato')} className="input-field add-input add-select" value={form.stato} onChange={e => set('stato', e.target.value)}>
+                {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
+              </select>
+            </Field>
+          </div>
+        </section>
 
-        {statiConColloquio.includes(form.stato) && <div className="card p-4"><InterviewFields form={form} onChange={set}/></div>}
-        <details className="card p-4">
-          <summary>{isIt?'Altri dettagli (facoltativi)':'More details (optional)'}</summary>
-          <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
+        {statiConColloquio.includes(form.stato) && <section className="add-extra-panel"><InterviewFields form={form} onChange={set}/></section>}
+
+        <details className="add-details">
+          <summary>
+            <span className="add-details-icon">＋</span>
+            <span className="flex-1 min-w-0">
+              <strong>{isIt ? 'Aggiungi altri dettagli' : 'Add more details'}</strong>
+              <small>{isIt ? 'Sede, link, stipendio, note… anche più tardi' : 'Location, link, salary, notes… you can do it later'}</small>
+            </span>
+            <span className="add-details-chevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div className="add-details-content">
+            <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
+          </div>
         </details>
       </div>
-        <div className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-          {formError && <p role="alert" className="text-sm text-red mb-3">{formError}</p>}
-          <button onClick={handleSubmit} disabled={loading}
-            className="btn-primary w-full text-base py-4 flex items-center justify-center gap-2">
-            {loading ? <Spinner size={20} /> : (isIt ? 'Salva candidatura' : 'Save application')}
-          </button>
-        </div>
+
+      <footer className="add-footer px-5 pt-3 pb-4 flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+        {formError && <p role="alert" className="text-sm text-red mb-3">{formError}</p>}
+        <button onClick={handleSubmit} disabled={loading} className="btn-primary add-submit w-full flex items-center justify-center gap-2">
+          {loading ? <Spinner size={20} /> : <>{isIt ? 'Crea candidatura' : 'Create application'} <span aria-hidden="true">→</span></>}
+        </button>
+        <p className="add-footer-hint">{isIt ? 'Potrai modificare tutto in qualsiasi momento.' : 'You can edit everything at any time.'}</p>
+      </footer>
     </div>
   )
 }
