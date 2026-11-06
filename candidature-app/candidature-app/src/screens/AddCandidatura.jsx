@@ -184,9 +184,10 @@ export default function AddCandidatura({ onBack, onDone }) {
                   {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
                 </select>
               </label>
-              <label className="flex items-center gap-1.5 pb-2 text-xs font-semibold whitespace-nowrap text-txt">
-                <input type="checkbox" checked={!!form.spontanea} onChange={e => set('spontanea', e.target.checked)} />
-                <span>💡 {isIt ? 'Spontanea' : 'Unsolicited'}</span>
+              <label className={`inline-flex items-center gap-2 mb-1 px-3 py-2 rounded-full border text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${form.spontanea ? 'border-purple/60 bg-purple/20 text-purple-soft' : 'border-border bg-surface text-muted'}`}>
+                <input type="checkbox" className="sr-only" checked={!!form.spontanea} onChange={e => set('spontanea', e.target.checked)} />
+                <span aria-hidden="true" className="text-sm">{form.spontanea ? '✦' : '＋'}</span>
+                <span>{isIt ? 'Spontanea' : 'Unsolicited'}</span>
               </label>
             </div>
           </div>
