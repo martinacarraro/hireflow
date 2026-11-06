@@ -134,7 +134,7 @@ export default function AddCandidatura({ onBack, onDone }) {
         <span className="add-time-chip">{isIt ? '1 min' : '1 min'}</span>
       </header>
 
-      <div className="flex-1 scrollable px-5 pt-5 pb-6 flex flex-col gap-5" data-application-fields>
+      <div className="add-scroll-area flex-1 scrollable px-5 pt-5 pb-6 flex flex-col gap-5" data-application-fields>
         {draftStatus && (
           <div className="add-draft-note" role="status">
             <span className="add-draft-dot" />
