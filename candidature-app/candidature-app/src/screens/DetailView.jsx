@@ -14,7 +14,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
   const { updateCandidatura, deleteCandidatura, profile } = useApp()
   const { t,i18n } = useTranslation()
   const en=i18n.language==='en'
-  const [form,setForm]=useState(()=>({...c,stato:c.stato==='Spontanea'?'Inviata':c.stato,interviews:ensureStageInterview(c)}))
+  const [form,setForm]=useState(()=>({...c,spontanea:c.spontanea ?? c.stato==='Spontanea',stato:c.stato==='Spontanea'?'Inviata':c.stato,interviews:ensureStageInterview(c)}))
   const [dirty,setDirty]=useState(false)
   const [saving,setSaving]=useState(false)
   const [saved,setSaved]=useState(false)
@@ -148,11 +148,17 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     </header>
     <div className="flex-1 scrollable px-5 py-4 flex flex-col gap-3">
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
-      <label className="block text-sm font-semibold">{en?'Where are you now? *':'A che punto sei? *'}
-        <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>saveAndBack({stato:e.target.value})}>
-          {STATI.map(state=><option key={state} value={state}>{state==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+state,state)}</option>)}
-        </select>
-      </label>
+      <div className="flex items-end gap-3">
+        <label className="block text-sm font-semibold flex-1 min-w-0">{en?'Where are you now? *':'A che punto sei? *'}
+          <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>saveAndBack({stato:e.target.value})}>
+            {STATI.map(state=><option key={state} value={state}>{state==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+state,state)}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 pb-3 text-xs font-semibold whitespace-nowrap">
+          <input type="checkbox" checked={!!form.spontanea} disabled={saving} onChange={e=>set('spontanea',e.target.checked)} />
+          <span>{en?'Spontaneous':'Spontanea'}</span>
+        </label>
+      </div>
       {INTERVIEW_STATES.includes(form.stato) && <InterviewFields form={form} onChange={set}/>}
       {form.stato==='Offerta ricevuta' && <div className="flex gap-3">
         <button className="btn-primary flex-1" disabled={saving} onClick={()=>saveAndBack({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
