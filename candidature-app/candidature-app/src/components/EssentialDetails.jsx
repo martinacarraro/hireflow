@@ -3,12 +3,13 @@ import LocationAutocomplete from './LocationAutocomplete'
 import { useTranslation } from 'react-i18next'
 import JobFields from './JobFields'
 import InterviewFields from './InterviewFields'
+import { localDay } from '../lib/applicationFlow'
 
 export default function EssentialDetails({ form, onChange, onLocationSelect, includeNotes = false }) {
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
   return <div className="space-y-4 pt-3">
-    <label className="block text-xs text-muted">{en?'Application date':'Data candidatura'}<input className="input-field mt-1" type="date" max={new Date().toLocaleDateString('sv-SE')} value={form.data_invio || ''} onChange={e=>{const today=new Date().toLocaleDateString('sv-SE');if(!e.target.value || e.target.value<=today)onChange('data_invio',e.target.value)}}/></label>
+    <label className="block text-xs text-muted">{en?'Application date':'Data candidatura'}<input className="input-field mt-1" type="date" max={localDay()} value={form.data_invio || ''} onChange={e=>{const today=localDay();if(!e.target.value || e.target.value<=today)onChange('data_invio',e.target.value)}}/></label>
     <label className="block text-xs text-muted">{en?'Job posting link':'Link annuncio'}<input className="input-field mt-1" type="url" placeholder="https://…" value={form.link_annuncio || ''} onChange={e=>onChange('link_annuncio',e.target.value)}/></label>
     <label className="block text-xs text-muted">{en?'Location':'Località'}<LocationAutocomplete className="input-field mt-1" value={locationText(form)} language={en?'en':'it'} onChange={value=>onChange('sede',value)} onSelect={onLocationSelect}/></label>
     <JobFields form={form} onChange={onChange} compact/>
