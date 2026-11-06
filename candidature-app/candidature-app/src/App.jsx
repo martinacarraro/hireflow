@@ -71,7 +71,14 @@ export default function App() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
+      // Se una nuova versione del Service Worker prende il controllo,
+      // ricarica l'app una sola volta per usare i nuovi asset pubblicati.
+      const handleControllerChange = () => window.location.reload()
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => registration.update())
+        .catch(() => {})
     }
 
     // Prepara silenziosamente le schermate durante lo splash:
