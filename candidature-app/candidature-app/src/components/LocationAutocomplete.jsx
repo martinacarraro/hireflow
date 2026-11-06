@@ -241,6 +241,7 @@ const popularSuggestions = (query, language) => {
   }
   const curatedAliases = curated.flatMap(place => place.aliases)
   for (const place of WORLD_CITIES_INDEX) {
+    // Search canonical city names independently of the selected interface language.
     if (!place.normalized.startsWith(term)) continue
     if (curatedAliases.some(alias => place.normalized.startsWith(alias) || alias.startsWith(place.normalized))) continue
     const country = language === 'en' ? place.country : (COUNTRY_NAMES_IT[place.country] || place.country)
