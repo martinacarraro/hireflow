@@ -1,5 +1,5 @@
 // Service Worker — avvio istantaneo e aggiornamenti in background
-const CACHE_NAME = 'lfs-app-shell-v4'
+const CACHE_NAME = 'lfs-app-shell-v5'
 const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', event => {
