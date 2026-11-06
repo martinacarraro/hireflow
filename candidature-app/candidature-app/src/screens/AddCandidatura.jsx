@@ -46,6 +46,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => {
     const next = { ...form, [k]: v, ...(k === 'sede' ? {paese:''} : {}) }
@@ -187,8 +188,8 @@ export default function AddCandidatura({ onBack, onDone }) {
 
         {statiConColloquio.includes(form.stato) && <section className="add-extra-panel"><InterviewFields form={form} onChange={set}/></section>}
 
-        <details className="add-details">
-          <summary>
+        <details className="add-details" open={detailsOpen}>
+          <summary onClick={event => { event.preventDefault(); setDetailsOpen(open => !open) }} aria-expanded={detailsOpen} aria-controls="add-details-content">
             <span className="add-details-icon">＋</span>
             <span className="flex-1 min-w-0">
               <strong>{isIt ? 'Aggiungi altri dettagli' : 'Add more details'}</strong>
@@ -196,7 +197,7 @@ export default function AddCandidatura({ onBack, onDone }) {
             </span>
             <span className="add-details-chevron" aria-hidden="true">⌄</span>
           </summary>
-          <div className="add-details-content">
+          <div className="add-details-content" id="add-details-content">
             <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation} includeNotes/>
           </div>
         </details>
