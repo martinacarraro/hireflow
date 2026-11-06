@@ -23,9 +23,11 @@
     @apply h-full flex flex-col overflow-hidden bg-bg;
   }
   .scrollable {
-    @apply overflow-y-auto;
+    @apply min-h-0 overflow-y-auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
     scrollbar-width: none;
+    touch-action: pan-y;
   }
   .card {
     @apply bg-surface rounded-2xl border border-border p-4 shadow-glow;
