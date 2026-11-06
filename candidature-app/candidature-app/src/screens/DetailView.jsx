@@ -192,7 +192,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     </div>
     <footer className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{paddingBottom:'max(16px, env(safe-area-inset-bottom))'}}>
       {error && <p role="alert" className="text-sm text-red mb-3">{error}</p>}
-      <button className="btn-primary w-full py-3 flex items-center justify-center gap-2" disabled={saving} onClick={()=>save()}>{saving?<Spinner size={20}/>:saved?(en?'Saved':'Salvato'):(en?'Save':'Salva')}</button>
+      <button className="btn-primary w-full py-3 flex items-center justify-center gap-2" disabled={saving} onClick={async()=>{const result=await save();if(result)onBack()}}>{saving?<Spinner size={20}/>:saved?(en?'Saved':'Salvato'):(en?'Save':'Salva')}</button>
     </footer>
     <ConfirmDialog isOpen={confirmDelete} title={t('detail.eliminaTitolo')} message={t('detail.eliminaMessaggio',{azienda:form.azienda})} danger onCancel={()=>setConfirmDelete(false)} onConfirm={async()=>{try{await deleteCandidatura(c.id);onBack()}catch(e){setConfirmDelete(false);setError(e.message)}}}/>
     {CelebrationOverlay}
