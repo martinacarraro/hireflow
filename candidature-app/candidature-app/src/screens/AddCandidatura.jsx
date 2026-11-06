@@ -12,7 +12,7 @@ import { ensureStageInterview, getInterviews, validationIssues, validationMessag
 
 const DRAFT_KEY = 'lfs_application_draft_v1'
 const emptyForm = () => ({
-  azienda: '', ruolo: '', stato: 'Inviata', priorita: 'Media',
+  azienda: '', ruolo: '', stato: 'Inviata', spontanea: false, priorita: 'Media',
   sede: '', paese: '', link_annuncio: '', fonte: '',
   stipendio_min: '', stipendio_max: '', note: '', notifiche_push: true,
   data_invio: new Date().toLocaleDateString('sv-SE'), data_colloquio: '',
@@ -183,6 +183,10 @@ export default function AddCandidatura({ onBack, onDone }) {
                 {STATI.filter(s => s !== 'Archiviate').map(s => <option key={s} value={s}>{s==='Assunta' ? hiredLabel(t,profile?.genere) : t(`add.stati.${s}`, s)}</option>)}
               </select>
             </Field>
+            <label className="add-field flex items-center gap-2 text-sm font-medium text-txt">
+              <input type="checkbox" checked={!!form.spontanea} onChange={e => set('spontanea', e.target.checked)} />
+              <span>{isIt ? 'Candidatura spontanea' : 'Unsolicited application'}</span>
+            </label>
           </div>
         </section>
 
