@@ -50,6 +50,8 @@ export default function App() {
   const [scrollToTopTrigger, setScrollToTopTrigger] = useState(0)
   const [showReviewPopup, setShowReviewPopup] = useState(false)
   const [showSupportPopup, setShowSupportPopup] = useState(false)
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const exitApproved = useRef(false)
 
   const [newSearch, setNewSearch] = useState(null)
   const searchChecked = useRef(false)
@@ -83,6 +85,21 @@ export default function App() {
       import('./screens/Calendar'),
     ]).catch(() => {})
   }, [])
+
+  // Intercetta il tasto Indietro solo nelle schermate principali.
+  useEffect(() => {
+    const mainScreenReady = !showSplash && !loading && linguaScelta && !view
+    if (!mainScreenReady) return
+
+    exitApproved.current = false
+    window.history.pushState({ lfsMainScreen: true }, '', window.location.href)
+    const handlePopState = () => {
+      if (exitApproved.current) return
+      setShowExitConfirm(true)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [showSplash, loading, linguaScelta, view])
 
   useEffect(() => {
     const now = new Date()
@@ -131,6 +148,26 @@ export default function App() {
         </Suspense>
       </div>
       <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} />
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/75 px-5" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
+          <div className="card w-full max-w-sm p-6 text-center">
+            <div className="mb-3 text-4xl">👋</div>
+            <h2 id="exit-confirm-title" className="mb-2 text-lg font-bold text-txt">{i18n.language === 'en' ? 'Leave the app?' : 'Vuoi uscire dall’app?'}</h2>
+            <p className="mb-5 text-sm text-muted">{i18n.language === 'en' ? 'Are you sure you want to close Le Faremo Sapere?' : 'Sei sicura di voler chiudere Le Faremo Sapere?'}</p>
+            <div className="flex gap-3">
+              <button className="flex-1 rounded-xl py-3 text-sm text-muted" onClick={() => {
+                setShowExitConfirm(false)
+                window.history.pushState({ lfsMainScreen: true }, '', window.location.href)
+              }}>{i18n.language === 'en' ? 'Stay' : 'Resta'}</button>
+              <button className="btn-primary flex-1 py-3" onClick={() => {
+                setShowExitConfirm(false)
+                exitApproved.current = true
+                window.history.back()
+              }}>{i18n.language === 'en' ? 'Exit' : 'Esci'}</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Toast toast={toast} />
       <Confetti active={confetti} />
       {migrationNotice && (
