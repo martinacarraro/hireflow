@@ -162,29 +162,29 @@
 }
 
 
-/* Add application — calmer, lighter mobile form */
+/* Add application — use one page-level scroll container for reliable
+   touch scrolling in Android WebView / installed PWA. */
 .add-screen {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
-  background: #0E0E1A;
-}
-.add-header { flex-shrink: 0; min-height: 0; }
-.add-scroll-area {
-  min-width: 0;
-  min-height: 0;
+  display: block;
+  width: auto;
   height: auto;
+  min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+  background: #0E0E1A;
+}
+.add-header { min-height: 0; }
+.add-scroll-area {
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  overflow: visible;
+  touch-action: auto;
 }
 .add-footer { min-height: 0; }
 .add-header { border-bottom: 1px solid rgba(196,181,253,.10); }
