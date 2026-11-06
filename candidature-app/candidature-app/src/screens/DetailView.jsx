@@ -157,12 +157,12 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
         <button className="btn-primary flex-1" disabled={saving} onClick={()=>save({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
         <button className="btn-secondary flex-1" disabled={saving} onClick={()=>save({stato:'Offerta rifiutata',offerta_risposta:'no'})}>{en?'Decline':'Rifiuta'}</button>
       </div>}
-      <label className="block text-sm font-semibold">{en?'Notes':'Note'}
-        <textarea className="input-field mt-2 resize-y" rows={3} placeholder={en?'Anything worth remembering…':'Cosa vuoi ricordarti?'} value={form.note || ''} onChange={e=>set('note',e.target.value)}/>
+      <label className="block text-sm font-semibold">{en?'Quick note':'Nota veloce'}
+        <textarea className="input-field mt-2 resize-y" rows={2} placeholder={en?'Anything worth remembering…':'Cosa vuoi ricordarti?'} value={form.note || ''} onChange={e=>set('note',e.target.value)}/>
       </label>
       <details className="card">
-        <summary>{en?'Edit details':'Modifica dettagli'}</summary>
-        <div className="pt-3 space-y-4">
+        <summary>{en?'Additional details':'Altri dettagli della candidatura'}</summary>
+        <div className="pt-3 space-y-3">
           <label className="block text-xs text-muted">{en?'Company *':'Azienda *'}<CompanyAutocomplete className="input-field mt-1" value={form.azienda} onChange={v=>set('azienda',v)} onSelect={company=>set('azienda',company.name)}/></label>
           <label className="block text-xs text-muted">{en?'Role *':'Ruolo *'}<RoleInput className="input-field mt-1" value={form.ruolo} onChange={v=>set('ruolo',v)}/></label>
           <EssentialDetails form={form} onChange={set} onLocationSelect={setLocation}/>
@@ -180,8 +180,13 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
             {form.offerta_note && <p className="text-sm text-muted whitespace-pre-wrap">{form.offerta_note}</p>}
           </div>}
           {legacy.length>0 && <details><summary>{en?'Previously saved information':'Informazioni già salvate'}</summary><dl className="pt-2 space-y-2">{legacy.map(([label,value])=><div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="text-sm whitespace-pre-wrap">{value}</dd></div>)}</dl></details>}
-          <button className="text-sm text-muted py-2" disabled={saving} onClick={async()=>{if(await save({archiviata:!form.archiviata}))onBack()}}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
-          <button className="block text-sm text-red py-2" onClick={()=>setConfirmDelete(true)}>{en?'Delete application':'Elimina candidatura'}</button>
+        </div>
+      </details>
+      <details className="card">
+        <summary>{en?'Manage application':'Gestisci candidatura'}</summary>
+        <div className="pt-3 flex flex-col gap-2">
+          <button className="text-sm text-muted py-2 text-left" disabled={saving} onClick={async()=>{if(await save({archiviata:!form.archiviata}))onBack()}}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
+          <button className="block text-sm text-red py-2 text-left" onClick={()=>setConfirmDelete(true)}>{en?'Delete application':'Elimina candidatura'}</button>
         </div>
       </details>
     </div>
