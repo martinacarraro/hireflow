@@ -53,6 +53,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     }catch(e){setError(e.message || (en?'Could not save. Try again.':'Salvataggio non riuscito. Riprova.'));return null}
     finally{setSaving(false);lock.current=false}
   }
+  const saveAndBack=async(patch={})=>{const result=await save(patch);if(result)onBack();return result}
   const back=async()=>{
     if(saving)return
     if(dirty && window.confirm(en?'Save changes before leaving? Cancel leaves without saving.':'Salvare prima di uscire? Annulla esce senza salvare.')){if(!await save())return}
@@ -148,14 +149,14 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     <div className="flex-1 scrollable px-5 py-4 flex flex-col gap-3">
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
       <label className="block text-sm font-semibold">{en?'Where are you now? *':'A che punto sei? *'}
-        <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>save({stato:e.target.value})}>
+        <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>saveAndBack({stato:e.target.value})}>
           {STATI.map(state=><option key={state} value={state}>{state==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+state,state)}</option>)}
         </select>
       </label>
       {INTERVIEW_STATES.includes(form.stato) && <InterviewFields form={form} onChange={set}/>}
       {form.stato==='Offerta ricevuta' && <div className="flex gap-3">
-        <button className="btn-primary flex-1" disabled={saving} onClick={()=>save({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
-        <button className="btn-secondary flex-1" disabled={saving} onClick={()=>save({stato:'Offerta rifiutata',offerta_risposta:'no'})}>{en?'Decline':'Rifiuta'}</button>
+        <button className="btn-primary flex-1" disabled={saving} onClick={()=>saveAndBack({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
+        <button className="btn-secondary flex-1" disabled={saving} onClick={()=>saveAndBack({stato:'Offerta rifiutata',offerta_risposta:'no'})}>{en?'Decline':'Rifiuta'}</button>
       </div>}
       <label className="block text-sm font-semibold">{en?'Quick note':'Nota veloce'}
         <textarea className="input-field mt-2 resize-y" rows={2} placeholder={en?'Anything worth remembering…':'Cosa vuoi ricordarti?'} value={form.note || ''} onChange={e=>set('note',e.target.value)}/>
@@ -185,14 +186,14 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
       <details className="card">
         <summary>{en?'Manage application':'Gestisci candidatura'}</summary>
         <div className="pt-3 flex flex-col gap-2">
-          <button className="text-sm text-muted py-2 text-left" disabled={saving} onClick={async()=>{if(await save({archiviata:!form.archiviata}))onBack()}}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
+          <button className="text-sm text-muted py-2 text-left" disabled={saving} onClick={()=>saveAndBack({archiviata:!form.archiviata})}>{form.archiviata?(en?'Remove from archive':'Rimuovi dall’archivio'):(en?'Archive application':'Archivia candidatura')}</button>
           <button className="block text-sm text-red py-2 text-left" onClick={()=>setConfirmDelete(true)}>{en?'Delete application':'Elimina candidatura'}</button>
         </div>
       </details>
     </div>
     <footer className="px-5 pt-3 pb-4 border-t border-border bg-surface flex-shrink-0" style={{paddingBottom:'max(16px, env(safe-area-inset-bottom))'}}>
       {error && <p role="alert" className="text-sm text-red mb-3">{error}</p>}
-      <button className="btn-primary w-full py-3 flex items-center justify-center gap-2" disabled={saving} onClick={async()=>{const result=await save();if(result)onBack()}}>{saving?<Spinner size={20}/>:saved?(en?'Saved':'Salvato'):(en?'Save':'Salva')}</button>
+      <button className="btn-primary w-full py-3 flex items-center justify-center gap-2" disabled={saving} onClick={()=>saveAndBack()}>{saving?<Spinner size={20}/>:saved?(en?'Saved':'Salvato'):(en?'Save':'Salva')}</button>
     </footer>
     <ConfirmDialog isOpen={confirmDelete} title={t('detail.eliminaTitolo')} message={t('detail.eliminaMessaggio',{azienda:form.azienda})} danger onCancel={()=>setConfirmDelete(false)} onConfirm={async()=>{try{await deleteCandidatura(c.id);onBack()}catch(e){setConfirmDelete(false);setError(e.message)}}}/>
     {CelebrationOverlay}
