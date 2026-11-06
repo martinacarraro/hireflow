@@ -596,7 +596,8 @@ function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMod
               <p className="font-semibold text-txt text-sm truncate">{c.azienda}</p>
               <p className="text-muted text-xs truncate">{c.ruolo}</p>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center gap-1.5">
+              {(c.spontanea || c.stato === 'Spontanea') && <span className="text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap" style={{background:'rgba(168,85,247,0.16)',color:'#C4B5FD'}} title={i18n.language==='en'?'Unsolicited application':'Candidatura spontanea'}>💡 {i18n.language==='en'?'Spontaneous':'Spontanea'}</span>}
               <StatusBadge stato={c.stato} genere={genere} />
             </div>
           </div>
