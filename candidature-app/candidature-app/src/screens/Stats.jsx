@@ -1,7 +1,7 @@
 import { hiredLabel } from '../lib/utils'
 import { useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { averageWaitingDays, flowStats, hasResponse, waitingSince, elapsedDays, countedInterviews, upcomingInterviews, hasOffer } from '../lib/applicationFlow'
+import { averageWaitingDays, flowStats, hasResponse, isSpontaneous, waitingSince, elapsedDays, countedInterviews, upcomingInterviews, hasOffer } from '../lib/applicationFlow'
 import { STATUS_CONFIG } from '../lib/utils'
 import { useTranslation } from 'react-i18next'
 
@@ -18,7 +18,7 @@ export default function Stats({ onOpenCandidatura }) {
     const total = candidature.length
     
     // Helper per contare stati (ignorando logicamente 'Archiviate' come stato)
-    const byStato = (s) => candidature.filter(c => c && c.stato === s).length
+    const byStato = (s) => candidature.filter(c => c && (s === 'Spontanea' ? isSpontaneous(c) : c.stato === s)).length
 
     const summary = flowStats(candidature)
     const colloqui = summary.colloqui
@@ -80,7 +80,10 @@ export default function Stats({ onOpenCandidatura }) {
         const days = averageWaitingDays([c])
         included = days !== null
         detail = `${days} ${en ? 'days' : 'gg'}`
-      } else if (selectedCount.startsWith('state:')) included = c.stato === selectedCount.slice(6)
+      } else if (selectedCount.startsWith('state:')) {
+        const state = selectedCount.slice(6)
+        included = state === 'Spontanea' ? isSpontaneous(c) : c.stato === state
+      }
       return included ? { c, detail } : null
     }).filter(Boolean)
     const title = selected?.label || t('add.stati.' + selectedCount.slice(6), selectedCount.slice(6))
