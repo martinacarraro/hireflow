@@ -40,6 +40,9 @@ export function interviewLabel(e, en = false) {
   if (e.kind === 'technical') return en ? 'Technical test' : 'Prova tecnica'
   return en ? `Interview ${e.order || 1}` : `${e.order || 1}° colloquio`
 }
+export function isSpontaneous(c) {
+  return c?.tipo_candidatura === 'spontanea' || c?.spontanea === true || c?.stato === 'Spontanea' || c?.fonte === 'Spontanea'
+}
 export function hasOffer(c) {
   return ['Offerta ricevuta', 'Offerta rifiutata', 'Assunta'].includes(c.stato) || !!c.offerta_risposta ||
     (c.history || []).some(h => ['Offerta ricevuta', 'Offerta rifiutata', 'Assunta'].includes(h.stato))
