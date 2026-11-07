@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
 import { StatusBadge, PriorityBadge, CompanyAvatar, LevelBadge, EmptyState, ConfirmDialog } from '../components/UI'
 import { STATUS_CONFIG, STATUS_GROUP_ORDER, STATI, daysSince, formatDateTime, getGreeting, getMotto } from '../lib/utils'
-import { CLOSED, upcomingInterviews, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays, shouldSuggestArchive } from '../lib/applicationFlow'
+import { CLOSED, isSpontaneous, upcomingInterviews, duplicateApplication, getInterviews, interviewLabel, waitingSince, elapsedDays, shouldSuggestArchive } from '../lib/applicationFlow'
 import { useTranslation } from 'react-i18next'
 
 const DASHBOARD_FILTERS = {
@@ -85,7 +85,7 @@ const stats = useMemo(() => [
   // Usiamo 'c' come variabile per il filtro, 'row' non esiste qui
   const count = s.stato === 'Archiviate' 
     ? candidature.filter(c => c.archiviata === true).length
-    : candidature.filter(c => c.stato === s.stato && !c.archiviata).length;
+    : candidature.filter(c => (s.stato === 'Spontanea' ? isSpontaneous(c) : c.stato === s.stato) && !c.archiviata).length;
   
   return { ...s, count };
 })
@@ -125,7 +125,7 @@ const candidatureFiltrate = useMemo(() => {
     } 
     else if (filtroStato) {
       // Filtra per lo stato scelto, escludendo le archiviate
-      list = list.filter(c => c.stato === filtroStato && !c.archiviata);
+      list = list.filter(c => (filtroStato === 'Spontanea' ? isSpontaneous(c) : c.stato === filtroStato) && !c.archiviata);
     } 
     else {
       // Default: nasconde sempre le archiviate dalla vista principale
@@ -138,7 +138,10 @@ const candidatureFiltrate = useMemo(() => {
       list = list.filter(c =>
         c.azienda?.toLowerCase().includes(q) ||
         c.ruolo?.toLowerCase().includes(q) ||
-        locationText(c).toLowerCase().includes(q)
+        locationText(c).toLowerCase().includes(q) ||
+        c.fonte?.toLowerCase().includes(q) ||
+        c.note?.toLowerCase().includes(q) ||
+        c.link_annuncio?.toLowerCase().includes(q)
       );
     }
 
