@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { averageWaitingDays, getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
+import { averageWaitingDays, getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, isSpontaneous, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
 import { calendarFile } from './calendarExport.js'
 
 const now = new Date('2026-10-01T10:00:00')
@@ -108,4 +108,12 @@ test('waiting average includes sent and viewed applications and excludes missing
   assert.equal(averageWaitingDays(list, now), 6)
   assert.equal(averageWaitingDays([{...base, data_invio:null}], now), null)
   assert.equal(averageWaitingDays([{...base, data_invio:'2026-10-01'}], now), 0)
+})
+
+test('spontaneous applications are recognized across current and legacy records', () => {
+  assert.equal(isSpontaneous({...base, stato:'Inviata', tipo_candidatura:'spontanea'}), true)
+  assert.equal(isSpontaneous({...base, stato:'Inviata', spontanea:true}), true)
+  assert.equal(isSpontaneous({...base, stato:'Spontanea'}), true)
+  assert.equal(isSpontaneous({...base, stato:'Inviata', fonte:'Spontanea'}), true)
+  assert.equal(isSpontaneous({...base, stato:'Inviata', tipo_candidatura:'annuncio'}), false)
 })
