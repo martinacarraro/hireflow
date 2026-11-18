@@ -114,7 +114,6 @@ export function validationIssues(c) {
   const validDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(parseDay(d).getTime()) && localDay(parseDay(d)) === d
   if ([c.data_invio, c.attesa_dal, c.ultimo_contatto, c.reminder_date, c.offerta_scadenza, c.data_inizio, c.data_scadenza_responso, ...items.map(e => e.date)].some(d => d && !validDate(d))) issues.push('date')
   if (items.some(e => e.time && !e.date) || c.reminder_time && !c.reminder_date) issues.push('timeWithoutDate')
-  if (items.some(e => e.date && c.data_invio && e.date < c.data_invio)) issues.push('beforeApplication')
   const dated = items.filter(e => e.date)
   if (dated.some((e,i) => i > 0 && `${e.date}T${e.time || '23:59'}` < `${dated[i-1].date}T${dated[i-1].time || '00:00'}`)) issues.push('sequence')
   if (items.some(e => e.status === 'completed' && e.date > localDay())) issues.push('futureCompleted')
@@ -127,7 +126,6 @@ export function validationMessage(code, en = false) {
   const messages = {
     company: ['Inserisci il nome dell’azienda.', 'Enter the company name.'], role: ['Inserisci il ruolo.', 'Enter the role.'],
     date: ['Controlla le date inserite.', 'Check the dates.'], timeWithoutDate: ['Hai inserito un orario senza la data.', 'A time needs a date.'],
-    beforeApplication: ['Un incontro precede la candidatura: correggi la data di invio o quella dell’incontro.', 'An interview is before the application: check both dates.'],
     sequence: ['Le date degli incontri non seguono l’ordine indicato: controllale.', 'Interview dates do not match their sequence.'],
     futureCompleted: ['Un incontro futuro non può essere già svolto.', 'A future interview cannot be completed yet.'],
     salary: ['Inserisci importi validi, uguali o superiori a zero.', 'Enter valid non-negative amounts.'],
@@ -208,17 +206,17 @@ export function applyElapsedInterviewTransitions(list, now = new Date()) {
     let meetingPassed = false
     let meetingsChanged = false
     const interviews = current.map(e => {
+      if (e.date && e.date < today && e.status !== 'cancelled') meetingPassed = true
       if (e.status === 'scheduled' && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') && e.date < today) {
-        meetingPassed = true
         meetingsChanged = true
         return { ...e, status: 'completed' }
       }
       return e
     })
-    if (!meetingsChanged) return c
     const futureMeeting = interviews.some(e => e.status === 'scheduled' && e.date >= today)
-    const nextStatus = meetingPassed && !futureMeeting
+    const nextStatus = meetingPassed && !futureMeeting && INTERVIEW_STATES.includes(c.stato)
       ? 'In attesa risposta' : c.stato
+    if (!meetingsChanged && nextStatus === c.stato) return c
     changed = true
     return normalizeTransition(c, { interviews, stato: nextStatus, updated_at: now.toISOString() }, now)
   })
