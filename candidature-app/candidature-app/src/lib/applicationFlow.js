@@ -196,26 +196,33 @@ export function isGhostReviewDue(c, now = new Date()) {
   return localDay(now) >= dueDay && c.ghosted_reviewed_for !== c.data_invio
 }
 
-// Past meetings are marked completed; after the last scheduled meeting, wait for a reply.
+// A stage only moves to "waiting for reply" after its own meeting has
+// both a date and a time, and that exact date/time has passed.
 export function applyElapsedInterviewTransitions(list, now = new Date()) {
-  const today = localDay(now)
   let changed = false
+  const stageOrder = { 'Prima call': 0, 'Colloquio': 1, 'Secondo colloquio': 2 }
   const nextList = list.map(c => {
     if (c.archiviata || CLOSED.has(c.stato) || c.stato === 'Offerta ricevuta') return c
-    const current = getInterviews(c)
-    let meetingPassed = false
+    const order = stageOrder[c.stato]
+    if (order === undefined) return c
     let meetingsChanged = false
-    const interviews = current.map(e => {
-      if (e.date && e.date < today && e.status !== 'cancelled') meetingPassed = true
-      if (e.status === 'scheduled' && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') && e.date < today) {
-        meetingsChanged = true
-        return { ...e, status: 'completed' }
-      }
-      return e
+    const interviews = getInterviews(c).map(e => {
+      if (e.status !== 'scheduled' || !e.date || !e.time ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(e.date) ||
+          !/^\d{2}:\d{2}$/.test(e.time)) return e
+      const when = new Date(`${e.date}T${e.time}:00`)
+      if (Number.isNaN(when.getTime()) || when > now) return e
+      meetingsChanged = true
+      return { ...e, status: 'completed' }
     })
-    const futureMeeting = interviews.some(e => e.status === 'scheduled' && e.date >= today)
-    const nextStatus = meetingPassed && !futureMeeting && INTERVIEW_STATES.includes(c.stato)
-      ? 'In attesa risposta' : c.stato
+    const activeMeeting = interviews.find(e => e.order === order && e.status !== 'cancelled')
+    const activeMeetingPassed = activeMeeting?.status === 'completed'
+    const futureMeeting = interviews.some(e => {
+      if (e.status !== 'scheduled' || !e.date || !e.time) return false
+      const when = new Date(`${e.date}T${e.time}:00`)
+      return !Number.isNaN(when.getTime()) && when > now
+    })
+    const nextStatus = activeMeetingPassed && !futureMeeting ? 'In attesa risposta' : c.stato
     if (!meetingsChanged && nextStatus === c.stato) return c
     changed = true
     return normalizeTransition(c, { interviews, stato: nextStatus, updated_at: now.toISOString() }, now)
