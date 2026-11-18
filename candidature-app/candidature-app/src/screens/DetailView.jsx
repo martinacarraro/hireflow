@@ -23,7 +23,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
   const [showAssuntaCelebration,setShowAssuntaCelebration]=useState(celebrateOnOpen)
   const [showCoffeePrompt,setShowCoffeePrompt]=useState(false)
   const lock=useRef(false),persisted=useRef(c)
-  const set=(key,value)=>{setForm(f=>({...f,[key]:value,...(key==='sede'?{paese:''}:{})}));setDirty(true);setSaved(false);setError('')}
+  const set=(key,value)=>{setForm(f=>{const next={...f,[key]:value,...(key==='sede'?{paese:''}:{})};if(key==='stato' && INTERVIEW_STATES.includes(value))next.interviews=ensureStageInterview(next,value);return next});setDirty(true);setSaved(false);setError('')}
   const setLocation=({name,country})=>{setForm(f=>({...f,sede:name,paese:country}));setDirty(true);setSaved(false);setError('')}
   useEffect(()=>{
     if(!showAssuntaCelebration)return
@@ -150,7 +150,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
       {form.stato==='Assunta' && <p className="text-green font-semibold">🎉 {en?'You got the job!':'Hai ottenuto il lavoro!'}</p>}
       <div className="flex items-end gap-3">
         <label className="block text-sm font-semibold flex-1 min-w-0">{en?'Where are you now? *':'A che punto sei? *'}
-          <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>saveAndBack({stato:e.target.value})}>
+          <select aria-label={en?'Application status':'Stato candidatura'} className="input-field mt-2" value={form.stato} disabled={saving} onChange={e=>set('stato',e.target.value)}>
             {STATI.map(state=><option key={state} value={state}>{state==='Assunta' ? hiredLabel(t,profile?.genere) : t('add.stati.'+state,state)}</option>)}
           </select>
         </label>
