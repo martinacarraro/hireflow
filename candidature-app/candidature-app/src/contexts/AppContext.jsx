@@ -102,6 +102,7 @@ export function AppProvider({ children }) {
   }
   const addCandidatura=async(data)=>{
     let row=normalizeTransition(null,{...data,id:crypto.randomUUID(),user_id:'local',created_at:new Date().toISOString(),updated_at:new Date().toISOString()})
+    row=applyElapsedInterviewTransitions([row])[0]
     validate(row)
     const reward=rewards(row,null);row=reward.row
     const points=(dataRef.current.length?XP_EVENTS.ADD_CANDIDATURA:XP_EVENTS.FIRST_CANDIDATURA)+reward.amount
@@ -114,6 +115,7 @@ export function AppProvider({ children }) {
     const prev=dataRef.current.find(c=>c.id===id)
     if(!prev)throw Error(en()?'Application not found':'Candidatura non trovata')
     let row=normalizeTransition(prev,{...updates,updated_at:new Date().toISOString()})
+    row=applyElapsedInterviewTransitions([row])[0]
     validate(row,prev)
     const reward=rewards(row,prev);row=reward.row
     const list=dataRef.current.map(c=>c.id===id?row:c)
