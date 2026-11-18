@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getInterviews, ensureStageInterview, interviewLabel, newInterview, INTERVIEW_STATES, upcomingInterviews, localDay } from '../lib/applicationFlow'
-import { downloadCalendar } from '../lib/calendarExport'
 
 export default function InterviewFields({ form, onChange, historyOnly = false }) {
   const { i18n } = useTranslation()
@@ -67,6 +66,5 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
   return <div className="space-y-2">
     <p className="text-sm font-semibold">{interviewLabel(current,en)}</p>
     {inputs(current)}
-    {current.date && <button className="text-xs text-purple-soft py-2" type="button" onClick={()=>downloadCalendar({id:(form.id||'draft')+'-'+current.id,title:form.azienda+' · '+interviewLabel(current,en),date:current.date,time:current.time,notes:current.notes})}>{en?'Add to phone calendar':'Aggiungi al calendario del telefono'}</button>}
   </div>
 }
