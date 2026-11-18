@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getInterviews, ensureStageInterview, interviewLabel, newInterview, INTERVIEW_STATES, upcomingInterviews, localDay } from '../lib/applicationFlow'
 import { downloadCalendar } from '../lib/calendarExport'
@@ -5,6 +6,7 @@ import { downloadCalendar } from '../lib/calendarExport'
 export default function InterviewFields({ form, onChange, historyOnly = false }) {
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
+  const [editingDateId, setEditingDateId] = useState(null)
   const items = getInterviews(form)
   const order = {'Prima call':0,'Colloquio':1,'Secondo colloquio':2}[form.stato]
   const current = items.find(e=>!e.needsReview && e.order===order && e.status==='scheduled') || upcomingInterviews(form)[0] || items.find(e=>!e.needsReview && e.order===order && e.status!=='cancelled')
@@ -15,7 +17,12 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
     return next
   }))
   const inputs = e => <div className="grid grid-cols-2 gap-3">
-    <label className="text-xs text-muted">{en?'Date':'Data'}<input aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>update(e.id,{date:ev.target.value})}/></label>
+    <div className="text-xs text-muted">
+      <p>{en?'Date':'Data'}</p>
+      {editingDateId===e.id
+        ? <input autoFocus aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>{update(e.id,{date:ev.target.value});setEditingDateId(null)}} onBlur={()=>setEditingDateId(null)}/>
+        : <button type="button" className="text-sm text-muted mt-1 text-left" aria-label={en?'Edit date':'Modifica data'} title={en?'Click to edit':'Clicca per modificare'} onClick={()=>setEditingDateId(e.id)}>{e.date || (en?'Add date':'Aggiungi data')}</button>}
+    </div>
     <label className="text-xs text-muted">{en?'Time':'Ora'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
   </div>
   if(historyOnly) {
