@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { getInterviews, ensureStageInterview, interviewLabel, newInterview, INTERVIEW_STATES, upcomingInterviews } from '../lib/applicationFlow'
+import { getInterviews, ensureStageInterview, interviewLabel, newInterview, INTERVIEW_STATES, upcomingInterviews, localDay } from '../lib/applicationFlow'
 import { downloadCalendar } from '../lib/calendarExport'
 
 export default function InterviewFields({ form, onChange, historyOnly = false }) {
@@ -8,7 +8,12 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
   const items = getInterviews(form)
   const order = {'Prima call':0,'Colloquio':1,'Secondo colloquio':2}[form.stato]
   const current = items.find(e=>!e.needsReview && e.order===order && e.status==='scheduled') || upcomingInterviews(form)[0] || items.find(e=>!e.needsReview && e.order===order && e.status!=='cancelled')
-  const update = (id,patch) => onChange('interviews',items.map(e=>e.id===id?{...e,...patch}:e))
+  const update = (id,patch) => onChange('interviews',items.map(e=>{
+    if(e.id!==id)return e
+    const next={...e,...patch}
+    if(patch.date) next.status=patch.date<localDay()?'completed':'scheduled'
+    return next
+  }))
   const inputs = e => <div className="grid grid-cols-2 gap-3">
     <label className="text-xs text-muted">{en?'Date':'Data'}<input aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>update(e.id,{date:ev.target.value})}/></label>
     <label className="text-xs text-muted">{en?'Time':'Ora'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
