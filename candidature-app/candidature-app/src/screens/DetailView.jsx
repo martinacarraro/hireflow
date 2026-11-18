@@ -156,7 +156,7 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
         </label>
         <label className={`inline-flex items-center gap-2 mb-1 px-3 py-2 rounded-full border text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${form.spontanea ? 'border-purple/60 bg-purple/20 text-purple-soft' : 'border-border bg-surface text-muted'} ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
           <input type="checkbox" className="sr-only" checked={!!form.spontanea} disabled={saving} onChange={e=>set('spontanea',e.target.checked)} />
-          <span aria-hidden="true" className="text-sm">{form.spontanea ? '✦' : '＋'}</span>
+          <span aria-hidden="true" className="text-sm">{form.spontanea ? '💡' : '＋'}</span>
           <span>{en?'Spontaneous':'Spontanea'}</span>
         </label>
       </div>
