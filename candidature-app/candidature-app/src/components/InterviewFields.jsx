@@ -15,8 +15,8 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
     if(e.id!==id)return e
     const next={...e,...patch}
     if(patch.date!==undefined || patch.time!==undefined){
-      const hasDate=/^\\d{4}-\\d{2}-\\d{2}$/.test(next.date || '')
-      const hasTime=/^([01]\\d|2[0-3]):[0-5]\\d$/.test(next.time || '')
+      const hasDate=/^\d{4}-\d{2}-\d{2}$/.test(next.date || '')
+      const hasTime=/^([01]\d|2[0-3]):[0-5]\d$/.test(next.time || '')
       const elapsed=hasDate && hasTime && new Date(`${next.date}T${next.time}:00`).getTime()<Date.now()
       next.status=elapsed?'completed':'scheduled'
     }
