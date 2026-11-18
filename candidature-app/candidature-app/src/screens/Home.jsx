@@ -591,15 +591,13 @@ function CandidaturaCard({ c, onArchive, onKeep, onPress, onLongPress, selectMod
         )}
         <CompanyAvatar name={c.azienda} size={40} domain={c.azienda_domain} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-semibold text-txt text-sm truncate">{c.azienda}</p>
-              <p className="text-muted text-xs truncate">{c.ruolo}</p>
-            </div>
-            <div className="flex-shrink-0 flex items-center gap-1.5">
-              {(c.spontanea || c.stato === 'Spontanea') && <span className="text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap" style={{background:'rgba(168,85,247,0.16)',color:'#C4B5FD'}} title={i18n.language==='en'?'Unsolicited application':'Candidatura spontanea'}>💡 {i18n.language==='en'?'Spontaneous':'Spontanea'}</span>}
-              <StatusBadge stato={c.stato} genere={genere} />
-            </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-txt text-sm whitespace-normal break-words leading-snug">{c.azienda}</p>
+            <p className="text-muted text-xs truncate mt-0.5">{c.ruolo}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            {(c.spontanea || c.stato === 'Spontanea') && <span className="text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap" style={{background:'rgba(168,85,247,0.16)',color:'#C4B5FD'}} title={i18n.language==='en'?'Unsolicited application':'Candidatura spontanea'}>💡 {i18n.language==='en'?'Spontaneous':'Spontanea'}</span>}
+            <StatusBadge stato={c.stato} genere={genere} />
           </div>
           {upcomingInterviews(c)[0] && <p className="text-xs text-amber mt-1.5">📅 {interviewLabel(upcomingInterviews(c)[0],i18n.language==='en')} · {formatDateTime(upcomingInterviews(c)[0].date,upcomingInterviews(c)[0].time)}</p>}
           {getInterviews(c).some(e=>e.needsReview) && <p className="text-xs text-amber mt-1.5">{i18n.language==='en'?'Check the stage of a previous interview':'Verifica la fase di un colloquio precedente'}</p>}
