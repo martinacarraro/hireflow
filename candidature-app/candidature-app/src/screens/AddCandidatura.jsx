@@ -46,7 +46,7 @@ export default function AddCandidatura({ onBack, onDone }) {
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(true)
   const statiConColloquio = ['Prima call','Colloquio','Secondo colloquio']
   const set = (k, v) => {
     const next = { ...form, [k]: v, ...(k === 'sede' ? {paese:''} : {}) }
