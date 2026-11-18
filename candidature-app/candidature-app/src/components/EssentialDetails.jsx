@@ -49,7 +49,7 @@ export default function EssentialDetails({ form, onChange, onLocationSelect, inc
     </section>}
 
     <section className="space-y-2">
-      <h3 className={sectionTitle}>{en ? 'Interview history' : 'Storico incontri'}</h3>
+      <h3 className={sectionTitle}>{en ? 'Application timeline' : 'Percorso della candidatura'}</h3>
       <InterviewFields form={form} onChange={onChange} historyOnly/>
     </section>
   </div>
