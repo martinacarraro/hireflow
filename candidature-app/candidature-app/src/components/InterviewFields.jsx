@@ -7,6 +7,7 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
   const [editingDateId, setEditingDateId] = useState(null)
+  const [editingTimeId, setEditingTimeId] = useState(null)
   const items = getInterviews(form)
   const order = {'Prima call':0,'Colloquio':1,'Secondo colloquio':2}[form.stato]
   const current = items.find(e=>!e.needsReview && e.order===order && e.status==='scheduled') || upcomingInterviews(form)[0] || items.find(e=>!e.needsReview && e.order===order && e.status!=='cancelled')
@@ -16,14 +17,20 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
     if(patch.date) next.status=patch.date<localDay()?'completed':'scheduled'
     return next
   }))
+  const editButton = (label, onClick) => <button type="button" className="ml-1 inline-flex items-center text-xs text-purple-soft align-middle" aria-label={label} title={label} onClick={onClick}>✎</button>
   const inputs = e => <div className="grid grid-cols-2 gap-3">
-    <div className="text-xs text-muted">
+    <div className="text-xs text-muted min-w-0">
       <p>{en?'Date':'Data'}</p>
       {editingDateId===e.id
-        ? <input autoFocus aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0" type="date" value={e.date || ''} onChange={ev=>{update(e.id,{date:ev.target.value});setEditingDateId(null)}} onBlur={()=>setEditingDateId(null)}/>
-        : <button type="button" className="text-sm text-muted mt-1 text-left" aria-label={en?'Edit date':'Modifica data'} title={en?'Click to edit':'Clicca per modificare'} onClick={()=>setEditingDateId(e.id)}>{e.date || (en?'Add date':'Aggiungi data')}</button>}
+        ? <input autoFocus aria-label={interviewLabel(e,en)+' '+(en?'date':'data')} className="input-field mt-1 min-w-0 w-full" type="date" value={e.date || ''} onChange={ev=>{update(e.id,{date:ev.target.value});setEditingDateId(null)}} onBlur={()=>setEditingDateId(null)}/>
+        : <div className="mt-1 text-sm text-muted">{e.date || (en?'Not set':'Non indicata')}{editButton(en?'Edit date':'Modifica data',()=>setEditingDateId(e.id))}</div>}
     </div>
-    <label className="text-xs text-muted">{en?'Time':'Ora'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
+    <div className="text-xs text-muted min-w-0">
+      <p>{en?'Time':'Ora'}</p>
+      {editingTimeId===e.id
+        ? <input autoFocus aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0 w-full" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})} onBlur={()=>setEditingTimeId(null)}/>
+        : <div className="mt-1 text-sm text-muted">{e.time || (en?'Not set':'Non indicata')}{editButton(en?'Edit time':'Modifica ora',()=>setEditingTimeId(e.id))}</div>}
+    </div>
   </div>
   if(historyOnly) {
     const history = items
