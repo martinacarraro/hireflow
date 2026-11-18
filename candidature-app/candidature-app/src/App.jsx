@@ -1,4 +1,5 @@
 import { eligibleHire } from './lib/newSearch'
+import { isGhostReviewDue } from './lib/applicationFlow'
 import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import { useApp } from './contexts/AppContext'
 import { TabBar, Toast, Confetti } from './components/UI'
@@ -39,7 +40,7 @@ function registerOpenAndShouldAskForSupport(now = new Date()) {
 }
 
 export default function App() {
-  const { candidature, updateProfile, profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
+  const { candidature, updateCandidatura, updateProfile, profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
   const { t, i18n } = useTranslation()
   
   const [showSplash, setShowSplash] = useState(true)
@@ -51,6 +52,7 @@ export default function App() {
   const [showReviewPopup, setShowReviewPopup] = useState(false)
   const [showSupportPopup, setShowSupportPopup] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const [ghostReview, setGhostReview] = useState(null)
   const exitApproved = useRef(false)
 
   const [newSearch, setNewSearch] = useState(null)
@@ -67,6 +69,26 @@ export default function App() {
       if(openSettings)setTab('profile')
     } catch {}
   }
+  useEffect(() => {
+    if (dataLoading || loadError || !linguaScelta || ghostReview) return
+    const candidate = candidature.find(c => isGhostReviewDue(c))
+    if (candidate) setGhostReview(candidate)
+  }, [dataLoading, loadError, linguaScelta, candidature, ghostReview])
+
+  const answerGhostReview = async receivedReply => {
+    if (!ghostReview) return
+    const candidate = ghostReview
+    try {
+      await updateCandidatura(candidate.id, {
+        ghosted_reviewed_for: candidate.data_invio,
+        ghosted_reviewed_at: new Date().toISOString(),
+        ha_ricevuto_risposta: receivedReply,
+        ...(receivedReply ? {} : { stato: 'GHOSTED' }),
+      })
+      setGhostReview(null)
+    } catch {}
+  }
+
   const loading = dataLoading
 
   useEffect(() => {
@@ -177,6 +199,7 @@ export default function App() {
       )}
       <Toast toast={toast} />
       <Confetti active={confetti} />
+      {ghostReview && !migrationNotice && <GhostedReviewPrompt candidate={ghostReview} en={i18n.language==='en'} onAnswer={answerGhostReview} />}
       {migrationNotice && (
         <MigrationNotice
           notice={migrationNotice}
@@ -332,4 +355,32 @@ function NewSearchPrompt({en,onClose,onSettings}) {
     <button className="btn-primary w-full mb-3" onClick={onSettings}>{en?'Go to reset options':'Vai alle opzioni di reset'}</button>
     <button className="w-full min-h-[44px] text-muted" onClick={onClose}>{en?'No, keep my data':'No, mantieni i miei dati'}</button>
   </dialog>
+}
+
+
+function GhostedReviewPrompt({ candidate, en, onAnswer }) {
+  return (
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 px-5" role="dialog" aria-modal="true" aria-labelledby="ghost-review-title">
+      <div className="card w-full max-w-sm p-6 text-center">
+        <div className="mb-3 text-5xl">👻</div>
+        <h2 id="ghost-review-title" className="mb-2 text-lg font-bold text-txt">
+          {en ? 'Any news from this company?' : 'Hai ricevuto notizie da questa azienda?'}
+        </h2>
+        <p className="mb-2 text-sm font-semibold text-txt">{candidate.azienda} · {candidate.ruolo}</p>
+        <p className="mb-5 text-sm text-muted">
+          {en
+            ? 'It has been two months since you sent this application. Have you received a reply or an update?'
+            : 'Sono passati due mesi dall’invio della candidatura. Hai ricevuto una risposta o un aggiornamento?'}
+        </p>
+        <div className="flex flex-col gap-2">
+          <button className="btn-primary w-full py-3" onClick={() => onAnswer(true)}>
+            {en ? 'Yes, I received a reply' : 'Sì, ho ricevuto una risposta'}
+          </button>
+          <button className="w-full rounded-xl border border-border py-3 text-sm font-semibold text-txt" onClick={() => onAnswer(false)}>
+            {en ? 'No, mark as Ghosted' : 'No, segnala come Ghosted'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }

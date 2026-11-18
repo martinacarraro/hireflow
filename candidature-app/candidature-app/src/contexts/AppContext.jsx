@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import i18n from '../i18n'
 import { XP_EVENTS, BADGES, DEFAULT_CHECKLIST } from '../lib/utils'
 import { migrateStoredLegacySession, recoverLegacyCloudData } from '../lib/legacyCloudMigration'
-import { localDay, elapsedDays, getInterviews, normalizeTransition, validationIssues, validationMessage, flowStats, hasOffer, dueReminders, INTERVIEW_STATES } from '../lib/applicationFlow'
+import { localDay, elapsedDays, getInterviews, normalizeTransition, applyElapsedInterviewTransitions, validationIssues, validationMessage, flowStats, hasOffer, dueReminders, INTERVIEW_STATES } from '../lib/applicationFlow'
 
 const AppContext = createContext(null)
 const CANDIDATURE_KEY = 'lfs_candidature'
@@ -66,6 +66,7 @@ export function AppProvider({ children }) {
           if(migrated){list=migrated.candidature;prof=migrated.profile;if(active)setMigrationNotice({type:'success',...migrated})}
         } catch { if(active && localStorage.getItem(MIGRATION_ERROR_DISMISSED_KEY)!=='1')setMigrationNotice({type:'error'}) }
         if(!active)return
+        list=applyElapsedInterviewTransitions(list)
         const observed = {...prof.hire_observed}
         list.filter(c=>c.stato==='Assunta').forEach(c=>{if(!observed[c.id])observed[c.id]=new Date().toISOString()})
         prof={...prof,hire_observed:observed}
@@ -148,6 +149,20 @@ export function AppProvider({ children }) {
   const updateProfile=async(updates)=>commit(dataRef.current,{...profileRef.current,...updates})
   const addXP=async(amount)=>updateProfile({xp_points:(profileRef.current?.xp_points || 0)+amount})
   const removeXP=async(amount)=>updateProfile({xp_points:Math.max(0,(profileRef.current?.xp_points || 0)-amount)})
+  useEffect(()=> {
+    if (loading || loadError) return
+    const reconcile = () => {
+      if (document.visibilityState === 'hidden') return
+      const current = dataRef.current
+      const next = applyElapsedInterviewTransitions(current)
+      if (next !== current) commit(next, withBadges(next, profileRef.current))
+    }
+    reconcile()
+    const timer = setInterval(reconcile, 60000)
+    document.addEventListener('visibilitychange', reconcile)
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', reconcile) }
+  }, [loading, loadError])
+
   const computeStats=()=>({...flowStats(dataRef.current),referral:Number(profileRef.current?.referral_count || 0)})
   const checkBadges=async()=>commit(dataRef.current,withBadges(dataRef.current,profileRef.current))
 
