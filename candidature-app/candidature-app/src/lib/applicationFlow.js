@@ -217,7 +217,7 @@ export function applyElapsedInterviewTransitions(list, now = new Date()) {
     })
     if (!meetingsChanged) return c
     const futureMeeting = interviews.some(e => e.status === 'scheduled' && e.date >= today)
-    const nextStatus = meetingPassed && !futureMeeting && INTERVIEW_STATES.includes(c.stato)
+    const nextStatus = meetingPassed && !futureMeeting
       ? 'In attesa risposta' : c.stato
     changed = true
     return normalizeTransition(c, { interviews, stato: nextStatus, updated_at: now.toISOString() }, now)
