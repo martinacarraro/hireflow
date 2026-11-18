@@ -181,3 +181,46 @@ export function shouldSuggestArchive(c, now = new Date()) {
     && c.archive_suggestion_dismissed_for !== since
 }
 
+
+
+// Ask once when two calendar months have passed since the application was sent.
+export function isGhostReviewDue(c, now = new Date()) {
+  if (!c || c.archiviata || !c.data_invio || c.stato === 'GHOSTED' ||
+      ['Rifiutata', 'Non mi piace', 'Offerta rifiutata', 'Offerta ricevuta', 'Assunta'].includes(c.stato)) return false
+  if (!['Inviata', 'Vista', 'In attesa risposta', 'Prima call', 'Colloquio', 'Secondo colloquio'].includes(c.stato)) return false
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(c.data_invio) || localDay(parseDay(c.data_invio)) !== c.data_invio) return false
+  const [year, month, day] = c.data_invio.split('-').map(Number)
+  const targetMonth = month - 1 + 2
+  const targetYear = year + Math.floor(targetMonth / 12)
+  const normalizedMonth = targetMonth % 12
+  const lastDay = new Date(targetYear, normalizedMonth + 1, 0).getDate()
+  const dueDay = localDay(new Date(targetYear, normalizedMonth, Math.min(day, lastDay)))
+  return localDay(now) >= dueDay && c.ghosted_reviewed_for !== c.data_invio
+}
+
+// Past meetings are marked completed; after the last scheduled meeting, wait for a reply.
+export function applyElapsedInterviewTransitions(list, now = new Date()) {
+  const today = localDay(now)
+  let changed = false
+  const nextList = list.map(c => {
+    if (c.archiviata || CLOSED.has(c.stato) || c.stato === 'Offerta ricevuta') return c
+    const current = getInterviews(c)
+    let meetingPassed = false
+    let meetingsChanged = false
+    const interviews = current.map(e => {
+      if (e.status === 'scheduled' && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') && e.date < today) {
+        meetingPassed = true
+        meetingsChanged = true
+        return { ...e, status: 'completed' }
+      }
+      return e
+    })
+    if (!meetingsChanged) return c
+    const futureMeeting = interviews.some(e => e.status === 'scheduled' && e.date >= today)
+    const nextStatus = meetingPassed && !futureMeeting && INTERVIEW_STATES.includes(c.stato)
+      ? 'In attesa risposta' : c.stato
+    changed = true
+    return normalizeTransition(c, { interviews, stato: nextStatus, updated_at: now.toISOString() }, now)
+  })
+  return changed ? nextList : list
+}
