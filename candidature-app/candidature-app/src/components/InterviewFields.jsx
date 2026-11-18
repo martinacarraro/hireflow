@@ -20,10 +20,14 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
   </div>
   if(historyOnly) {
     const history = items
-    if(!history.length)return null
+    if(!history.length && !form.data_invio)return null
     return <details open>
       <summary>{en?'Meeting history':'Storico incontri'}</summary>
       <div className="space-y-4 pt-3">
+        {form.data_invio && <div>
+          <p className="text-sm font-medium">{en?'Application sent':'Candidatura inviata'}</p>
+          <p className="text-sm text-muted mt-1">{form.data_invio}</p>
+        </div>}
         {history.map(e=><div key={e.id}>
           <p className="text-sm font-medium mb-2">{interviewLabel(e,en)}</p>
           {e.needsReview && <label className="block text-xs text-amber mb-2">{en?'Which interview was this? The saved date is unchanged.':'A quale colloquio si riferisce? La data salvata resta qui.'}
