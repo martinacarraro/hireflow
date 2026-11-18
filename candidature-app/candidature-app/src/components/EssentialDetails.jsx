@@ -5,6 +5,19 @@ import JobFields from './JobFields'
 import InterviewFields from './InterviewFields'
 import { localDay } from '../lib/applicationFlow'
 
+function SectionHeading({ icon, children }) {
+  const paths = {
+    document: <><path d="M8 3h6l4 4v14H6V3h2Z"/><path d="M14 3v5h5M9 12h6M9 16h6"/></>,
+    briefcase: <><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></>,
+    note: <><path d="M5 3h14v18H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></>,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h2M14 14h2M8 17h2"/></>,
+  }
+  return <h3 className="text-sm font-semibold text-txt flex items-center gap-2">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 text-purple-soft">{paths[icon]}</svg>
+    <span>{children}</span>
+  </h3>
+}
+
 export default function EssentialDetails({ form, onChange, onLocationSelect, includeNotes = false }) {
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
@@ -14,7 +27,7 @@ export default function EssentialDetails({ form, onChange, onLocationSelect, inc
   return <div className="space-y-4 pt-3">
     <section className="rounded-2xl border border-border bg-surface/50 p-4 space-y-4">
       <div>
-        <h3 className={sectionTitle}>{en ? 'Job information' : 'Informazioni dell’annuncio'}</h3>
+        <SectionHeading icon="document">{en ? 'Job information' : 'Informazioni dell’annuncio'}</SectionHeading>
         <p className="text-xs text-muted mt-1">{en ? 'When and where you applied.' : 'Quando e dove hai inviato la candidatura.'}</p>
       </div>
       <label className={fieldClass}>{en ? 'Application date' : 'Data candidatura'}
@@ -30,7 +43,7 @@ export default function EssentialDetails({ form, onChange, onLocationSelect, inc
 
     <section className="rounded-2xl border border-border bg-surface/50 p-4 space-y-4">
       <div>
-        <h3 className={sectionTitle}>{en ? 'Job conditions' : 'Condizioni di lavoro'}</h3>
+        <SectionHeading icon="briefcase">{en ? 'Job conditions' : 'Condizioni di lavoro'}</SectionHeading>
         <p className="text-xs text-muted mt-1">{en ? 'Details about the role and compensation.' : 'Dettagli su orario, contratto e retribuzione.'}</p>
       </div>
       <JobFields form={form} onChange={onChange} compact/>
@@ -44,12 +57,12 @@ export default function EssentialDetails({ form, onChange, onLocationSelect, inc
     </section>
 
     {includeNotes && <section className="rounded-2xl border border-border bg-surface/50 p-4 space-y-3">
-      <h3 className={sectionTitle}>{en ? 'Personal notes' : 'Note personali'}</h3>
+      <SectionHeading icon="note">{en ? 'Personal notes' : 'Note personali'}</SectionHeading>
       <textarea aria-label={en?'Personal notes':'Note personali'} className="input-field resize-y" rows={3} placeholder={en?'Add a note about this application…':'Aggiungi una nota su questa candidatura…'} value={form.note || ''} onChange={e=>onChange('note',e.target.value)}/>
     </section>}
 
     <section className="space-y-2">
-      <h3 className={sectionTitle}>{en ? 'Application timeline' : 'Percorso della candidatura'}</h3>
+      <SectionHeading icon="calendar">{en ? 'Application timeline' : 'Percorso della candidatura'}</SectionHeading>
       <InterviewFields form={form} onChange={onChange} historyOnly/>
     </section>
   </div>
