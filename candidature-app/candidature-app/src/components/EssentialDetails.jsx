@@ -21,11 +21,10 @@ function SectionHeading({ icon, children }) {
 export default function EssentialDetails({ form, onChange, onLocationSelect, includeNotes = false }) {
   const { i18n } = useTranslation()
   const en = i18n.language === 'en'
-  const sectionTitle = 'text-sm font-semibold text-txt'
   const fieldClass = 'block text-xs text-muted'
 
-  return <div className="space-y-4 pt-3">
-    <section className="rounded-2xl border border-border bg-surface/50 p-4 space-y-4">
+  return <div className="space-y-5 pt-3">
+    <section className="space-y-4 border-b border-border/60 pb-5">
       <div>
         <SectionHeading icon="document">{en ? 'Job information' : 'Informazioni dell’annuncio'}</SectionHeading>
         <p className="text-xs text-muted mt-1">{en ? 'When and where you applied.' : 'Quando e dove hai inviato la candidatura.'}</p>
@@ -56,7 +55,7 @@ export default function EssentialDetails({ form, onChange, onLocationSelect, inc
       </fieldset>
     </section>
 
-    {includeNotes && <section className="rounded-2xl border border-border bg-surface/50 p-4 space-y-3">
+    {includeNotes && <section className="space-y-3 border-b border-border/60 pb-5">
       <SectionHeading icon="note">{en ? 'Personal notes' : 'Note personali'}</SectionHeading>
       <textarea aria-label={en?'Personal notes':'Note personali'} className="input-field resize-y" rows={3} placeholder={en?'Add a note about this application…':'Aggiungi una nota su questa candidatura…'} value={form.note || ''} onChange={e=>onChange('note',e.target.value)}/>
     </section>}
