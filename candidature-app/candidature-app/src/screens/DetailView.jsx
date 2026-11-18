@@ -160,7 +160,9 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
           <span>{en?'Spontaneous':'Spontanea'}</span>
         </label>
       </div>
-      {INTERVIEW_STATES.includes(form.stato) && <InterviewFields form={form} onChange={set}/>}
+      {INTERVIEW_STATES.includes(form.stato)
+        ? <InterviewFields form={form} onChange={set}/>
+        : <InterviewFields form={form} onChange={set} historyOnly />}
       {form.stato==='Offerta ricevuta' && <div className="flex gap-3">
         <button className="btn-primary flex-1" disabled={saving} onClick={()=>saveAndBack({stato:'Assunta',offerta_risposta:'si'})}>{en?'Accept offer':'Accetta offerta'}</button>
         <button className="btn-secondary flex-1" disabled={saving} onClick={()=>saveAndBack({stato:'Offerta rifiutata',offerta_risposta:'no'})}>{en?'Decline':'Rifiuta'}</button>

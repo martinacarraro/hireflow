@@ -19,12 +19,12 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
     <label className="text-xs text-muted">{en?'Time':'Ora'}<input aria-label={interviewLabel(e,en)+' '+(en?'time':'ora')} className="input-field mt-1 min-w-0" type="time" value={e.time || ''} onChange={ev=>update(e.id,{time:ev.target.value})}/></label>
   </div>
   if(historyOnly) {
-    const previous = items.filter(e=>e.id!==current?.id)
-    if(!previous.length && form.stato!=='Secondo colloquio')return null
-    return <details>
-      <summary>{en?'Previous meetings':'Incontri precedenti'}</summary>
+    const history = items
+    if(!history.length)return null
+    return <details open>
+      <summary>{en?'Meeting history':'Storico incontri'}</summary>
       <div className="space-y-4 pt-3">
-        {previous.map(e=><div key={e.id}>
+        {history.map(e=><div key={e.id}>
           <p className="text-sm font-medium mb-2">{interviewLabel(e,en)}</p>
           {e.needsReview && <label className="block text-xs text-amber mb-2">{en?'Which interview was this? The saved date is unchanged.':'A quale colloquio si riferisce? La data salvata resta qui.'}
             <select className="input-field mt-1" value="" onChange={ev=>update(e.id,{order:Number(ev.target.value),needsReview:false})}><option value="">{en?'Choose':'Scegli'}</option><option value="1">{en?'First interview':'Primo colloquio'}</option><option value="2">{en?'Second interview':'Secondo colloquio'}</option></select>
