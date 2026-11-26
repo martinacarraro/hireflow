@@ -71,10 +71,14 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close()
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(openClients => {
-      const existing = openClients.find(client => client.url.includes(self.location.origin))
-      if (existing) return existing.focus()
-      return clients.openWindow(event.notification.data?.url || '/')
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async openClients => {
+      const targetUrl = new URL(event.notification.data?.url || '/', self.location.origin).href
+      const existing = openClients.find(client => client.url.startsWith(self.location.origin))
+      if (existing) {
+        if (existing.navigate) await existing.navigate(targetUrl)
+        return existing.focus()
+      }
+      return clients.openWindow(targetUrl)
     })
   )
 })
