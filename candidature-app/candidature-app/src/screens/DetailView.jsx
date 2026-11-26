@@ -10,7 +10,7 @@ import InterviewFields from '../components/InterviewFields'
 import { STATI } from '../lib/utils'
 import { ensureStageInterview, getInterviews, INTERVIEW_STATES, localDay } from '../lib/applicationFlow'
 
-export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateOnOpen=false }) {
+export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateOnOpen=false, reviewInterviewId=null }) {
   const { updateCandidatura, deleteCandidatura, profile } = useApp()
   const { t,i18n } = useTranslation()
   const en=i18n.language==='en'
@@ -20,6 +20,11 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
   const [saved,setSaved]=useState(false)
   const [error,setError]=useState('')
   const [confirmDelete,setConfirmDelete]=useState(false)
+  const [reviewEmoji,setReviewEmoji]=useState('🙂')
+  const [reviewNotes,setReviewNotes]=useState('')
+  const [reviewOffer,setReviewOffer]=useState('')
+  const [reviewOfferNotes,setReviewOfferNotes]=useState('')
+  const [showInterviewReview,setShowInterviewReview]=useState(!!reviewInterviewId)
   const [showAssuntaCelebration,setShowAssuntaCelebration]=useState(celebrateOnOpen)
   const [showCoffeePrompt,setShowCoffeePrompt]=useState(false)
   const lock=useRef(false),persisted=useRef(c)
@@ -54,6 +59,11 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     finally{setSaving(false);lock.current=false}
   }
   const saveAndBack=async(patch={})=>{const result=await save(patch);if(result)onBack();return result}
+  const saveInterviewReview=async()=>{
+    const interviews=getInterviews(form).map(e=>e.id===reviewInterviewId?{...e,review:{emoji:reviewEmoji,notes:reviewNotes,offer:reviewOffer,offerNotes:reviewOfferNotes,reviewedAt:new Date().toISOString()}}:e)
+    const result=await save({interviews,...(reviewNotes.trim()?{note:[form.note,reviewNotes.trim()].filter(Boolean).join('\\n\\n')}:{}),...(reviewOffer.trim()?{offerta_ral:reviewOffer}:{}),...(reviewOfferNotes.trim()?{offerta_note:reviewOfferNotes.trim()}:{})})
+    if(result)setShowInterviewReview(false)
+  }
   const back=async()=>{
     if(saving)return
     if(dirty && window.confirm(en?'Save changes before leaving? Cancel leaves without saving.':'Salvare prima di uscire? Annulla esce senza salvare.')){if(!await save())return}
@@ -207,5 +217,17 @@ export default function DetailView({ candidatura:c, onBack, onUpdate, celebrateO
     <ConfirmDialog isOpen={confirmDelete} title={t('detail.eliminaTitolo')} message={t('detail.eliminaMessaggio',{azienda:form.azienda})} danger onCancel={()=>setConfirmDelete(false)} onConfirm={async()=>{try{await deleteCandidatura(c.id);onBack()}catch(e){setConfirmDelete(false);setError(e.message)}}}/>
     {CelebrationOverlay}
     {CoffeePrompt}
+    {showInterviewReview && reviewInterviewId && (
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 px-5" role="dialog" aria-modal="true">
+        <div className="card w-full max-w-sm p-5 space-y-4">
+          <div className="text-center"><div className="text-3xl mb-2">💬</div><h2 className="text-lg font-bold text-txt">{en?'How did it go?':'Com’è andata?'}</h2><p className="text-sm text-muted">{form.azienda} · {form.ruolo}</p></div>
+          <div className="flex justify-center gap-3">{['😞','😐','🙂','😄','🤩'].map(emoji=><button type="button" key={emoji} onClick={()=>setReviewEmoji(emoji)} aria-pressed={reviewEmoji===emoji} className={`text-3xl rounded-xl p-2 ${reviewEmoji===emoji?'bg-purple/20 ring-2 ring-purple':'bg-surface'}`}>{emoji}</button>)}</div>
+          <label className="block text-sm font-semibold">{en?'Your impressions':'Le tue impressioni'}<textarea className="input-field mt-1" rows={2} value={reviewNotes} onChange={e=>setReviewNotes(e.target.value)} placeholder={en?'Atmosphere, people, impressions…':'Atmosfera, persone, impressioni…'}/></label>
+          <label className="block text-sm font-semibold">{en?'Offer salary (optional)':'RAL proposta (facoltativa)'}<input className="input-field mt-1" value={reviewOffer} onChange={e=>setReviewOffer(e.target.value)} placeholder="€" inputMode="decimal"/></label>
+          <label className="block text-sm font-semibold">{en?'Other offer details':'Altre informazioni sull’offerta'}<textarea className="input-field mt-1" rows={2} value={reviewOfferNotes} onChange={e=>setReviewOfferNotes(e.target.value)} placeholder={en?'Contract, benefits, next steps…':'Contratto, benefit, prossimi passaggi…'}/></label>
+          <div className="flex gap-2"><button type="button" className="btn-secondary flex-1" onClick={()=>setShowInterviewReview(false)}>{en?'Later':'Più tardi'}</button><button type="button" className="btn-primary flex-1" disabled={saving} onClick={saveInterviewReview}>{saving?(en?'Saving…':'Salvataggio…'):(en?'Save':'Salva')}</button></div>
+        </div>
+      </div>
+    )}
   </div>
 }
