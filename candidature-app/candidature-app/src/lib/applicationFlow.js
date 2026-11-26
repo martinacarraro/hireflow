@@ -163,15 +163,17 @@ export function flowStats(list, now = new Date()) {
     risposte:list.filter(hasResponse).length, offerte:list.filter(hasOffer).length,
     ghosted:list.filter(c => c.stato === 'GHOSTED').length }
 }
+// Ask for feedback only on the calendar day immediately after the meeting.
+// If the app was not opened that day, do not show a stale reminder later.
 export function dueInterviewReviews(c, now = new Date()) {
   if (!c || c.archiviata) return []
-  return getInterviews(c).filter(e => {
-    if (!e.date || e.status === 'cancelled' || e.needsReview || e.review?.reviewedAt) return false
-    const due = new Date(`${e.date}T${e.time || '09:00'}:00`)
-    if (e.time) due.setHours(due.getHours() + 1)
-    else due.setDate(due.getDate() + 1)
-    return due <= now
-  }).map(e => ({key:`interview-review:${c.id}:${e.id}:${e.date}:${e.time || 'no-time'}`,kind:'interview-review',interviewId:e.id,date:e.date,time:e.time}))
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayKey = localDay(yesterday)
+  return getInterviews(c).filter(e =>
+    !!e.date && e.date === yesterdayKey &&
+    e.status !== 'cancelled' && !e.needsReview && !e.review?.reviewedAt
+  ).map(e => ({key:`interview-review:${c.id}:${e.id}:${e.date}`,kind:'interview-review',interviewId:e.id,date:e.date,time:e.time}))
 }
 
 export function dueReminders(c, now = new Date()) {
