@@ -230,7 +230,7 @@ const candidatureFiltrate = useMemo(() => {
               onClick={() => {
                 if (n.candidaturaId) {
                   const cand = candidature.find(c => c.id === n.candidaturaId)
-                  if (cand) { setShowNotifs(false); markAllNotificationsRead(); onDetail(cand) }
+                  if (cand) { setShowNotifs(false); markAllNotificationsRead(); onDetail(cand, false, n.type==='interview-review' ? n.interviewId : null) }
                 }
               }}
               className={`card mb-2 flex items-start gap-3 ${!n.read ? 'border-purple/30' : ''} ${n.candidaturaId ? 'cursor-pointer active:scale-[0.98] transition-all' : ''}`}>
