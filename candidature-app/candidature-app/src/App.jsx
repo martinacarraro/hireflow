@@ -54,6 +54,23 @@ export default function App() {
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [ghostReview, setGhostReview] = useState(null)
   const exitApproved = useRef(false)
+  const handledNotificationLink = useRef(false)
+
+  // Deep-link from an operating-system notification directly to the
+  // application and its interview-feedback dialog.
+  useEffect(() => {
+    if (dataLoading || loadError || !linguaScelta || handledNotificationLink.current) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('notification') !== 'interview-review') return
+    const candidaturaId = params.get('candidaturaId')
+    const interviewId = params.get('interviewId')
+    const candidate = candidature.find(item => item.id === candidaturaId)
+    if (!candidate || !interviewId) return
+    handledNotificationLink.current = true
+    setTab('home')
+    setView({ type: 'detail', data: candidate, reviewInterviewId: interviewId })
+    window.history.replaceState({}, '', window.location.pathname)
+  }, [dataLoading, loadError, linguaScelta, candidature])
 
   const [newSearch, setNewSearch] = useState(null)
   const searchChecked = useRef(false)
