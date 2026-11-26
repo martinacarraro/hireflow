@@ -167,13 +167,23 @@ export function flowStats(list, now = new Date()) {
 // If the app was not opened that day, do not show a stale reminder later.
 export function dueInterviewReviews(c, now = new Date()) {
   if (!c || c.archiviata) return []
+  const todayKey = localDay(now)
   const yesterday = new Date(now)
   yesterday.setDate(yesterday.getDate() - 1)
   const yesterdayKey = localDay(yesterday)
-  return getInterviews(c).filter(e =>
-    !!e.date && e.date === yesterdayKey &&
-    e.status !== 'cancelled' && !e.needsReview && !e.review?.reviewedAt
-  ).map(e => ({key:`interview-review:${c.id}:${e.id}:${e.date}`,kind:'interview-review',interviewId:e.id,date:e.date,time:e.time}))
+  return getInterviews(c).filter(e => {
+    if (!e.date || e.status === 'cancelled' || e.needsReview || e.review?.reviewedAt) return false
+    if (e.time) {
+      // With a time, ask two hours later on the same calendar day only.
+      if (e.date !== todayKey) return false
+      const [hours, minutes] = e.time.split(':').map(Number)
+      const due = new Date(`${e.date}T00:00:00`)
+      due.setHours(hours + 2, minutes || 0, 0, 0)
+      return due.getDate() === now.getDate() && due <= now
+    }
+    // Without a time, ask on the following calendar day only.
+    return e.date === yesterdayKey
+  }).map(e => ({key:`interview-review:${c.id}:${e.id}:${e.date}:${e.time || 'no-time'}`,kind:'interview-review',interviewId:e.id,date:e.date,time:e.time}))
 }
 
 export function dueReminders(c, now = new Date()) {
