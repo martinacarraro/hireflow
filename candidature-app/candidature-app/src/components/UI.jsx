@@ -239,7 +239,7 @@ export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel, dan
 }
 
 // ─── TAB BAR ─────────────────────────────────────────────────────
-export function TabBar({ active, onChange, unread = 0 }) {
+export function TabBar({ active, onChange, unread = 0, badgeUnread = 0 }) {
   const { t, i18n } = useTranslation()
   const isIt = i18n.language !== 'en'
   const tabs = [
@@ -272,6 +272,9 @@ export function TabBar({ active, onChange, unread = 0 }) {
                     <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
                       {unread > 9 ? '9+' : unread}
                     </span>
+                  )}
+                  {tab.id === 'profile' && badgeUnread > 0 && (
+                    <span aria-label={isIt ? 'Nuovi badge da vedere' : 'New badges to view'} className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full bg-red ring-2 ring-surface" />
                   )}
                 </span>
                 <span className="text-xs leading-tight font-medium">{tab.label}</span>
