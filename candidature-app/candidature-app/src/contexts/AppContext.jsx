@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import i18n from '../i18n'
 import { XP_EVENTS, BADGES, DEFAULT_CHECKLIST } from '../lib/utils'
 import { migrateStoredLegacySession, recoverLegacyCloudData } from '../lib/legacyCloudMigration'
-import { localDay, elapsedDays, getInterviews, normalizeTransition, applyElapsedInterviewTransitions, validationIssues, validationMessage, flowStats, hasOffer, dueReminders, INTERVIEW_STATES } from '../lib/applicationFlow'
+import { localDay, elapsedDays, getInterviews, dueInterviewReviews, normalizeTransition, applyElapsedInterviewTransitions, validationIssues, validationMessage, flowStats, hasOffer, dueReminders, INTERVIEW_STATES } from '../lib/applicationFlow'
 
 const AppContext = createContext(null)
 const CANDIDATURE_KEY = 'lfs_candidature'
@@ -201,9 +201,9 @@ export function AppProvider({ children }) {
     throw Error(en()?'Checklist item not found':'Voce della checklist non trovata')
   }
 
-  const pushNotification=(title,body,cid=null,key=title+'::'+body)=>{
+  const pushNotification=(title,body,cid=null,key=title+'::'+body,meta={})=>{
     if(profileRef.current?.reminders_enabled===false || profileRef.current?.notification_mode==='off' || notifRef.current.some(n=>n.key===key))return
-    const next=[{id:crypto.randomUUID(),key,title,body,candidaturaId:cid,time:new Date().toISOString(),read:false},...notifRef.current].slice(0,100)
+    const next=[{id:crypto.randomUUID(),key,title,body,candidaturaId:cid,...meta,time:new Date().toISOString(),read:false},...notifRef.current].slice(0,100)
     writeValues({[NOTIFICATIONS_KEY]:next});notifRef.current=next;setNotifications(next)
     if(profileRef.current?.notification_mode==='on' && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(registration => {
@@ -216,6 +216,9 @@ export function AppProvider({ children }) {
     const check=()=>{
       if(document.visibilityState==='hidden' || profileRef.current?.reminders_enabled===false)return
       for(const c of dataRef.current){
+        for(const review of dueInterviewReviews(c)){
+          try { pushNotification(en()?'How did it go?':'Com’è andata?',c.azienda+(review.time?' · '+review.time:''),c.id,review.key,{type:'interview-review',interviewId:review.interviewId}) } catch {}
+        }
         for(const reminder of dueReminders(c)){
           try { pushNotification(reminder.kind==='interview'?(en()?'Interview today':'Colloquio oggi'):(en()?'Reminder':'Promemoria'),
             c.azienda+(reminder.time?' · '+reminder.time:'')+(reminder.note?' · '+reminder.note:''),c.id,reminder.key) } catch {}
