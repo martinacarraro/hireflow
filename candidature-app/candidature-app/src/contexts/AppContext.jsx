@@ -50,7 +50,12 @@ export function AppProvider({ children }) {
     const stats = {...flowStats(list),referral:Number(prof?.referral_count || 0)}
     const earned = new Set((prof?.badge_lista || '').split(',').filter(Boolean))
     BADGES.forEach(b => { if(b.check(stats)) earned.add(b.id) })
-    return {...prof,badge_lista:[...earned].join(',')}
+    // Alla prima inizializzazione i badge già presenti sono considerati visualizzati.
+    // Da quel momento, ogni nuovo badge sbloccato genera una notifica da leggere.
+    const pending = Array.isArray(prof?.badge_notifiche)
+      ? [...new Set([...prof.badge_notifiche, ...[...earned].filter(id => !(prof?.badge_lista || '').split(',').includes(id))])]
+      : []
+    return {...prof,badge_lista:[...earned].join(','),badge_notifiche:pending}
   }
   useEffect(()=>{
     let active=true
@@ -167,6 +172,10 @@ export function AppProvider({ children }) {
 
   const computeStats=()=>({...flowStats(dataRef.current),referral:Number(profileRef.current?.referral_count || 0)})
   const checkBadges=async()=>commit(dataRef.current,withBadges(dataRef.current,profileRef.current))
+  const markBadgeNotificationsSeen=()=>{
+    if(!profileRef.current?.badge_notifiche?.length)return
+    commit(dataRef.current,{...profileRef.current,badge_notifiche:[]})
+  }
 
   const getChecklist=async(cid,meetingId)=>{
     const key='lfs_checklist_'+cid+(meetingId?':'+meetingId:'')
@@ -236,6 +245,7 @@ export function AppProvider({ children }) {
   }
   return <AppContext.Provider value={{
     candidature,profile,notifications,toast,confetti,loading,loadError,migrationNotice,unreadCount:notifications.filter(n=>!n.read).length,
+    newBadgeCount:profile?.badge_notifiche?.length || 0,markBadgeNotificationsSeen,
     resetSearch,addCandidatura,updateCandidatura,deleteCandidatura,addBulkCandidature,getChecklist,toggleChecklistItem,
     addXP,removeXP,updateProfile,computeStats,checkBadges,triggerConfetti,showToast,markOnboarded,
     pushNotification,recoverLegacyData,markAllNotificationsRead,dismissMigrationNotice,
