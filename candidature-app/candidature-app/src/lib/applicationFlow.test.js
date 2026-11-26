@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { averageWaitingDays, getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive } from './applicationFlow.js'
+import { averageWaitingDays, getInterviews, newInterview, ensureStageInterview, normalizeTransition, validationIssues, upcomingInterviews, agendaEvents, flowStats, hasOffer, hasResponse, needsFollowUp, duplicateApplication, dueReminders, waitingSince, shouldSuggestArchive, applyElapsedInterviewTransitions } from './applicationFlow.js'
 import { calendarFile } from './calendarExport.js'
 
 const now = new Date('2026-10-01T10:00:00')
@@ -56,6 +56,28 @@ test('waiting starts at latest recorded contact rather than application creation
   const c={...base,stato:'In attesa risposta',attesa_dal:'2026-09-28',ultimo_contatto:'2026-09-30'}
   assert.equal(waitingSince(c),'2026-09-30')
 })
+test('calls and interviews move to waiting the day after their scheduled date, not during the day',()=>{
+  const call = {...base,stato:'Prima call',interviews:[{...meeting(0,'2026-09-30'),time:''}]}
+  const movedCall = applyElapsedInterviewTransitions([call],now)[0]
+  assert.equal(movedCall.stato,'In attesa risposta')
+  assert.equal(movedCall.interviews[0].status,'completed')
+  assert.equal(movedCall.attesa_dal,'2026-10-01')
+
+  const sameDay = {...base,stato:'Colloquio',interviews:[meeting(1,'2026-10-01')]}
+  assert.equal(applyElapsedInterviewTransitions([sameDay],now)[0],sameDay)
+
+  const nextDay = applyElapsedInterviewTransitions([sameDay],new Date('2026-10-02T00:01:00'))[0]
+  assert.equal(nextDay.stato,'In attesa risposta')
+  assert.equal(nextDay.interviews[0].status,'completed')
+})
+test('a later scheduled interview keeps the application in its current stage',()=>{
+  const c={...base,stato:'Colloquio',interviews:[meeting(1,'2026-09-30'),meeting(2,'2026-10-03')]}
+  const next=applyElapsedInterviewTransitions([c],now)[0]
+  assert.equal(next.stato,'Colloquio')
+  assert.equal(next.interviews[0].status,'completed')
+  assert.equal(next.interviews[1].status,'scheduled')
+})
+
 test('duplication does not retain archive, interviews, response, reminder or XP history',()=>{
   const c=duplicateApplication({...base,stato:'Assunta',archiviata:true,interviews:[meeting(1,'2026-10-03')],offerta_risposta:'si',data_inizio:'2026-11-01',reminder_date:'2026-10-03',xp_awards:{offer:true}},now)
   assert.equal(c.archiviata,false);assert.equal(c.stato,'Inviata');assert.deepEqual(c.interviews,[])
