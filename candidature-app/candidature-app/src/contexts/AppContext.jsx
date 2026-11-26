@@ -207,7 +207,12 @@ export function AppProvider({ children }) {
     writeValues({[NOTIFICATIONS_KEY]:next});notifRef.current=next;setNotifications(next)
     if(profileRef.current?.notification_mode==='on' && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(registration => {
-        if(profileRef.current?.notification_mode==='on' && profileRef.current?.reminders_enabled!==false) return registration?.showNotification(title,{body,tag:key,icon:'/icon-192.png'})
+        if(profileRef.current?.notification_mode==='on' && profileRef.current?.reminders_enabled!==false) {
+          const url = meta.type === 'interview-review' && cid && meta.interviewId
+            ? `/?notification=interview-review&candidaturaId=${encodeURIComponent(cid)}&interviewId=${encodeURIComponent(meta.interviewId)}`
+            : '/'
+          return registration?.showNotification(title,{body,tag:key,icon:'/icon-192.png',data:{url}})
+        }
       }).catch(()=>{})
     }
   }
