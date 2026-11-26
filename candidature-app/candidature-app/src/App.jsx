@@ -40,7 +40,7 @@ function registerOpenAndShouldAskForSupport(now = new Date()) {
 }
 
 export default function App() {
-  const { candidature, updateCandidatura, updateProfile, profile, loading: dataLoading, loadError, toast, confetti, unreadCount, migrationNotice, dismissMigrationNotice } = useApp()
+  const { candidature, updateCandidatura, updateProfile, profile, loading: dataLoading, loadError, toast, confetti, unreadCount, newBadgeCount, migrationNotice, dismissMigrationNotice } = useApp()
   const { t, i18n } = useTranslation()
   
   const [showSplash, setShowSplash] = useState(true)
@@ -176,7 +176,7 @@ export default function App() {
           {tab === 'profile' && <Profile />}
         </Suspense>
       </div>
-      <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} />
+      <TabBar active={tab} onChange={(t) => t === 'add' ? setView({ type: 'add' }) : setTab(t)} unread={unreadCount} badgeUnread={newBadgeCount} />
       {showExitConfirm && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/75 px-5" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
           <div className="card w-full max-w-sm p-6 text-center">
