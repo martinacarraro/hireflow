@@ -249,7 +249,7 @@ export default function AddCandidatura({ onBack, onDone }) {
           <button onClick={goNext} className="btn-primary add-submit w-full flex items-center justify-center gap-2">{isIt?'Continua':'Continue'} <span>→</span></button>
         ) : (
           <div className="space-y-2">
-            <button onClick={handleSubmit} disabled={loading} className="btn-primary add-submit w-full flex items-center justify-center gap-2">{loading ? <Spinner size={20}/> : <>{isIt?'Salva subito':'Save now'} <span>✓</span></>}</button>
+            <button onClick={handleSubmit} disabled={loading} className="btn-primary add-submit w-full flex items-center justify-center gap-2">{loading ? <Spinner size={20}/> : <>{isIt?'Salva':'Save'} <span>✓</span></>}</button>
             <button type="button" onClick={()=>setShowDetails(true)} className="w-full rounded-2xl border border-border bg-surface py-4 text-sm font-semibold text-txt">{isIt?'Aggiungi altri dettagli':'Add more details'} <span className="text-purple-soft">＋</span></button>
           </div>
         )}
