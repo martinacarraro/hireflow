@@ -222,7 +222,7 @@ export function AppProvider({ children }) {
       if(document.visibilityState==='hidden' || profileRef.current?.reminders_enabled===false)return
       for(const c of dataRef.current){
         for(const review of dueInterviewReviews(c)){
-          try { pushNotification(en()?'How did it go?':'Com’è andata?',c.azienda+(review.time?' · '+review.time:''),c.id,review.key,{type:'interview-review',interviewId:review.interviewId}) } catch {}
+          try { pushNotification(en()?'How did it go?':'Com’è andata?',en()?`Interview with ${c.azienda}`:`Colloquio con ${c.azienda}`,c.id,review.key,{type:'interview-review',interviewId:review.interviewId}) } catch {}
         }
         for(const reminder of dueReminders(c)){
           try { pushNotification(reminder.kind==='interview'?(en()?'Interview today':'Colloquio oggi'):(en()?'Reminder':'Promemoria'),
