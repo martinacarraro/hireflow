@@ -16,6 +16,7 @@ export default function Profile() {
     candidature,
     showToast,
     resetSearch,
+    markBadgeNotificationsSeen,
   } = useApp()
 
   const { t, i18n } = useTranslation()
@@ -49,6 +50,10 @@ export default function Profile() {
   const [editNome, setEditNome] = useState(false)
   const [nomeEdit, setNomeEdit] = useState(profile?.nome || '')
   const backupRef = useRef(null)
+
+  useEffect(() => {
+    markBadgeNotificationsSeen()
+  }, [])
 
   const isIt = i18n.language === 'it'
   const nome = profile?.nome || (isIt ? 'Utente' : 'User')
