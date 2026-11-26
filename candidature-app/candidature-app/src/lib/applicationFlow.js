@@ -196,17 +196,17 @@ export function isGhostReviewDue(c, now = new Date()) {
   return localDay(now) >= dueDay && c.ghosted_reviewed_for !== c.data_invio
 }
 
-// A stage only moves to "waiting for reply" after its own meeting has
-// both a date and a time, and that exact date/time has passed.
+// An interview/call remains in its current stage for the whole scheduled day.
+// Starting the following local day, the stage moves to "In attesa risposta".
 export function applyElapsedInterviewTransitions(list, now = new Date()) {
   let changed = false
+  const today = localDay(now)
   const stageOrder = { 'Prima call': 0, 'Colloquio': 1, 'Secondo colloquio': 2 }
-  const validDateTime = e => {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(e.date || '') ||
-        !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(e.time || '')) return null
-    const when = new Date(`${e.date}T${e.time}:00`)
-    if (Number.isNaN(when.getTime()) || localDay(when) !== e.date) return null
-    return when
+  const validMeetingDate = e => {
+    if (!e?.date) return null
+    const date = parseDay(e.date)
+    if (Number.isNaN(date?.getTime()) || localDay(date) !== e.date) return null
+    return e.date
   }
   const nextList = list.map(c => {
     if (c.archiviata || CLOSED.has(c.stato) || c.stato === 'Offerta ricevuta') return c
@@ -214,23 +214,18 @@ export function applyElapsedInterviewTransitions(list, now = new Date()) {
     if (order === undefined) return c
     let meetingsChanged = false
     const interviews = getInterviews(c).map(e => {
-      if (e.status === 'cancelled' || !['scheduled', 'completed'].includes(e.status)) return e
-      const when = validDateTime(e)
-      if (!when) return e
-      // Recalculate in both directions: a same-day appointment in the future
-      // must remain scheduled, even if an older date-only rule marked it done.
-      const status = when.getTime() <= now.getTime() ? 'completed' : 'scheduled'
-      if (status === e.status) return e
+      if (e.status !== 'scheduled') return e
+      const date = validMeetingDate(e)
+      if (!date || date >= today) return e
       meetingsChanged = true
-      return { ...e, status }
+      return { ...e, status: 'completed' }
     })
     const activeMeeting = interviews.find(e => e.order === order && e.status !== 'cancelled')
-    const activeMeetingPassed = activeMeeting?.status === 'completed'
-    const futureMeeting = interviews.some(e => {
-      if (e.status !== 'scheduled') return false
-      const when = validDateTime(e)
-      return !!when && when.getTime() > now.getTime()
-    })
+    const activeMeetingPassed = !!activeMeeting && validMeetingDate(activeMeeting) < today
+    // Keep the current stage if another appointment is still scheduled for today or later.
+    const futureMeeting = interviews.some(e =>
+      e.status === 'scheduled' && (validMeetingDate(e) || '') >= today
+    )
     const nextStatus = activeMeetingPassed && !futureMeeting ? 'In attesa risposta' : c.stato
     if (!meetingsChanged && nextStatus === c.stato) return c
     changed = true
