@@ -43,13 +43,6 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
       <summary className="cursor-pointer text-xs font-medium text-muted">{en?'Show / hide meeting details':'Mostra / nascondi dettagli degli incontri'}</summary>
       <div className="relative mt-4 space-y-0">
         <div className="absolute left-[5px] top-2 bottom-3 w-px bg-border" aria-hidden="true" />
-        {form.data_invio && <div className="relative flex gap-3 pb-4">
-          <span className="relative z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-purple-soft bg-surface" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-txt">{en?'Application sent':'Candidatura inviata'}</p>
-            <p className="text-xs text-muted mt-1">{form.data_invio}</p>
-          </div>
-        </div>}
         {history.map(e=><div key={e.id} className="relative flex gap-3 pb-4 last:pb-0">
           <span className={`relative z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 ${e.status==='completed'?'border-purple-soft bg-purple-soft':'border-purple-soft bg-surface'}`} aria-hidden="true" />
           <div className="min-w-0 flex-1 rounded-xl border border-border/70 bg-surface/50 p-3 space-y-3">
@@ -64,6 +57,13 @@ export default function InterviewFields({ form, onChange, historyOnly = false })
             {[e.mode,e.contact,e.notes].filter(Boolean).length>0 && <p className="text-xs text-muted whitespace-pre-wrap">{[e.mode,e.contact,e.notes].filter(Boolean).join(' · ')}</p>}
           </div>
         </div>)}
+        {form.data_invio && <div className="relative flex gap-3 pb-4">
+          <span className="relative z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-purple-soft bg-surface" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-txt">{en?'Application sent':'Candidatura inviata'}</p>
+            <p className="text-xs text-muted mt-1">{form.data_invio}</p>
+          </div>
+        </div>}
         {form.stato==='Secondo colloquio' && !items.some(e=>e.order===1 || e.needsReview) && <button className="text-sm text-purple-soft py-2 ml-6" type="button" onClick={()=>onChange('interviews',[...items,newInterview(1)])}>{en?'+ Add first interview date':'+ Aggiungi la data del primo colloquio'}</button>}
       </div>
     </details>
